@@ -1,0 +1,45 @@
+@layer components {
+  .button {
+    display: inline-flex;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    color: var(--ink);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    transition:
+      transform var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-ui) var(--ease-standard);
+  }
+
+  .button svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .button:hover {
+    transform: translateY(-1px);
+  }
+
+  .button[data-saved='true'] {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .button[data-saved='true'] svg {
+    fill: currentColor;
+    animation: fold var(--duration-ui) var(--ease-enter);
+  }
+
+  @keyframes fold {
+    from {
+      transform: scale(0.82) rotate(-5deg);
+    }
+  }
+}

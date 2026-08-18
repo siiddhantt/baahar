@@ -1,0 +1,51 @@
+@layer components {
+  .empty {
+    display: grid;
+    width: min(100%, 40rem);
+    min-height: 23rem;
+    margin-inline: auto;
+    padding: 2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg) var(--radius-lg) 0.4rem;
+    background: var(--surface);
+    text-align: center;
+    place-content: center;
+    place-items: center;
+    gap: 0.75rem;
+  }
+
+  .sun {
+    width: 4.5rem;
+    height: 4.5rem;
+    margin-bottom: 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--signal) 70%, var(--line));
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--signal) 30%, var(--surface));
+    box-shadow:
+      1.4rem -1rem 0 -1rem var(--accent),
+      -1.3rem 1rem 0 -1rem var(--accent-secondary);
+  }
+
+  .eyebrow {
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .empty h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 5vw, 2.5rem);
+    line-height: 1;
+  }
+
+  .empty p:not(.eyebrow) {
+    max-width: 30rem;
+    color: var(--muted);
+  }
+
+  .empty button {
+    margin-top: 0.6rem;
+  }
+}

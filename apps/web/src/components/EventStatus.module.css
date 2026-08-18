@@ -1,0 +1,32 @@
+@layer components {
+  .list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .list span {
+    padding: 0.26rem 0.52rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .warning {
+    background: var(--warning-soft);
+    color: var(--warning);
+  }
+
+  .accent {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+}

@@ -1,0 +1,169 @@
+@layer components {
+  .header {
+    position: relative;
+    z-index: 10;
+    padding: 0.9rem var(--page-gutter) 0;
+  }
+
+  .inner {
+    display: flex;
+    width: min(100%, var(--content-max));
+    min-height: 4rem;
+    margin-inline: auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    color: var(--ink);
+    text-decoration: none;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 1.55rem + 0.75vw, 2.55rem);
+    font-variation-settings: 'wdth' 105;
+    font-weight: 725;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    transition: font-variation-settings var(--duration-ui) var(--ease-standard);
+  }
+
+  .brand:hover .wordmark {
+    font-variation-settings: 'wdth' 118;
+  }
+
+  .brandDot {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 50%;
+    background: var(--signal);
+  }
+
+  .actions,
+  .navLink,
+  .cityControl {
+    display: flex;
+    align-items: center;
+  }
+
+  .actions {
+    gap: 0.45rem;
+  }
+
+  .navLink,
+  .cityControl select,
+  .iconButton {
+    min-height: 2.75rem;
+    border: 1px solid transparent;
+    background: transparent;
+  }
+
+  .cityControl select {
+    max-width: 10rem;
+    padding-inline: 0.85rem 2rem;
+    border-color: var(--line);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+  }
+
+  .navLink {
+    padding: 0.55rem 0.8rem;
+    color: var(--muted);
+    text-decoration: none;
+    gap: 0.45rem;
+  }
+
+  .navLink:hover,
+  .active {
+    color: var(--ink);
+  }
+
+  .navLink svg,
+  .iconButton svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .count {
+    display: grid;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding-inline: 0.25rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 800;
+    place-items: center;
+  }
+
+  .iconButton {
+    display: grid;
+    width: 2.75rem;
+    padding: 0;
+    border-color: var(--line);
+    border-radius: 50%;
+    color: var(--ink);
+    cursor: pointer;
+    place-items: center;
+  }
+
+  .cityControl select {
+    color: var(--ink);
+  }
+
+  .iconButton:hover {
+    background: var(--surface);
+  }
+
+  @media (max-width: 34rem) {
+    .navLink span:not(.count) {
+      display: none;
+    }
+
+    .cityControl select {
+      max-width: 8.5rem;
+    }
+  }
+
+  @media (max-width: 24rem) {
+    .cityControl select {
+      width: 7.2rem;
+    }
+  }
+
+  @media (max-width: 21.25rem) {
+    .header {
+      padding-inline: 0.65rem;
+    }
+
+    .inner,
+    .actions {
+      gap: 0.25rem;
+    }
+
+    .wordmark {
+      font-size: 1.5rem;
+    }
+
+    .cityControl select {
+      width: 6rem;
+      padding-inline: 0.55rem 1.25rem;
+    }
+
+    .navLink {
+      width: 2.75rem;
+      padding-inline: 0;
+      justify-content: center;
+    }
+
+    .count {
+      display: none;
+    }
+  }
+}

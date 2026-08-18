@@ -1,0 +1,35 @@
+@layer components {
+  .error {
+    display: grid;
+    width: min(100%, 42rem);
+    margin: 3rem auto;
+    padding: clamp(1.25rem, 4vw, 2.25rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg) var(--radius-lg) 0.45rem;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    place-items: center;
+    gap: 1rem;
+  }
+
+  .error h2 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+  }
+
+  .error p {
+    margin-top: 0.35rem;
+    color: var(--muted);
+  }
+
+  .code {
+    color: var(--danger);
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+  }
+
+  .error svg {
+    width: 1rem;
+  }
+}

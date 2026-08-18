@@ -1,0 +1,56 @@
+schema_version: source-manifest/v1
+source: bic
+city: bengaluru
+canonical_hosts:
+  - bangaloreinternationalcentre.org
+collector_id: c_msyr5ts21rq3nfjxrz
+output_schema: event-occurrence/v1
+schedule: "0 */4 * * *"
+freshness_ttl: 12h
+limits:
+  pages_per_run: 2
+  records_per_run: 100
+  window_days: 45
+health:
+  minimum_records: 1
+  maximum_records_before_baseline: 100
+  maximum_parse_error_ratio: 0.02
+  maximum_duplicate_ratio: 0.01
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.4
+  high_count_ratio_after_baseline: 2.5
+identity:
+  source_event_id: id
+  stable_when_time_changes: true
+  array_position_allowed: false
+  multi_performance_requirement: stable_performance_id_or_reviewed_fallback
+image_preference:
+  - image.sizes.8-col-4-3-hard.url
+  - image.sizes.large.url
+  - image.url
+category_map:
+  Books: books
+  Literature: books
+  Biography: books
+  Language: books
+  Music: music
+  Performing Arts: theatre
+  Visual Arts: arts
+  Architecture: arts
+  Design: arts
+  Dance: arts
+  Film: arts
+  Experience: arts
+  Workshops: community
+  Business: talks
+  Cities: talks
+  Climate Change: talks
+  Defence & security: talks
+  Development: talks
+  Environment: talks
+  Governance: talks
+  History: talks
+  Politics: talks
+  Science: talks
+  Society: talks
+  Sustainability: talks

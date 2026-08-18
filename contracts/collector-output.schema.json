@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://baahar.app/contracts/collector-output.schema.json",
+  "title": "Baahar collector event occurrence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_url",
+    "source_host",
+    "city_slug",
+    "title",
+    "category",
+    "start_date",
+    "starts_at",
+    "end_date",
+    "ends_at",
+    "time_precision",
+    "timezone",
+    "venue_name",
+    "venue_address",
+    "is_free",
+    "price_min_minor",
+    "price_max_minor",
+    "currency",
+    "registration_url",
+    "registration_state",
+    "status",
+    "language",
+    "age_note",
+    "accessibility_note",
+    "image_url",
+    "observed_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "event-occurrence/v1" },
+    "source_event_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Use only when the value is stable for one occurrence; never use a parent event ID for several performances."
+    },
+    "source_url": { "type": "string", "format": "uri", "maxLength": 2048 },
+    "source_host": { "type": "string", "format": "hostname", "maxLength": 253 },
+    "city_slug": { "enum": ["bengaluru", "varanasi"] },
+    "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "category": { "$ref": "#/$defs/category" },
+    "start_date": { "type": "string", "format": "date" },
+    "starts_at": { "type": ["string", "null"], "format": "date-time" },
+    "end_date": { "type": ["string", "null"], "format": "date" },
+    "ends_at": { "type": ["string", "null"], "format": "date-time" },
+    "time_precision": { "enum": ["timed", "date"] },
+    "timezone": { "const": "Asia/Kolkata" },
+    "venue_name": { "type": ["string", "null"], "minLength": 1, "maxLength": 300 },
+    "venue_address": { "type": ["string", "null"], "minLength": 1, "maxLength": 1000 },
+    "is_free": { "type": ["boolean", "null"] },
+    "price_min_minor": { "type": ["integer", "null"], "minimum": 0 },
+    "price_max_minor": { "type": ["integer", "null"], "minimum": 0 },
+    "currency": { "type": ["string", "null"], "enum": ["INR", null] },
+    "registration_url": { "type": ["string", "null"], "format": "uri", "maxLength": 2048 },
+    "registration_state": {
+      "type": ["string", "null"],
+      "enum": ["open", "sold_out", "closed", "not_required", null]
+    },
+    "status": { "enum": ["scheduled", "cancelled", "postponed"] },
+    "language": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 2, "maxLength": 35 },
+      "maxItems": 12,
+      "uniqueItems": true
+    },
+    "age_note": { "type": ["string", "null"], "minLength": 1, "maxLength": 300 },
+    "accessibility_note": { "type": ["string", "null"], "minLength": 1, "maxLength": 1000 },
+    "image_url": { "type": ["string", "null"], "format": "uri", "maxLength": 2048 },
+    "observed_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "time_precision": { "const": "timed" } }, "required": ["time_precision"] },
+      "then": { "properties": { "starts_at": { "type": "string", "format": "date-time" } } },
+      "else": { "properties": { "starts_at": { "type": "null" }, "ends_at": { "type": "null" } } }
+    },
+    {
+      "if": {
+        "anyOf": [
+          { "required": ["price_min_minor"], "properties": { "price_min_minor": { "type": "integer" } } },
+          { "required": ["price_max_minor"], "properties": { "price_max_minor": { "type": "integer" } } }
+        ]
+      },
+      "then": { "properties": { "currency": { "const": "INR" }, "is_free": { "const": false } } }
+    },
+    {
+      "if": { "properties": { "is_free": { "const": true } }, "required": ["is_free"] },
+      "then": {
+        "properties": {
+          "price_min_minor": { "type": "null" },
+          "price_max_minor": { "type": "null" },
+          "currency": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "price_min_minor": { "type": "null" },
+          "price_max_minor": { "type": "null" }
+        },
+        "required": ["price_min_minor", "price_max_minor"]
+      },
+      "then": { "properties": { "currency": { "type": "null" } } }
+    },
+    {
+      "if": {
+        "properties": { "price_max_minor": { "type": "integer" } },
+        "required": ["price_max_minor"]
+      },
+      "then": { "properties": { "price_min_minor": { "type": "integer" } } }
+    }
+  ],
+  "$defs": {
+    "category": {
+      "enum": ["arts", "talks", "theatre", "music", "books", "community", "other"]
+    }
+  }
+}

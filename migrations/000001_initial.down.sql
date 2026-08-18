@@ -1,0 +1,16 @@
+DROP TABLE operator_audit_log;
+DROP TABLE operator_incidents;
+DROP TABLE outbox;
+DROP TABLE jobs;
+DROP TABLE source_aliases;
+DROP TABLE source_observations;
+DROP TABLE event_changes;
+ALTER TABLE event_occurrences DROP CONSTRAINT event_occurrences_current_version_fk;
+DROP TABLE event_versions;
+DROP TABLE event_occurrences;
+DROP TABLE events;
+DROP TABLE quarantined_records;
+DROP TABLE collection_runs;
+DROP TABLE sources;
+DROP TABLE venues;
+DROP TABLE cities;

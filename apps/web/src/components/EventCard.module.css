@@ -1,0 +1,126 @@
+@layer components {
+  .card {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md) var(--radius-md) 0.45rem;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    container-type: inline-size;
+    flex-direction: column;
+    transition:
+      transform var(--duration-ui) var(--ease-standard),
+      border-color var(--duration-ui) var(--ease-standard),
+      box-shadow var(--duration-ui) var(--ease-standard);
+  }
+
+  .card:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  .card[data-status='cancelled'] {
+    opacity: 0.82;
+  }
+
+  .cardLink {
+    display: block;
+    padding: 0.38rem;
+    border-radius: var(--radius-md);
+  }
+
+  .card:hover .cardLink img {
+    transform: scale(1.015);
+  }
+
+  .body {
+    display: flex;
+    min-width: 0;
+    padding: 0.75rem 0.85rem 0.85rem;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.42rem;
+  }
+
+  .timing {
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .body h2 {
+    display: -webkit-box;
+    overflow: hidden;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 8cqi, 1.48rem);
+    font-variation-settings: 'wdth' 103;
+    font-weight: 710;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .body h2 a {
+    text-decoration: none;
+  }
+
+  .body h2 a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 0.09em;
+    text-underline-offset: 0.12em;
+  }
+
+  .venue,
+  .price {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .price {
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+
+  .footer {
+    display: flex;
+    margin-top: auto;
+    padding-top: 0.45rem;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.45rem;
+  }
+
+  .source {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.68rem;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+  }
+
+  @container (max-width: 11rem) {
+    .body {
+      padding: 0.62rem;
+    }
+
+    .body h2 {
+      font-size: 1rem;
+      -webkit-line-clamp: 2;
+    }
+
+    .source span {
+      display: none;
+    }
+  }
+}

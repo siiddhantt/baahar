@@ -1,0 +1,202 @@
+@layer components {
+  .page {
+    padding-block: clamp(3rem, 8vw, 7rem) 2rem;
+  }
+
+  .intro {
+    max-width: 67rem;
+  }
+
+  .kicker {
+    margin-bottom: 0.8rem;
+    color: var(--accent-strong);
+    font-size: 0.76rem;
+    font-weight: 820;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .intro h1 {
+    max-width: 14ch;
+    font-family: var(--font-display);
+    font-size: clamp(3.3rem, 9vw, 8.8rem);
+    font-variation-settings: 'wdth' 108;
+    font-weight: 730;
+    letter-spacing: -0.065em;
+    line-height: 0.83;
+  }
+
+  .intro > p:last-child {
+    max-width: 40rem;
+    margin-top: 1.4rem;
+    color: var(--muted);
+    font-size: clamp(1rem, 0.85rem + 0.55vw, 1.38rem);
+  }
+
+  .choices {
+    display: grid;
+    margin-top: clamp(2.5rem, 6vw, 5rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(0.8rem, 2vw, 1.5rem);
+  }
+
+  .city {
+    position: relative;
+    display: grid;
+    min-height: clamp(17rem, 35vw, 30rem);
+    overflow: hidden;
+    padding: clamp(1.2rem, 3vw, 2.2rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg) var(--radius-lg) 0.5rem;
+    background: var(--surface);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    align-content: space-between;
+    transition:
+      transform var(--duration-spatial) var(--ease-standard),
+      box-shadow var(--duration-spatial) var(--ease-standard),
+      border-color var(--duration-ui) var(--ease-standard);
+  }
+
+  .city:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-0.3rem);
+  }
+
+  .number {
+    position: relative;
+    z-index: 1;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+  }
+
+  .cityName {
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 6vw, 5.8rem);
+    font-variation-settings: 'wdth' 112;
+    font-weight: 730;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+  }
+
+  .cityAction {
+    position: relative;
+    z-index: 1;
+    margin-top: 0.8rem;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .cityArt {
+    position: absolute;
+    width: 65%;
+    aspect-ratio: 1;
+    top: 7%;
+    right: -8%;
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent-soft) 80%, transparent);
+    transform: rotate(-12deg);
+    transition: transform var(--duration-spatial) var(--ease-enter);
+  }
+
+  .city:hover .cityArt {
+    transform: rotate(-6deg) scale(1.025);
+  }
+
+  .cityArt i {
+    position: absolute;
+    border: 1px solid color-mix(in srgb, var(--accent-secondary) 50%, transparent);
+    border-radius: 50%;
+    inset: 11%;
+  }
+
+  .cityArt i:nth-child(2) {
+    inset: 25%;
+  }
+
+  .cityArt i:nth-child(3) {
+    inset: 39%;
+    background: var(--signal);
+  }
+
+  .proof {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-align: right;
+  }
+
+  .preview {
+    margin-top: clamp(3.5rem, 8vw, 8rem);
+  }
+
+  .previewHeading {
+    display: flex;
+    margin-bottom: 1.2rem;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .previewHeading h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    font-variation-settings: 'wdth' 108;
+    font-weight: 720;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  .previewHeading > p,
+  .previewEmpty {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .previewHeading > p {
+    padding-bottom: 0.25rem;
+    text-align: right;
+  }
+
+  .previewEmpty {
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+
+  @media (max-width: 43rem) {
+    .choices {
+      grid-template-columns: 1fr;
+    }
+
+    .city {
+      min-height: 14rem;
+    }
+
+    .intro h1 {
+      font-size: clamp(3.15rem, 16vw, 5.8rem);
+    }
+
+    .proof {
+      text-align: left;
+    }
+
+    .previewHeading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .previewHeading > p {
+      text-align: left;
+    }
+  }
+}

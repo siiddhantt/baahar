@@ -1,0 +1,41 @@
+@layer components {
+  .notice {
+    display: grid;
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--warning) 40%, var(--line));
+    border-radius: var(--radius-md) var(--radius-md) 0.35rem;
+    background: var(--warning-soft);
+    color: var(--warning);
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+  }
+
+  .marker {
+    display: grid;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    place-items: center;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+    font-weight: 820;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .notice h2 {
+    margin-top: 0.15rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+
+  .notice p:last-child {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+  }
+}

@@ -1,0 +1,77 @@
+@layer components {
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 1rem;
+  }
+
+  .card {
+    display: grid;
+    overflow: hidden;
+    padding: 0.4rem 0.75rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    gap: 0.6rem;
+  }
+
+  .art,
+  .short,
+  .title,
+  .titleSmall {
+    display: block;
+    border-radius: var(--radius-xs);
+    background: linear-gradient(
+      100deg,
+      var(--canvas-deep) 20%,
+      var(--surface-raised) 40%,
+      var(--canvas-deep) 60%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  .art {
+    aspect-ratio: 4 / 5;
+    border-radius: calc(var(--radius-md) - 0.25rem);
+  }
+
+  .short {
+    width: 45%;
+    height: 0.65rem;
+  }
+
+  .title,
+  .titleSmall {
+    width: 92%;
+    height: 1rem;
+  }
+
+  .titleSmall {
+    width: 64%;
+  }
+
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+}

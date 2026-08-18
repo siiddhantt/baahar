@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://baahar.app/contracts/collector-batch.schema.json",
+  "title": "Baahar collector batch",
+  "type": "array",
+  "maxItems": 1000,
+  "items": { "$ref": "collector-output.schema.json" }
+}
+

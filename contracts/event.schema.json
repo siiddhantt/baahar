@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://baahar.app/contracts/event.schema.json",
+  "title": "Baahar normalized event occurrence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "slug",
+    "city",
+    "title",
+    "category",
+    "timing",
+    "venue",
+    "pricing",
+    "registration",
+    "status",
+    "image_url",
+    "language",
+    "age_note",
+    "accessibility_note",
+    "source",
+    "last_checked_at",
+    "change_kind"
+  ],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$", "maxLength": 120 },
+    "city": { "$ref": "#/$defs/city" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "category": { "enum": ["arts", "talks", "theatre", "music", "books", "community", "other"] },
+    "timing": { "$ref": "#/$defs/timing" },
+    "venue": { "type": ["object", "null"], "additionalProperties": false, "required": ["name", "address"], "properties": { "name": { "type": "string" }, "address": { "type": ["string", "null"] } } },
+    "pricing": { "$ref": "#/$defs/pricing" },
+    "registration": { "$ref": "#/$defs/registration" },
+    "status": { "enum": ["scheduled", "cancelled", "postponed"] },
+    "image_url": { "type": ["string", "null"], "format": "uri" },
+    "language": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "age_note": { "type": ["string", "null"] },
+    "accessibility_note": { "type": ["string", "null"] },
+    "source": { "$ref": "#/$defs/source" },
+    "last_checked_at": { "type": "string", "format": "date-time" },
+    "change_kind": { "type": ["string", "null"], "enum": ["new", "updated", null] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "timing": { "properties": { "precision": { "const": "timed" } }, "required": ["precision"] } }, "required": ["timing"] },
+      "then": { "properties": { "timing": { "properties": { "starts_at": { "type": "string", "format": "date-time" } } } } },
+      "else": { "properties": { "timing": { "properties": { "starts_at": { "type": "null" }, "ends_at": { "type": "null" } } } } }
+    },
+    {
+      "if": { "properties": { "pricing": { "anyOf": [{ "properties": { "minimum_minor": { "type": "integer" } }, "required": ["minimum_minor"] }, { "properties": { "maximum_minor": { "type": "integer" } }, "required": ["maximum_minor"] }] } }, "required": ["pricing"] },
+      "then": { "properties": { "pricing": { "properties": { "currency": { "const": "INR" }, "is_free": { "const": false } } } } }
+    },
+    {
+      "if": { "properties": { "pricing": { "properties": { "is_free": { "const": true } }, "required": ["is_free"] } }, "required": ["pricing"] },
+      "then": { "properties": { "pricing": { "properties": { "minimum_minor": { "type": "null" }, "maximum_minor": { "type": "null" }, "currency": { "type": "null" } } } } }
+    },
+    {
+      "if": { "properties": { "pricing": { "properties": { "maximum_minor": { "type": "integer" } }, "required": ["maximum_minor"] } }, "required": ["pricing"] },
+      "then": { "properties": { "pricing": { "properties": { "minimum_minor": { "type": "integer" } } } } }
+    },
+    {
+      "if": { "properties": { "pricing": { "properties": { "minimum_minor": { "type": "null" }, "maximum_minor": { "type": "null" } }, "required": ["minimum_minor", "maximum_minor"] } }, "required": ["pricing"] },
+      "then": { "properties": { "pricing": { "properties": { "currency": { "type": "null" } } } } }
+    }
+  ],
+  "$defs": {
+    "city": { "type": "object", "additionalProperties": false, "required": ["slug", "name", "timezone", "accent"], "properties": { "slug": { "enum": ["bengaluru", "varanasi"] }, "name": { "type": "string" }, "timezone": { "const": "Asia/Kolkata" }, "accent": { "enum": ["rain", "river"] } } },
+    "timing": { "type": "object", "additionalProperties": false, "required": ["start_date", "starts_at", "end_date", "ends_at", "precision", "timezone"], "properties": { "start_date": { "type": "string", "format": "date" }, "starts_at": { "type": ["string", "null"], "format": "date-time" }, "end_date": { "type": ["string", "null"], "format": "date" }, "ends_at": { "type": ["string", "null"], "format": "date-time" }, "precision": { "enum": ["timed", "date"] }, "timezone": { "const": "Asia/Kolkata" } } },
+    "pricing": { "type": "object", "additionalProperties": false, "required": ["is_free", "minimum_minor", "maximum_minor", "currency"], "properties": { "is_free": { "type": ["boolean", "null"] }, "minimum_minor": { "type": ["integer", "null"], "minimum": 0 }, "maximum_minor": { "type": ["integer", "null"], "minimum": 0 }, "currency": { "type": ["string", "null"], "enum": ["INR", null] } } },
+    "registration": { "type": "object", "additionalProperties": false, "required": ["url", "state"], "properties": { "url": { "type": ["string", "null"], "format": "uri" }, "state": { "type": ["string", "null"], "enum": ["open", "sold_out", "closed", "not_required", null] } } },
+    "source": { "type": "object", "additionalProperties": false, "required": ["slug", "name", "url", "host", "freshness"], "properties": { "slug": { "type": "string" }, "name": { "type": "string" }, "url": { "type": "string", "format": "uri" }, "host": { "type": "string", "format": "hostname" }, "freshness": { "enum": ["fresh", "stale"] } } }
+  }
+}

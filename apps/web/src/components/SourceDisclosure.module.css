@@ -1,0 +1,47 @@
+@layer components {
+  .disclosure {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .disclosure summary {
+    min-height: 3.5rem;
+    padding-block: 1rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-weight: 650;
+  }
+
+  .disclosure summary span {
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .content {
+    display: grid;
+    max-width: 40rem;
+    padding: 0 0 1.2rem 1.1rem;
+    border-left: 2px solid var(--accent);
+    gap: 0.55rem;
+  }
+
+  .content a {
+    display: inline-flex;
+    width: fit-content;
+    color: var(--accent-strong);
+    font-weight: 700;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .content svg {
+    width: 0.9rem;
+  }
+
+  .stale {
+    color: var(--warning);
+    font-weight: 650;
+  }
+}

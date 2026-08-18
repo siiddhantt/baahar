@@ -1,0 +1,108 @@
+@layer components {
+  .filters {
+    display: grid;
+    margin-block: 1.6rem clamp(2rem, 4vw, 3.5rem);
+    gap: 0.85rem;
+  }
+
+  .primaryRail,
+  .categoryRail {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.2rem 0.15rem 0.45rem;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    gap: 0.45rem;
+  }
+
+  .primaryRail::-webkit-scrollbar,
+  .categoryRail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .primaryRail button,
+  .categoryRail button {
+    min-height: 2.75rem;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .timeChip,
+  .freeChip,
+  .categoryChip {
+    position: relative;
+    padding: 0.62rem 0.92rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-weight: 670;
+    white-space: nowrap;
+    transition:
+      color var(--duration-ui) var(--ease-standard),
+      background-color var(--duration-ui) var(--ease-standard),
+      border-color var(--duration-ui) var(--ease-standard),
+      transform var(--duration-fast) var(--ease-standard);
+  }
+
+  .timeChip::after {
+    position: absolute;
+    right: 20%;
+    bottom: -0.17rem;
+    left: 20%;
+    height: 0.22rem;
+    border-radius: var(--radius-pill);
+    background: var(--signal);
+    content: '';
+    opacity: 0;
+    transform: scaleX(0.45);
+    transition:
+      opacity var(--duration-ui) var(--ease-standard),
+      transform var(--duration-ui) var(--ease-enter);
+  }
+
+  .timeChip[data-selected='true']::after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .timeChip[data-selected='true'],
+  .categoryChip[data-selected='true'] {
+    border-color: var(--accent-strong);
+    background: var(--accent-strong);
+    color: var(--surface);
+  }
+
+  .freeChip[data-selected='true'] {
+    border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .freeChip span {
+    display: inline-grid;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.35rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 0.68rem;
+    place-items: center;
+  }
+
+  .timeChip:active,
+  .freeChip:active,
+  .categoryChip:active {
+    transform: scale(0.98);
+  }
+
+  .divider {
+    width: 1px;
+    height: 1.8rem;
+    margin: auto 0.25rem;
+    background: var(--line);
+    flex: 0 0 auto;
+  }
+}

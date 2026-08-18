@@ -1,0 +1,32 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# Go
+bin/
+*.exe
+*.test
+*.out
+vendor/
+
+# Local infrastructure and private evidence
+.data/
+artifacts/private/
+sources/**/private/
+tmp/
+
+# Tooling and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+

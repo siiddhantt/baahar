@@ -1,0 +1,80 @@
+name: quality
+
+on:
+  pull_request:
+  push:
+    branches: [main, "codex/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          npm ci --prefix apps/web
+
+      - name: Verify generated API types
+        run: |
+          npm --prefix apps/web run generate:api
+          git diff --exit-code -- apps/web/src/api/schema.generated.ts
+
+      - name: Check Go
+        shell: bash
+        run: |
+          test -z "$(gofmt -l $(find . -type f -name '*.go' -not -path './vendor/*' -not -path './apps/web/node_modules/*'))"
+          go vet ./cmd/... ./contracts ./internal/...
+          go test ./cmd/... ./contracts ./internal/...
+
+      - name: Check web
+        run: |
+          npm --prefix apps/web run format:check
+          npm --prefix apps/web run lint
+          npm --prefix apps/web run typecheck
+          npm --prefix apps/web run test
+          npm --prefix apps/web run build
+
+  infrastructure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Start real PostgreSQL and MinIO
+        run: |
+          docker compose up -d postgres minio create-bucket
+          docker compose wait create-bucket
+
+      - name: Test migrations and exact artifact storage
+        env:
+          BAAHAR_TEST_DATABASE_URL: postgres://baahar:baahar@127.0.0.1:5433/baahar?sslmode=disable
+          BAAHAR_TEST_S3_ENDPOINT: http://127.0.0.1:9002
+          BAAHAR_TEST_S3_ACCESS_KEY: baahar
+          BAAHAR_TEST_S3_SECRET_KEY: baahar-local-secret
+        run: go test ./internal/platform/postgres ./internal/platform/s3 -count=1 -v
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose logs --no-color
