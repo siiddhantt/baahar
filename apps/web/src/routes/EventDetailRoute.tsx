@@ -48,8 +48,8 @@ export default function EventDetailRoute() {
             <h1>This plan couldn’t be found</h1>
             <p>It may have ended, or the link may have changed.</p>
           </div>
-          <Link className={styles.notFoundLink} to="/bengaluru">
-            See Bengaluru plans
+          <Link className={styles.notFoundLink} to="/">
+            Choose a city
           </Link>
         </section>
       );

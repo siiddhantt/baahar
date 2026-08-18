@@ -45,14 +45,13 @@ type CursorBoundary struct {
 }
 
 type FeedQuery struct {
-	CitySlug      string
-	Window        TimeRange
-	Categories    []Category
-	ExplicitFree  bool
-	After         *CursorBoundary
-	Limit         int
-	FreshnessTime time.Time
-	NewSince      time.Time
+	CitySlug     string
+	Window       Window
+	AsOf         time.Time
+	Categories   []Category
+	ExplicitFree bool
+	After        *CursorBoundary
+	Limit        int
 }
 
 type FeedPage struct {
@@ -62,6 +61,7 @@ type FeedPage struct {
 	ResultCount   int
 	SourceCount   int
 	LastCheckedAt *time.Time
+	AsOf          time.Time
 }
 
 type PublicChange struct {

@@ -65,12 +65,31 @@
     transform: translateY(-0.3rem);
   }
 
+  .city[data-remembered='true'] {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+  }
+
   .number {
     position: relative;
     z-index: 1;
     font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 0.14em;
+  }
+
+  .remembered {
+    position: absolute;
+    z-index: 2;
+    top: clamp(1rem, 3vw, 2rem);
+    right: clamp(1rem, 3vw, 2rem);
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: 0.68rem;
+    font-weight: 780;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   .cityName {

@@ -81,6 +81,9 @@ type eventMetaDTO struct {
 	ResultCount   int        `json:"result_count"`
 	SourceCount   int        `json:"source_count"`
 	LastCheckedAt *time.Time `json:"last_checked_at"`
+	PageSize      int        `json:"page_size"`
+	HasMore       bool       `json:"has_more"`
+	AsOf          time.Time  `json:"as_of"`
 }
 
 type eventChangeDTO struct {

@@ -226,6 +226,7 @@ func TestRangeForWindowAndOverlap(t *testing.T) {
 		wantEnd   string
 	}{
 		{"today", time.Date(2026, time.August, 18, 11, 0, 0, 0, kolkata), WindowToday, "2026-08-18", "2026-08-19"},
+		{"upcoming", time.Date(2026, time.August, 18, 11, 0, 0, 0, kolkata), WindowUpcoming, "2026-08-18", "2026-11-16"},
 		{"tomorrow", time.Date(2026, time.August, 18, 11, 0, 0, 0, kolkata), WindowTomorrow, "2026-08-19", "2026-08-20"},
 		{"next weekend", time.Date(2026, time.August, 18, 11, 0, 0, 0, kolkata), WindowWeekend, "2026-08-22", "2026-08-24"},
 		{"current weekend Saturday", time.Date(2026, time.August, 22, 11, 0, 0, 0, kolkata), WindowWeekend, "2026-08-22", "2026-08-24"},
@@ -241,6 +242,19 @@ func TestRangeForWindowAndOverlap(t *testing.T) {
 				t.Fatalf("range = %s..%s, want %s..%s", got.Start, got.End, test.wantStart, test.wantEnd)
 			}
 		})
+	}
+
+	upcomingNow := time.Date(2026, time.August, 18, 11, 23, 45, 0, kolkata)
+	upcoming, err := RangeForWindow(upcomingNow.UTC(), "Asia/Kolkata", WindowUpcoming)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !upcoming.Start.Equal(upcomingNow) {
+		t.Fatalf("upcoming start = %s, want request anchor %s", upcoming.Start, upcomingNow)
+	}
+	wantUpcomingEnd := time.Date(2026, time.November, 16, 0, 0, 0, 0, kolkata)
+	if !upcoming.End.Equal(wantUpcomingEnd) {
+		t.Fatalf("upcoming end = %s, want local 90-day horizon %s", upcoming.End, wantUpcomingEnd)
 	}
 
 	weekend, _ := RangeForWindow(time.Date(2026, time.August, 18, 11, 0, 0, 0, kolkata), "Asia/Kolkata", WindowWeekend)

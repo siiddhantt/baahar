@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { useCities, useCityPreview } from '../api/queries';
 import { updatePreferences, usePreferences } from '../app/preferences';
@@ -27,11 +27,15 @@ function renderRoute() {
     <MemoryRouter initialEntries={['/']}>
       <Routes>
         <Route path="/" element={<ChooseCityRoute />} />
-        <Route path="/bengaluru" element={<p>Bengaluru feed</p>} />
-        <Route path="/varanasi" element={<p>Varanasi feed</p>} />
+        <Route path="/:city" element={<OpenedCity />} />
       </Routes>
     </MemoryRouter>,
   );
+}
+
+function OpenedCity() {
+  const location = useLocation();
+  return <p>Opened {location.pathname + location.search}</p>;
 }
 
 describe('ChooseCityRoute', () => {
@@ -47,7 +51,7 @@ describe('ChooseCityRoute', () => {
       isPending: false,
       isError: false,
       isSuccess: true,
-    } as ReturnType<typeof useCityPreview>);
+    } as unknown as ReturnType<typeof useCityPreview>);
   });
 
   it('does not redirect from a stale preference for a disabled city', () => {
@@ -61,6 +65,17 @@ describe('ChooseCityRoute', () => {
     expect(screen.queryByText('Varanasi feed')).not.toBeInTheDocument();
   });
 
+  it('keeps the chooser visible and highlights a remembered city', () => {
+    vi.mocked(usePreferences).mockReturnValue({ city: 'bengaluru', theme: 'system' });
+
+    renderRoute();
+
+    expect(
+      screen.getByRole('heading', { name: /find something worth stepping out for/i }),
+    ).toBeVisible();
+    expect(screen.getByText('Last opened')).toBeVisible();
+  });
+
   it('persists and opens a city returned by the enabled-cities API', () => {
     vi.mocked(usePreferences).mockReturnValue({ city: null, theme: 'system' });
 
@@ -68,6 +83,6 @@ describe('ChooseCityRoute', () => {
     fireEvent.click(screen.getByRole('button', { name: /bengaluru/i }));
 
     expect(updatePreferences).toHaveBeenCalledWith({ city: 'bengaluru' });
-    expect(screen.getByText('Bengaluru feed')).toBeInTheDocument();
+    expect(screen.getByText('Opened /bengaluru?window=upcoming')).toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
+import type { CitySlug } from '../api/client';
 import { useCities, useCityPreview } from '../api/queries';
 import { updatePreferences, usePreferences } from '../app/preferences';
 import { DataError } from '../components/DataError';
@@ -14,7 +15,7 @@ export default function ChooseCityRoute() {
   const cities = useCities();
   const navigate = useNavigate();
   const preferredCity = cities.data?.items.find((city) => city.slug === preferences.city);
-  const previewCity = preferredCity ? undefined : cities.data?.items[0];
+  const previewCity = preferredCity ?? cities.data?.items[0];
   const preview = useCityPreview(previewCity?.slug);
 
   if (cities.isPending) return <RouteFallback />;
@@ -27,13 +28,9 @@ export default function ChooseCityRoute() {
       />
     );
   }
-  if (preferredCity) {
-    return <Navigate to={`/${preferredCity.slug}?window=today`} replace />;
-  }
-
-  function chooseCity(city: 'bengaluru' | 'varanasi') {
+  function chooseCity(city: CitySlug) {
     updatePreferences({ city });
-    void navigate(`/${city}?window=today`);
+    void navigate(`/${city}?window=upcoming`);
   }
 
   return (
@@ -52,6 +49,7 @@ export default function ChooseCityRoute() {
           <button
             className={styles.city}
             data-accent={city.accent}
+            data-remembered={city.slug === preferredCity?.slug}
             key={city.slug}
             type="button"
             onClick={() => chooseCity(city.slug)}
@@ -59,13 +57,16 @@ export default function ChooseCityRoute() {
             <span className={styles.number} aria-hidden="true">
               0{index + 1}
             </span>
+            {city.slug === preferredCity?.slug ? (
+              <span className={styles.remembered}>Last opened</span>
+            ) : null}
             <span className={styles.cityArt} aria-hidden="true">
               <i />
               <i />
               <i />
             </span>
             <span className={styles.cityName}>{city.name}</span>
-            <span className={styles.cityAction}>Open the noticeboard →</span>
+            <span className={styles.cityAction}>See upcoming plans →</span>
           </button>
         ))}
       </div>
@@ -82,7 +83,7 @@ export default function ChooseCityRoute() {
             {preview.data ? (
               <p>
                 {timeWindowLabels[preview.data.meta.window]} · from {preview.data.meta.source_count}{' '}
-                {preview.data.meta.source_count === 1 ? 'official calendar' : 'official calendars'}
+                {preview.data.meta.source_count === 1 ? 'official page' : 'official pages'}
               </p>
             ) : null}
           </header>
@@ -99,7 +100,7 @@ export default function ChooseCityRoute() {
           ) : null}
           {preview.isSuccess && !preview.data?.items.length ? (
             <p className={styles.previewEmpty}>
-              No plans are listed through this weekend yet. Open the noticeboard to check again.
+              No upcoming plans are listed yet. Open the noticeboard to check again.
             </p>
           ) : null}
         </section>

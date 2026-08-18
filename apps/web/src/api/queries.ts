@@ -19,24 +19,14 @@ export type EventFilters = {
 
 export const queryKeys = {
   cities: ['cities'] as const,
-  cityPreview: (city: CitySlug) => ['city-preview', city] as const,
+  cityPreview: (city: string) => ['city-preview', city] as const,
   event: (id: string) => ['event', id] as const,
   events: (filters: EventFilters) => ['events', filters] as const,
   changes: (id: string) => ['event', id, 'changes'] as const,
 };
 
-const previewWindows = ['today', 'tomorrow', 'weekend'] as const satisfies readonly TimeWindow[];
-
 export async function loadCityPreview(city: CitySlug, signal?: AbortSignal) {
-  let lastPage: Awaited<ReturnType<typeof listEvents>> | undefined;
-
-  for (const window of previewWindows) {
-    const page = await listEvents({ city, window, limit: 3 }, signal);
-    lastPage = page;
-    if (page.items.length) return page;
-  }
-
-  return lastPage;
+  return listEvents({ city, window: 'upcoming', limit: 3 }, signal);
 }
 
 export function useCities() {
@@ -49,8 +39,11 @@ export function useCities() {
 
 export function useCityPreview(city: CitySlug | undefined) {
   return useQuery({
-    queryKey: queryKeys.cityPreview(city ?? 'bengaluru'),
-    queryFn: ({ signal }) => loadCityPreview(city ?? 'bengaluru', signal),
+    queryKey: queryKeys.cityPreview(city ?? ''),
+    queryFn: ({ signal }) => {
+      if (!city) throw new Error('A city is required for its preview');
+      return loadCityPreview(city, signal);
+    },
     enabled: Boolean(city),
     staleTime: 60_000,
   });
@@ -72,7 +65,7 @@ export function useEvents(filters: EventFilters, enabled = true) {
         signal,
       ),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (page) => page.next_cursor ?? undefined,
+    getNextPageParam: (page) => (page.meta.has_more ? (page.next_cursor ?? undefined) : undefined),
     enabled,
   });
 }

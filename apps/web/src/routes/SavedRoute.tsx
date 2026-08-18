@@ -1,20 +1,20 @@
 import { Link } from 'react-router-dom';
 
-import { useSavedEvents } from '../api/queries';
+import { useCities, useSavedEvents } from '../api/queries';
 import { usePreferences } from '../app/preferences';
 import { EventQuilt } from '../components/EventQuilt';
 import { EventQuiltSkeleton } from '../components/EventCardSkeleton';
 import { useSavedIds } from '../features/saved/savedStore';
 import styles from './SavedRoute.module.css';
 
-function EmptySaved({ city }: { city: 'bengaluru' | 'varanasi' | null }) {
+function EmptySaved({ city }: { city: string | null }) {
   return (
     <section className={styles.empty}>
       <div className={styles.bookmark} aria-hidden="true" />
       <h2>Your next plan can live here.</h2>
       <p>Save anything that looks worth stepping out for. No account needed.</p>
-      <Link to={city ? `/${city}?window=weekend` : '/'}>
-        {city ? 'Find a weekend plan' : 'Choose a city'}
+      <Link to={city ? `/${city}?window=upcoming` : '/'}>
+        {city ? 'Find an upcoming plan' : 'Choose a city'}
       </Link>
     </section>
   );
@@ -22,6 +22,7 @@ function EmptySaved({ city }: { city: 'bengaluru' | 'varanasi' | null }) {
 
 export default function SavedRoute() {
   const preferences = usePreferences();
+  const cities = useCities();
   const savedIds = useSavedIds();
   const queries = useSavedEvents([...savedIds]);
   const events = queries
@@ -33,6 +34,10 @@ export default function SavedRoute() {
     });
   const isPending = queries.some((query) => query.isPending);
   const unavailableCount = queries.filter((query) => query.isError).length;
+  const preferredCity =
+    cities.data?.items.some((city) => city.slug === preferences.city) === true
+      ? preferences.city
+      : null;
 
   return (
     <div className={styles.page}>
@@ -44,7 +49,7 @@ export default function SavedRoute() {
         </span>
       </header>
 
-      {!savedIds.length ? <EmptySaved city={preferences.city} /> : null}
+      {!savedIds.length ? <EmptySaved city={preferredCity} /> : null}
       {isPending ? <EventQuiltSkeleton /> : null}
       {events.length ? <EventQuilt events={events} /> : null}
       {unavailableCount ? (

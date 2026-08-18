@@ -7,7 +7,7 @@ describe('feed URL filters', () => {
     );
 
     expect(filters).toEqual({
-      window: 'today',
+      window: 'upcoming',
       categories: ['music'],
       explicitlyFree: false,
     });

@@ -32,6 +32,7 @@ export function FeedFilters({ filters, onChange }: Props) {
         {timeWindows.map((window) => (
           <button
             className={styles.timeChip}
+            data-primary={window === 'upcoming'}
             data-selected={filters.window === window}
             key={window}
             type="button"

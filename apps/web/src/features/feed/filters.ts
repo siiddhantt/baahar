@@ -1,6 +1,7 @@
 import type { EventCategory, TimeWindow } from '../../api/client';
 
 export const timeWindows = [
+  'upcoming',
   'today',
   'tomorrow',
   'weekend',
@@ -16,6 +17,7 @@ export const eventCategories = [
 ] as const satisfies readonly EventCategory[];
 
 export const timeWindowLabels: Record<TimeWindow, string> = {
+  upcoming: 'Upcoming',
   today: 'Today',
   tomorrow: 'Tomorrow',
   weekend: 'This weekend',
@@ -47,7 +49,7 @@ export function readFilters(params: URLSearchParams) {
     .filter((category, index, values) => values.indexOf(category) === index);
 
   return {
-    window: isWindow(requestedWindow) ? requestedWindow : 'today',
+    window: isWindow(requestedWindow) ? requestedWindow : 'upcoming',
     categories,
     explicitlyFree: params.get('free') === 'true',
   } satisfies {

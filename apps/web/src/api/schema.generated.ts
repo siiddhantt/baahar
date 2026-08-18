@@ -28,7 +28,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** List current event occurrences for one city and named time window */
+    /**
+     * List current event occurrences for one city and named time window
+     * @description Omitting window selects upcoming. Upcoming is bounded to the next 90 local calendar days. All windows exclude occurrences that ended at or before the first page's as_of anchor; ongoing timed and current all-day occurrences remain. Pages are ordered by effective start and occurrence ID. A signed cursor preserves the first-page anchor and active filters.
+     */
     get: operations['listEvents'];
     put?: never;
     post?: never;
@@ -193,10 +196,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    CitySlug: string;
     /** @enum {unknown} */
-    CitySlug: 'bengaluru' | 'varanasi';
-    /** @enum {unknown} */
-    TimeWindow: 'today' | 'tomorrow' | 'weekend';
+    TimeWindow: 'upcoming' | 'today' | 'tomorrow' | 'weekend';
     /** @enum {unknown} */
     Category: 'arts' | 'talks' | 'theatre' | 'music' | 'books' | 'community' | 'other';
     /** @enum {unknown} */
@@ -208,10 +210,8 @@ export interface components {
     City: {
       slug: components['schemas']['CitySlug'];
       name: string;
-      /** @constant */
-      timezone: 'Asia/Kolkata';
-      /** @enum {unknown} */
-      accent: 'rain' | 'river';
+      timezone: string;
+      accent: string;
     };
     Timing: {
       /** Format: date */
@@ -278,14 +278,25 @@ export interface components {
     EventDetail: components['schemas']['EventSummary'];
     EventPage: {
       items: components['schemas']['EventSummary'][];
+      /** @description Signed continuation cursor; non-null exactly when meta.has_more is true. */
       next_cursor: string | null;
       meta: {
         city: components['schemas']['City'];
         window: components['schemas']['TimeWindow'];
+        /** @description Total occurrences matching the anchored filters, not only this page. */
         result_count: number;
         source_count: number;
         /** Format: date-time */
         last_checked_at: string | null;
+        /** @description Number of items returned in this page. */
+        page_size: number;
+        /** @description Whether a continuation page is available through next_cursor. */
+        has_more: boolean;
+        /**
+         * Format: date-time
+         * @description Stable request-time anchor carried by every cursor in this result set.
+         */
+        as_of: string;
       };
     };
     EventChange: {
@@ -427,7 +438,7 @@ export interface operations {
     parameters: {
       query: {
         city: components['parameters']['CitySlug'];
-        window: components['schemas']['TimeWindow'];
+        window?: components['schemas']['TimeWindow'];
         category?: components['schemas']['Category'][];
         /** @description When true, include only events explicitly marked free. */
         free?: boolean;

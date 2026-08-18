@@ -81,8 +81,9 @@ export function listCities(signal?: AbortSignal) {
 }
 
 export function listEvents(query: ListEventsQuery, signal?: AbortSignal) {
-  const params = new URLSearchParams({ city: query.city, window: query.window });
+  const params = new URLSearchParams({ city: query.city });
 
+  if (query.window) params.set('window', query.window);
   if (query.category?.length) params.set('category', query.category.join(','));
   if (query.free) params.set('free', 'true');
   if (query.cursor) params.set('cursor', query.cursor);

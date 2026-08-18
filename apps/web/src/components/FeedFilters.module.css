@@ -74,6 +74,16 @@
     color: var(--surface);
   }
 
+  .timeChip[data-primary='true'] {
+    padding-inline: 1.1rem;
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+    font-weight: 780;
+  }
+
+  .timeChip[data-primary='true'][data-selected='true'] {
+    border-color: var(--accent-strong);
+  }
+
   .freeChip[data-selected='true'] {
     border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
     background: var(--accent-soft);

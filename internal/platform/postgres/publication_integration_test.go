@@ -296,11 +296,9 @@ func TestDisabledSourceIsAbsentFromPublicReads(t *testing.T) {
 	}
 	page, err := repository.List(ctx, events.FeedQuery{
 		CitySlug: "bengaluru",
-		Window: events.TimeRange{
-			Start: time.Date(2026, time.September, 1, 0, 0, 0, 0, time.UTC),
-			End:   time.Date(2026, time.September, 2, 0, 0, 0, 0, time.UTC),
-		},
-		Limit: 20, FreshnessTime: at, NewSince: at.Add(-24 * time.Hour),
+		Window:   events.WindowToday,
+		AsOf:     time.Date(2026, time.September, 1, 0, 0, 0, 0, time.UTC),
+		Limit:    20,
 	})
 	if err != nil {
 		t.Fatal(err)

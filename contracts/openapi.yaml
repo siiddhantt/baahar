@@ -43,13 +43,21 @@ paths:
       operationId: listEvents
       tags: [public]
       summary: List current event occurrences for one city and named time window
+      description: >-
+        Omitting window selects upcoming. Upcoming is bounded to the next 90
+        local calendar days. All windows exclude occurrences that ended at or
+        before the first page's as_of anchor; ongoing timed and current all-day
+        occurrences remain. Pages are ordered by effective start and occurrence
+        ID. A signed cursor preserves the first-page anchor and active filters.
       parameters:
         - $ref: "#/components/parameters/CitySlug"
         - name: window
           in: query
-          required: true
+          required: false
           schema:
-            $ref: "#/components/schemas/TimeWindow"
+            allOf:
+              - $ref: "#/components/schemas/TimeWindow"
+            default: upcoming
         - name: category
           in: query
           required: false
@@ -355,9 +363,12 @@ components:
             $ref: "#/components/schemas/Problem"
   schemas:
     CitySlug:
-      enum: [bengaluru, varanasi]
+      type: string
+      minLength: 1
+      maxLength: 80
+      pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
     TimeWindow:
-      enum: [today, tomorrow, weekend]
+      enum: [upcoming, today, tomorrow, weekend]
     Category:
       enum: [arts, talks, theatre, music, books, community, other]
     EventStatus:
@@ -379,9 +390,13 @@ components:
           minLength: 1
           maxLength: 100
         timezone:
-          const: Asia/Kolkata
+          type: string
+          minLength: 1
+          maxLength: 100
         accent:
-          enum: [rain, river]
+          type: string
+          minLength: 1
+          maxLength: 40
     Timing:
       type: object
       additionalProperties: false
@@ -609,10 +624,11 @@ components:
             $ref: "#/components/schemas/EventSummary"
         next_cursor:
           type: [string, "null"]
+          description: Signed continuation cursor; non-null exactly when meta.has_more is true.
         meta:
           type: object
           additionalProperties: false
-          required: [city, window, result_count, source_count, last_checked_at]
+          required: [city, window, result_count, source_count, last_checked_at, page_size, has_more, as_of]
           properties:
             city:
               $ref: "#/components/schemas/City"
@@ -621,12 +637,25 @@ components:
             result_count:
               type: integer
               minimum: 0
+              description: Total occurrences matching the anchored filters, not only this page.
             source_count:
               type: integer
               minimum: 0
             last_checked_at:
               type: [string, "null"]
               format: date-time
+            page_size:
+              type: integer
+              minimum: 0
+              maximum: 60
+              description: Number of items returned in this page.
+            has_more:
+              type: boolean
+              description: Whether a continuation page is available through next_cursor.
+            as_of:
+              type: string
+              format: date-time
+              description: Stable request-time anchor carried by every cursor in this result set.
     EventChange:
       type: object
       additionalProperties: false

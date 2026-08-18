@@ -48,13 +48,16 @@ func (repository *Events) List(ctx context.Context, query events.FeedQuery) (eve
 	if query.Limit < 1 || query.Limit > 60 {
 		return events.FeedPage{}, errors.New("feed limit must be between 1 and 60")
 	}
+	if query.AsOf.IsZero() {
+		return events.FeedPage{}, errors.New("feed as-of time is required")
+	}
 	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return events.FeedPage{}, fmt.Errorf("begin feed read: %w", err)
 	}
 	defer tx.Rollback(ctx)
 
-	page := events.FeedPage{}
+	page := events.FeedPage{AsOf: query.AsOf.UTC()}
 	if err := tx.QueryRow(ctx, `
 		SELECT id, slug, display_name, timezone, accent
 		FROM cities
@@ -70,7 +73,11 @@ func (repository *Events) List(ctx context.Context, query events.FeedQuery) (eve
 		}
 		return events.FeedPage{}, fmt.Errorf("get feed city: %w", err)
 	}
-	metadataWhere, metadataArguments := feedWhere(query, []any{query.CitySlug, query.Window.Start, query.Window.End})
+	window, err := events.RangeForWindow(page.AsOf, page.City.Timezone, query.Window)
+	if err != nil {
+		return events.FeedPage{}, fmt.Errorf("calculate feed window: %w", err)
+	}
+	metadataWhere, metadataArguments := feedWhere(query, []any{query.CitySlug, window.Start, window.End, page.AsOf})
 	err = tx.QueryRow(ctx, `
 		SELECT COUNT(*), COUNT(DISTINCT o.source_id), MAX(o.last_observed_at)
 		`+feedFrom+metadataWhere, metadataArguments...).Scan(&page.ResultCount, &page.SourceCount, &page.LastCheckedAt)
@@ -78,7 +85,7 @@ func (repository *Events) List(ctx context.Context, query events.FeedQuery) (eve
 		return events.FeedPage{}, fmt.Errorf("read feed metadata: %w", err)
 	}
 
-	pageWhere, pageArguments := feedWhere(query, []any{query.CitySlug, query.Window.Start, query.Window.End, query.FreshnessTime, query.NewSince})
+	pageWhere, pageArguments := feedWhere(query, []any{query.CitySlug, window.Start, window.End, page.AsOf, page.AsOf.Add(-48 * time.Hour)})
 	if query.After != nil {
 		pageWhere += fmt.Sprintf(" AND (COALESCE(o.starts_at, o.start_date::timestamp AT TIME ZONE o.timezone), o.id) > ($%d, $%d)", len(pageArguments)+1, len(pageArguments)+2)
 		pageArguments = append(pageArguments, query.After.SortAt, query.After.OccurrenceID)
@@ -251,14 +258,11 @@ func feedWhere(query events.FeedQuery, arguments []any) (string, []any) {
 		  AND s.enabled
 		  AND s.publication_state <> 'disabled'
 		  AND o.visible
+		  AND o.first_observed_at <= $4
 		  AND ev.status <> 'cancelled'
 		  AND COALESCE(o.starts_at, o.start_date::timestamp AT TIME ZONE o.timezone) < $3
-		  AND CASE
-			WHEN o.ends_at IS NOT NULL THEN o.ends_at
-			WHEN o.time_precision = 'date' OR o.end_date IS NOT NULL
-				THEN (COALESCE(o.end_date, o.start_date) + 1)::timestamp AT TIME ZONE o.timezone
-			ELSE o.starts_at + interval '1 microsecond'
-		  END > $2`
+		  AND ` + occurrenceEndSQL + ` > $2
+		  AND ` + occurrenceEndSQL + ` > $4`
 	if len(query.Categories) > 0 {
 		categories := make([]string, len(query.Categories))
 		for index, category := range query.Categories {
@@ -272,6 +276,13 @@ func feedWhere(query events.FeedQuery, arguments []any) (string, []any) {
 	}
 	return where, arguments
 }
+
+const occurrenceEndSQL = `CASE
+	WHEN o.ends_at IS NOT NULL THEN o.ends_at
+	WHEN o.time_precision = 'date' OR o.end_date IS NOT NULL
+		THEN (COALESCE(o.end_date, o.start_date) + 1)::timestamp AT TIME ZONE o.timezone
+	ELSE o.starts_at + interval '1 microsecond'
+END`
 
 type occurrenceScanner interface {
 	Scan(...any) error

@@ -12,7 +12,7 @@ import (
 	"github.com/siddhantk232/baahar/internal/events"
 )
 
-var sourceSlugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
 type feedRequest struct {
 	City         string
@@ -44,28 +44,23 @@ func (server *Server) handleEvents(writer http.ResponseWriter, request *http.Req
 		writeProblem(writer, request, http.StatusBadRequest, "invalid_feed_query", "Invalid event filters", err.Error())
 		return
 	}
-	now := server.now().UTC()
-	rangeValue, err := events.RangeForWindow(now, "Asia/Kolkata", parsed.Window)
-	if err != nil {
-		server.internalError(writer, request, "calculate feed window", err)
-		return
-	}
+	asOf := server.now().UTC()
 	query := events.FeedQuery{
-		CitySlug:      parsed.City,
-		Window:        rangeValue,
-		Categories:    parsed.Categories,
-		ExplicitFree:  parsed.ExplicitFree,
-		Limit:         parsed.Limit,
-		FreshnessTime: now,
-		NewSince:      now.Add(-48 * time.Hour),
+		CitySlug:     parsed.City,
+		Window:       parsed.Window,
+		AsOf:         asOf,
+		Categories:   parsed.Categories,
+		ExplicitFree: parsed.ExplicitFree,
+		Limit:        parsed.Limit,
 	}
 	if parsed.Cursor != "" {
-		boundary, err := server.cursors.Decode(parsed.Cursor, parsed)
+		decoded, err := server.cursors.Decode(parsed.Cursor, parsed)
 		if err != nil {
 			writeProblem(writer, request, http.StatusBadRequest, "invalid_cursor", "Invalid page cursor", err.Error())
 			return
 		}
-		query.After = &boundary
+		query.After = &decoded.Boundary
+		query.AsOf = decoded.AsOf
 	}
 	page, err := server.events.List(request.Context(), query)
 	if err != nil {
@@ -82,7 +77,7 @@ func (server *Server) handleEvents(writer http.ResponseWriter, request *http.Req
 	}
 	var nextCursor *string
 	if page.Next != nil {
-		value, err := server.cursors.Encode(parsed, *page.Next)
+		value, err := server.cursors.Encode(parsed, *page.Next, page.AsOf)
 		if err != nil {
 			server.internalError(writer, request, "encode feed cursor", err)
 			return
@@ -98,6 +93,9 @@ func (server *Server) handleEvents(writer http.ResponseWriter, request *http.Req
 			ResultCount:   page.ResultCount,
 			SourceCount:   page.SourceCount,
 			LastCheckedAt: page.LastCheckedAt,
+			PageSize:      len(items),
+			HasMore:       page.Next != nil,
+			AsOf:          page.AsOf,
 		},
 	}, "public, max-age=60, stale-while-revalidate=300")
 }
@@ -168,7 +166,7 @@ func (server *Server) handleEventChanges(writer http.ResponseWriter, request *ht
 
 func (server *Server) handleSourceSummary(writer http.ResponseWriter, request *http.Request) {
 	slug := request.PathValue("source_slug")
-	if len(slug) > 80 || !sourceSlugPattern.MatchString(slug) {
+	if len(slug) > 80 || !slugPattern.MatchString(slug) {
 		writeProblem(writer, request, http.StatusBadRequest, "invalid_source_slug", "Invalid source", "The source slug is invalid.")
 		return
 	}
@@ -190,12 +188,15 @@ func (server *Server) handleSourceSummary(writer http.ResponseWriter, request *h
 func parseFeedRequest(request *http.Request) (feedRequest, error) {
 	query := request.URL.Query()
 	city := query.Get("city")
-	if city != "bengaluru" && city != "varanasi" {
-		return feedRequest{}, errors.New("city must be bengaluru or varanasi")
+	if len(city) > 80 || !slugPattern.MatchString(city) {
+		return feedRequest{}, errors.New("city must be a valid city slug")
 	}
 	window := events.Window(query.Get("window"))
-	if window != events.WindowToday && window != events.WindowTomorrow && window != events.WindowWeekend {
-		return feedRequest{}, errors.New("window must be today, tomorrow, or weekend")
+	if window == "" {
+		window = events.WindowUpcoming
+	}
+	if window != events.WindowUpcoming && window != events.WindowToday && window != events.WindowTomorrow && window != events.WindowWeekend {
+		return feedRequest{}, errors.New("window must be upcoming, today, tomorrow, or weekend")
 	}
 	categories, err := parseCategories(query.Get("category"))
 	if err != nil {

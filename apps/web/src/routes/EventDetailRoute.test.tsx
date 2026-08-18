@@ -42,9 +42,6 @@ describe('EventDetailRoute', () => {
 
     expect(screen.getByRole('heading', { name: /this plan couldn’t be found/i })).toBeVisible();
     expect(screen.queryByRole('button', { name: /try again/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /see bengaluru plans/i })).toHaveAttribute(
-      'href',
-      '/bengaluru',
-    );
+    expect(screen.getByRole('link', { name: /choose a city/i })).toHaveAttribute('href', '/');
   });
 });

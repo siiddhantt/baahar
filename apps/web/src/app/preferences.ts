@@ -1,10 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
-export type SupportedCity = 'bengaluru' | 'varanasi';
 
 type Preferences = {
-  city: SupportedCity | null;
+  city: string | null;
   theme: ThemePreference;
 };
 
@@ -14,8 +13,10 @@ const listeners = new Set<() => void>();
 
 let current = readPreferences();
 
-function isSupportedCity(value: unknown): value is SupportedCity {
-  return value === 'bengaluru' || value === 'varanasi';
+function isCitySlug(value: unknown): value is string {
+  return (
+    typeof value === 'string' && value.length <= 80 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
+  );
 }
 
 function isTheme(value: unknown): value is ThemePreference {
@@ -31,7 +32,7 @@ function readPreferences(): Preferences {
 
     const value = parsed as Record<string, unknown>;
     return {
-      city: isSupportedCity(value.city) ? value.city : null,
+      city: isCitySlug(value.city) ? value.city : null,
       theme: isTheme(value.theme) ? value.theme : 'system',
     };
   } catch {

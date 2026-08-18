@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 
 import { AppShell } from './AppShell';
 import { ThemeProvider } from './ThemeProvider';
@@ -13,6 +13,12 @@ const EventDetailRoute = lazy(() => import('../routes/EventDetailRoute'));
 const ExploreRoute = lazy(() => import('../routes/ExploreRoute'));
 const OperatorRoute = lazy(() => import('../operator/OperatorRoute'));
 const SavedRoute = lazy(() => import('../routes/SavedRoute'));
+
+function CityRoute() {
+  const { citySlug } = useParams();
+  if (!citySlug) return <Navigate to="/" replace />;
+  return <ExploreRoute city={citySlug} />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,10 +44,9 @@ export function App() {
                 <Route path="operator" element={<OperatorRoute />} />
                 <Route element={<AppShell />}>
                   <Route index element={<ChooseCityRoute />} />
-                  <Route path="bengaluru" element={<ExploreRoute city="bengaluru" />} />
-                  <Route path="varanasi" element={<ExploreRoute city="varanasi" />} />
                   <Route path="events/:occurrenceId/:slug?" element={<EventDetailRoute />} />
                   <Route path="saved" element={<SavedRoute />} />
+                  <Route path=":citySlug" element={<CityRoute />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
               </Routes>

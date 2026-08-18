@@ -93,6 +93,12 @@
     display: grid;
     margin-top: 2rem;
     place-items: center;
+    gap: 0.65rem;
+  }
+
+  .paginationProblem {
+    color: var(--danger);
+    font-size: 0.84rem;
   }
 
   .unavailable {

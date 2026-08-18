@@ -80,14 +80,14 @@ always-moving particle fields.
 
 Base tokens start here and must be contrast-tested in their actual pairings:
 
-| Token | Light | Dark | Role |
-| --- | --- | --- | --- |
-| `canvas` | `#F5F0E7` | `#10110F` | warm paper / green-black ink |
-| `surface` | `#FFFDF7` | `#191B18` | cards and sheets |
-| `ink` | `#171713` | `#F4F0E8` | primary text |
-| `muted` | `#67665E` | `#B7B5AB` | secondary text |
-| `line` | `#D8D1C4` | `#33362F` | separators |
-| `focus` | `#3457D5` | `#9EB3FF` | accessible focus state |
+| Token     | Light     | Dark      | Role                         |
+| --------- | --------- | --------- | ---------------------------- |
+| `canvas`  | `#F5F0E7` | `#10110F` | warm paper / green-black ink |
+| `surface` | `#FFFDF7` | `#191B18` | cards and sheets             |
+| `ink`     | `#171713` | `#F4F0E8` | primary text                 |
+| `muted`   | `#67665E` | `#B7B5AB` | secondary text               |
+| `line`    | `#D8D1C4` | `#33362F` | separators                   |
+| `focus`   | `#3457D5` | `#9EB3FF` | accessible focus state       |
 
 City accents:
 
@@ -155,7 +155,7 @@ app. Its first viewport contains:
 2. a one-line promise and one supporting sentence;
 3. time/free/category quick choices;
 4. at least the top portion of real event cards;
-5. a quiet live-data line such as `Fresh from 7 official city calendars`.
+5. a quiet live-data line such as `Fresh from 7 official city pages`.
 
 If the city has no events today, automatically preview the next non-empty window
 and say exactly what happened: `Nothing listed for tonight — here is tomorrow.`
@@ -258,11 +258,11 @@ sheets on phones and anchored panels on larger screens. Test 320px, 390px,
 
 Motion explains continuity and state. It is not a layer of constant spectacle.
 
-| Class | Duration | Use |
-| --- | ---: | --- |
-| Immediate | 80–140ms | press, focus-adjacent response, chip feedback |
-| Interface | 180–240ms | filters, sheet, saved state, theme colour |
-| Spatial | 260–340ms | card-to-detail, city/feed transition |
+| Class     |  Duration | Use                                           |
+| --------- | --------: | --------------------------------------------- |
+| Immediate |  80–140ms | press, focus-adjacent response, chip feedback |
+| Interface | 180–240ms | filters, sheet, saved state, theme colour     |
+| Spatial   | 260–340ms | card-to-detail, city/feed transition          |
 
 Easing:
 
@@ -350,4 +350,3 @@ themes, plus:
 
 The UI is not accepted because it resembles a design mock. It is accepted only
 after the live-data states render with the same polish.
-

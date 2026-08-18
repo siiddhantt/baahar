@@ -17,22 +17,32 @@ type Props = {
   city: CitySlug;
 };
 
+function cityNameFromSlug(slug: string) {
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase() ?? ''}${part.slice(1)}`)
+    .join(' ');
+}
+
 export default function ExploreRoute({ city }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const preferences = usePreferences();
   const cities = useCities();
   const filters = readFilters(searchParams);
-  const cityEnabled = cities.data?.items.some((item) => item.slug === city) ?? false;
+  const cityConfig = cities.data?.items.find((item) => item.slug === city);
+  const cityEnabled = Boolean(cityConfig);
   const events = useEvents({ city, ...filters }, cities.isSuccess && cityEnabled);
   const items = useMemo(
     () => events.data?.pages.flatMap((page) => page.items) ?? [],
     [events.data],
   );
   const meta = events.data?.pages[0]?.meta;
+  const resultCount = meta?.result_count ?? items.length;
 
   useEffect(() => {
-    document.documentElement.dataset.city = city;
-  }, [city]);
+    if (cityConfig) document.documentElement.dataset.cityAccent = cityConfig.accent;
+  }, [cityConfig]);
 
   useEffect(() => {
     if (cities.isSuccess && cityEnabled && events.isSuccess && preferences.city !== city) {
@@ -46,13 +56,13 @@ export default function ExploreRoute({ city }: Props) {
     }
   }, [filters, searchParams, setSearchParams]);
 
-  const cityName = meta?.city.name ?? (city === 'bengaluru' ? 'Bengaluru' : 'Varanasi');
+  const cityName = meta?.city.name ?? cityConfig?.name ?? cityNameFromSlug(city);
   const filtered = filters.categories.length > 0 || filters.explicitlyFree;
 
   function resetEmpty() {
     setSearchParams(
       writeFilters(searchParams, {
-        window: filtered ? filters.window : 'weekend',
+        window: filtered ? filters.window : 'upcoming',
         categories: [],
         explicitlyFree: false,
       }),
@@ -68,10 +78,10 @@ export default function ExploreRoute({ city }: Props) {
     return (
       <section className={styles.unavailable}>
         <p className={styles.kicker}>Not live yet</p>
-        <h1>{city === 'varanasi' ? 'Varanasi' : 'This city'} is still being checked.</h1>
-        <p>We only open a city after its official calendars pass the same freshness checks.</p>
+        <h1>{cityName} is still being checked.</h1>
+        <p>We only open a city after its official pages pass the same freshness checks.</p>
         {available ? (
-          <Link to={`/${available.slug}?window=today`}>See what’s on in {available.name}</Link>
+          <Link to={`/${available.slug}?window=upcoming`}>See what’s on in {available.name}</Link>
         ) : null}
       </section>
     );
@@ -110,28 +120,26 @@ export default function ExploreRoute({ city }: Props) {
       />
 
       {events.isPending ? <EventQuiltSkeleton /> : null}
-      {events.isError ? <DataError onRetry={() => void events.refetch()} /> : null}
+      {events.isError && !events.data ? <DataError onRetry={() => void events.refetch()} /> : null}
 
-      {events.isSuccess ? (
+      {events.data ? (
         <section aria-labelledby="feed-heading">
           <div className={styles.feedHeading}>
             <div>
               <p className={styles.windowLabel}>{timeWindowLabels[filters.window]}</p>
               <h2 id="feed-heading">
-                {meta?.result_count ?? items.length} {items.length === 1 ? 'plan' : 'plans'}
+                {resultCount} {resultCount === 1 ? 'plan' : 'plans'}
               </h2>
             </div>
             {meta && meta.source_count > 0 ? (
               <p className={styles.sourceProof}>
-                Fresh from {meta.source_count} official{' '}
-                {meta.source_count === 1 ? 'calendar' : 'calendars'}
+                Fresh from {meta.source_count} official {meta.source_count === 1 ? 'page' : 'pages'}
               </p>
             ) : null}
           </div>
 
           <p className="visually-hidden" aria-live="polite" aria-atomic="true">
-            {meta?.result_count ?? items.length}{' '}
-            {(meta?.result_count ?? items.length) === 1 ? 'event' : 'events'} found
+            {resultCount} {resultCount === 1 ? 'event' : 'events'} found
           </p>
 
           {items.length ? (
@@ -142,6 +150,11 @@ export default function ExploreRoute({ city }: Props) {
 
           {events.hasNextPage ? (
             <div className={styles.loadMore}>
+              {events.isFetchNextPageError ? (
+                <p className={styles.paginationProblem} role="alert">
+                  More plans didn’t load. Try that page again.
+                </p>
+              ) : null}
               <ActionButton
                 tone="quiet"
                 disabled={events.isFetchingNextPage}

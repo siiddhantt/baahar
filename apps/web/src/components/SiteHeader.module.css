@@ -46,7 +46,7 @@
 
   .actions,
   .navLink,
-  .cityControl {
+  .cityButton {
     display: flex;
     align-items: center;
   }
@@ -56,19 +56,98 @@
   }
 
   .navLink,
-  .cityControl select,
+  .cityButton,
   .iconButton {
     min-height: 2.75rem;
     border: 1px solid transparent;
     background: transparent;
   }
 
-  .cityControl select {
-    max-width: 10rem;
-    padding-inline: 0.85rem 2rem;
+  .cityMenu {
+    position: relative;
+  }
+
+  .cityButton {
+    max-width: 12rem;
+    padding-inline: 0.85rem;
     border-color: var(--line);
     border-radius: var(--radius-pill);
+    color: var(--ink);
     cursor: pointer;
+    font: inherit;
+    font-weight: 680;
+    gap: 0.55rem;
+  }
+
+  .cityButton > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chevron {
+    color: var(--muted);
+    font-size: 0.76rem;
+    transition: transform var(--duration-ui) var(--ease-standard);
+  }
+
+  .cityButton[aria-expanded='true'] .chevron {
+    transform: rotate(180deg);
+  }
+
+  .cityPopover {
+    position: absolute;
+    z-index: 20;
+    display: grid;
+    width: min(18rem, calc(100vw - 2rem));
+    top: calc(100% + 0.5rem);
+    right: 0;
+    padding: 0.55rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md) var(--radius-md) 0.4rem;
+    background: var(--surface-raised);
+    box-shadow: var(--shadow-lg);
+    gap: 0.25rem;
+  }
+
+  .cityPopover[hidden] {
+    display: none;
+  }
+
+  .cityPopover > p {
+    padding: 0.45rem 0.55rem 0.35rem;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 780;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .cityPopover a {
+    display: grid;
+    padding: 0.65rem 0.7rem;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    text-decoration: none;
+    gap: 0.05rem;
+  }
+
+  .cityPopover a:hover,
+  .cityPopover a[aria-current='page'] {
+    background: var(--accent-soft);
+  }
+
+  .cityPopover a span {
+    font-weight: 760;
+  }
+
+  .cityPopover a small {
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  .cityButton:hover {
+    background: var(--surface);
   }
 
   .navLink {
@@ -113,10 +192,6 @@
     place-items: center;
   }
 
-  .cityControl select {
-    color: var(--ink);
-  }
-
   .iconButton:hover {
     background: var(--surface);
   }
@@ -126,14 +201,22 @@
       display: none;
     }
 
-    .cityControl select {
-      max-width: 8.5rem;
+    .cityButton {
+      max-width: 9.5rem;
+    }
+
+    .cityPopover {
+      position: fixed;
+      width: auto;
+      top: 4.75rem;
+      right: 1rem;
+      left: 1rem;
     }
   }
 
   @media (max-width: 24rem) {
-    .cityControl select {
-      width: 7.2rem;
+    .cityButton {
+      width: 8rem;
     }
   }
 
@@ -151,9 +234,9 @@
       font-size: 1.5rem;
     }
 
-    .cityControl select {
-      width: 6rem;
-      padding-inline: 0.55rem 1.25rem;
+    .cityButton {
+      width: 6.5rem;
+      padding-inline: 0.55rem;
     }
 
     .navLink {

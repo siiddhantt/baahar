@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 
 import type { EventSummary } from '../api/client';
-import { eventDateTimeLabel, freshnessLabel, priceLabel } from '../lib/eventFormat';
+import { eventDateTimeLabel, priceLabel } from '../lib/eventFormat';
 import { EventArtwork } from './EventArtwork';
 import { EventStatus } from './EventStatus';
 import { SaveButton } from './SaveButton';
@@ -12,19 +12,18 @@ type Props = {
   priority?: boolean;
 };
 
-function cardShape(id: string) {
-  const checksum = [...id].reduce((total, character) => total + character.charCodeAt(0), 0);
-  return checksum % 5 === 0 ? 'tall' : checksum % 7 === 0 ? 'wide' : 'standard';
-}
-
 export function EventCard({ event, priority = false }: Props) {
   const location = useLocation();
   const price = priceLabel(event);
-  const shape = cardShape(event.id);
   const eventPath = `/events/${event.id}/${event.slug}`;
+  const sourceAddsContext =
+    !event.venue ||
+    event.source.name.trim().localeCompare(event.venue.name.trim(), undefined, {
+      sensitivity: 'base',
+    }) !== 0;
 
   return (
-    <article className={styles.card} data-shape={shape} data-status={event.status}>
+    <article className={styles.card} data-status={event.status}>
       <Link
         className={styles.cardLink}
         to={eventPath}
@@ -51,11 +50,7 @@ export function EventCard({ event, priority = false }: Props) {
         {price ? <p className={styles.price}>{price}</p> : null}
 
         <div className={styles.footer}>
-          <p className={styles.source}>
-            {event.source.name}
-            <span aria-hidden="true"> · </span>
-            <span>{freshnessLabel(event.last_checked_at)}</span>
-          </p>
+          {sourceAddsContext ? <p className={styles.source}>{event.source.name}</p> : null}
           <SaveButton occurrenceId={event.id} />
         </div>
       </div>

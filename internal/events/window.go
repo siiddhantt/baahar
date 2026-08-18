@@ -8,9 +8,12 @@ import (
 type Window string
 
 const (
+	WindowUpcoming Window = "upcoming"
 	WindowToday    Window = "today"
 	WindowTomorrow Window = "tomorrow"
 	WindowWeekend  Window = "weekend"
+
+	upcomingHorizonDays = 90
 )
 
 type TimeRange struct {
@@ -27,6 +30,8 @@ func RangeForWindow(now time.Time, timezone string, window Window) (TimeRange, e
 	today := localMidnight(localNow)
 
 	switch window {
+	case WindowUpcoming:
+		return TimeRange{Start: localNow, End: today.AddDate(0, 0, upcomingHorizonDays)}, nil
 	case WindowToday:
 		return TimeRange{Start: today, End: today.AddDate(0, 0, 1)}, nil
 	case WindowTomorrow:

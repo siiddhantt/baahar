@@ -70,7 +70,7 @@
     --shadow-lg: 0 28px 80px rgb(0 0 0 / 36%);
   }
 
-  :root[data-city='varanasi'] {
+  :root[data-city-accent='river'] {
     --accent: #c45c22;
     --accent-strong: #7d3215;
     --accent-soft: #f3ddc9;
@@ -78,7 +78,7 @@
     --signal: #d3382f;
   }
 
-  :root[data-city='varanasi'][data-theme='dark'] {
+  :root[data-city-accent='river'][data-theme='dark'] {
     --accent: #f29a5e;
     --accent-strong: #ffc19a;
     --accent-soft: #462b1e;

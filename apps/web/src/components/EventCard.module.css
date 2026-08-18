@@ -3,6 +3,7 @@
     position: relative;
     display: flex;
     min-width: 0;
+    height: 100%;
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: var(--radius-md) var(--radius-md) 0.45rem;
@@ -54,16 +55,13 @@
   }
 
   .body h2 {
-    display: -webkit-box;
-    overflow: hidden;
+    overflow-wrap: anywhere;
     font-family: var(--font-display);
     font-size: clamp(1.05rem, 8cqi, 1.48rem);
     font-variation-settings: 'wdth' 103;
     font-weight: 710;
     letter-spacing: -0.025em;
     line-height: 1.05;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
   }
 
   .body h2 a {
@@ -79,11 +77,9 @@
 
   .venue,
   .price {
-    overflow: hidden;
     color: var(--muted);
     font-size: 0.82rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   .price {
@@ -102,11 +98,14 @@
 
   .source {
     min-width: 0;
-    overflow: hidden;
     color: var(--muted);
     font-size: 0.68rem;
     line-height: 1.35;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+  }
+
+  .footer > button {
+    margin-left: auto;
   }
 
   @container (max-width: 11rem) {
@@ -116,11 +115,6 @@
 
     .body h2 {
       font-size: 1rem;
-      -webkit-line-clamp: 2;
-    }
-
-    .source span {
-      display: none;
     }
   }
 }

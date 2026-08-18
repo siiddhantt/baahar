@@ -64,7 +64,7 @@ export default function OperatorRoute() {
   const [authMessage, setAuthMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    delete document.documentElement.dataset.city;
+    delete document.documentElement.dataset.cityAccent;
   }, []);
 
   function clearSession(message: string | null) {
