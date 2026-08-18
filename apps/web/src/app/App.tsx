@@ -11,6 +11,7 @@ import { ApiProblem } from '../api/client';
 const ChooseCityRoute = lazy(() => import('../routes/ChooseCityRoute'));
 const EventDetailRoute = lazy(() => import('../routes/EventDetailRoute'));
 const ExploreRoute = lazy(() => import('../routes/ExploreRoute'));
+const OperatorRoute = lazy(() => import('../operator/OperatorRoute'));
 const SavedRoute = lazy(() => import('../routes/SavedRoute'));
 
 const queryClient = new QueryClient({
@@ -34,6 +35,7 @@ export function App() {
           <BrowserRouter>
             <Suspense fallback={<RouteFallback />}>
               <Routes>
+                <Route path="operator" element={<OperatorRoute />} />
                 <Route element={<AppShell />}>
                   <Route index element={<ChooseCityRoute />} />
                   <Route path="bengaluru" element={<ExploreRoute city="bengaluru" />} />

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -64,6 +65,18 @@ func TestMigrationUpDownUpOnPostgres(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertVersion(t, ctx, pool, int64(len(migrations)))
+
+	jagritiID := uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f")
+	_, err = pool.Exec(ctx, `
+		INSERT INTO collection_runs (id, source_id, trace_id, status, triggered_at)
+		VALUES ($1, $2, $3, 'queued', now())`, uuid.Must(uuid.NewV7()), jagritiID, uuid.NewString())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err == nil {
+		t.Fatal("Jagriti down migration removed a source with collection history")
+	}
+	assertVersion(t, ctx, pool, int64(len(migrations)))
 }
 
 func assertVersion(t *testing.T, ctx context.Context, pool *pgxpool.Pool, want int64) {
@@ -98,6 +111,7 @@ func assertMigrationInvariants(t *testing.T, ctx context.Context, pool *pgxpool.
 	if pageLimit != 2 || recordLimit != 100 || eventIDPattern != `^[0-9]+$` {
 		t.Fatalf("BIC launch policy pages/records/id = %d/%d/%q", pageLimit, recordLimit, eventIDPattern)
 	}
+	assertJagritiMigration(t, ctx, pool, cityID)
 	for index := range 2 {
 		if _, err := pool.Exec(ctx, `INSERT INTO venues (id, city_id, name) VALUES ($1, $2, $3)`, uuid.Must(uuid.NewV7()), cityID, fmt.Sprintf("Unreviewed venue %d", index)); err != nil {
 			t.Fatalf("multiple venues without reviewed keys should be allowed: %v", err)
@@ -155,5 +169,48 @@ func assertMigrationInvariants(t *testing.T, ctx context.Context, pool *pgxpool.
 		"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
 	if err == nil {
 		t.Fatal("is_free=true with a known price must violate the database contract")
+	}
+}
+
+func assertJagritiMigration(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cityID uuid.UUID) {
+	t.Helper()
+	var gotCityID uuid.UUID
+	var displayName, canonicalHost, officialURL, manifestVersion, collectorID, schemaVersion string
+	var collectionInput []byte
+	var sourceEventIDPattern *string
+	var enabled bool
+	var freshnessTTL, cadence, pageLimit, recordLimit, dailyRunLimit, absenceThreshold int
+	var publicationState string
+	var nextDueAt *time.Time
+	var lastHealthyAt *time.Time
+	err := pool.QueryRow(ctx, `
+		SELECT city_id, display_name, canonical_host, official_url, manifest_version,
+			collector_id, schema_version, collection_input, source_event_id_pattern, enabled,
+			freshness_ttl_seconds, cadence_seconds, page_limit, record_limit, daily_run_limit,
+			absence_threshold, publication_state, next_due_at, last_healthy_at
+		FROM sources
+		WHERE id = 'de7c8acb-0185-5994-b1b4-290029c3ed5f' AND slug = 'jagriti'`).Scan(
+		&gotCityID, &displayName, &canonicalHost, &officialURL, &manifestVersion,
+		&collectorID, &schemaVersion, &collectionInput, &sourceEventIDPattern, &enabled,
+		&freshnessTTL, &cadence, &pageLimit, &recordLimit, &dailyRunLimit,
+		&absenceThreshold, &publicationState, &nextDueAt, &lastHealthyAt,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var input map[string]string
+	if err := json.Unmarshal(collectionInput, &input); err != nil {
+		t.Fatal(err)
+	}
+	if gotCityID != cityID || displayName != "Jagriti Theatre" || canonicalHost != "www.jagrititheatre.com" ||
+		officialURL != "https://www.jagrititheatre.com/" || manifestVersion != "source-manifest/v1" ||
+		collectorID != "c_msywx7up19xi1xi8v" || schemaVersion != "event-occurrence/v1" ||
+		input["url"] != "https://www.jagrititheatre.com/jagriti-events-collections" || sourceEventIDPattern != nil || !enabled ||
+		freshnessTTL != 43200 || cadence != 21600 || pageLimit != 26 || recordLimit != 50 || dailyRunLimit != 4 ||
+		absenceThreshold != 2 || publicationState != "active" || nextDueAt == nil || lastHealthyAt != nil {
+		t.Fatalf("unexpected Jagriti launch policy: city=%s name=%q host=%q url=%q manifest=%q collector=%q schema=%q input=%v pattern=%v enabled=%v ttl/cadence/pages/records/daily/absence=%d/%d/%d/%d/%d/%d state=%q next=%v healthy=%v",
+			gotCityID, displayName, canonicalHost, officialURL, manifestVersion, collectorID, schemaVersion,
+			input, sourceEventIDPattern, enabled, freshnessTTL, cadence, pageLimit, recordLimit, dailyRunLimit,
+			absenceThreshold, publicationState, nextDueAt, lastHealthyAt)
 	}
 }

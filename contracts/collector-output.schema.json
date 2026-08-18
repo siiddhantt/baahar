@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "required": [
     "schema_version",
+    "source_event_id",
     "source_url",
     "source_host",
     "city_slug",

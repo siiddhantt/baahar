@@ -210,17 +210,19 @@ func validDataset(t *testing.T) []byte {
 }
 
 func testSource() sources.Config {
+	pattern := `^[0-9]+$`
 	return sources.Config{
-		ID:               testSourceID,
-		CityID:           uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f7700"),
-		CitySlug:         "bengaluru",
-		Slug:             "bic",
-		CanonicalHost:    "bangaloreinternationalcentre.org",
-		CollectorID:      "c_msyr5ts21rq3nfjxrz",
-		SchemaVersion:    "event-occurrence/v1",
-		CollectionInput:  json.RawMessage(`{"url":"https://bangaloreinternationalcentre.org/events/"}`),
-		RecordLimit:      100,
-		AbsenceThreshold: 2,
+		ID:                   testSourceID,
+		CityID:               uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f7700"),
+		CitySlug:             "bengaluru",
+		Slug:                 "bic",
+		CanonicalHost:        "bangaloreinternationalcentre.org",
+		CollectorID:          "c_msyr5ts21rq3nfjxrz",
+		SchemaVersion:        "event-occurrence/v1",
+		CollectionInput:      json.RawMessage(`{"url":"https://bangaloreinternationalcentre.org/events/"}`),
+		SourceEventIDPattern: &pattern,
+		RecordLimit:          100,
+		AbsenceThreshold:     2,
 	}
 }
 

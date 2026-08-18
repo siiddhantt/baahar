@@ -99,6 +99,118 @@ func TestPublicationVersionTransitionsAndRejectedRunFreeze(t *testing.T) {
 	}
 }
 
+func TestJagritiMultiPerformanceNormalizationAndPersistence(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	source, err := NewSourceConfigs(pool).Get(ctx, uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if source.SourceEventIDPattern != nil {
+		t.Fatalf("Jagriti source event ID pattern = %q, want NULL fallback policy", *source.SourceEventIDPattern)
+	}
+	observed := time.Date(2026, time.August, 18, 12, 0, 0, 0, time.UTC)
+	record := map[string]any{
+		"schema_version":     "event-occurrence/v1",
+		"source_event_id":    nil,
+		"source_url":         "https://www.jagrititheatre.com/12-angry-men",
+		"source_host":        "www.jagrititheatre.com",
+		"city_slug":          "bengaluru",
+		"title":              "12 Angry Men",
+		"category":           "theatre",
+		"start_date":         "2026-08-22",
+		"starts_at":          "2026-08-22T15:00:00+05:30",
+		"end_date":           "2026-08-22",
+		"ends_at":            "2026-08-22T17:00:00+05:30",
+		"time_precision":     "timed",
+		"timezone":           "Asia/Kolkata",
+		"venue_name":         "Jagriti Theatre",
+		"venue_address":      "Jagriti, Ramagondanahalli, Varthur Road, Whitefield, Bengaluru 560066, India",
+		"is_free":            false,
+		"price_min_minor":    75000,
+		"price_max_minor":    75000,
+		"currency":           "INR",
+		"registration_url":   "https://in.bookmyshow.com/plays/12-angry-men/ET00400001",
+		"registration_state": nil,
+		"status":             "scheduled",
+		"language":           []string{"English"},
+		"age_note":           "12+ years",
+		"accessibility_note": nil,
+		"image_url":          "https://www.jagrititheatre.com/uploads/images/thumbnails/0123456789abcdef0123456789abcdef.jpg",
+		"observed_at":        observed.Format(time.RFC3339),
+	}
+	second := make(map[string]any, len(record))
+	for key, value := range record {
+		second[key] = value
+	}
+	second["starts_at"] = "2026-08-22T19:00:00+05:30"
+	second["ends_at"] = "2026-08-22T21:00:00+05:30"
+	dataset, err := json.Marshal([]map[string]any{record, second})
+	if err != nil {
+		t.Fatal(err)
+	}
+	validator, err := collections.NewCollectorValidator()
+	if err != nil {
+		t.Fatal(err)
+	}
+	prepared, err := collections.PrepareDataset(dataset, collections.SourcePolicy{
+		ID:                  source.ID,
+		CitySlug:            source.CitySlug,
+		CanonicalHost:       source.CanonicalHost,
+		SchemaVersion:       source.SchemaVersion,
+		RecordLimit:         source.RecordLimit,
+		ObservationEarliest: observed.Add(-time.Minute),
+		ObservationLatest:   observed.Add(time.Minute),
+	}, validator)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if prepared.HealthCode != "" || len(prepared.Candidates) != 2 || len(prepared.Quarantined) != 0 ||
+		prepared.Candidates[0].Identity == prepared.Candidates[1].Identity {
+		t.Fatalf("Jagriti preparation = %+v", prepared)
+	}
+	runID := validatingRun(t, ctx, pool, source.ID, 2, observed)
+	if err := NewPublication(pool).Publish(ctx, runID, source, prepared, observed.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+
+	rows, err := pool.Query(ctx, `
+		SELECT version.starts_at, version.price_min_minor, version.price_max_minor,
+			version.currency, version.registration_url, version.languages,
+			version.age_note, version.image_url
+		FROM event_occurrences occurrence
+		JOIN event_versions version ON version.id = occurrence.current_version_id
+		WHERE occurrence.source_id = $1
+		ORDER BY version.starts_at`, source.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	starts := make([]time.Time, 0, 2)
+	for rows.Next() {
+		var startsAt time.Time
+		var minimum, maximum int64
+		var currency, registrationURL, ageNote, imageURL string
+		var languages []string
+		if err := rows.Scan(&startsAt, &minimum, &maximum, &currency, &registrationURL, &languages, &ageNote, &imageURL); err != nil {
+			t.Fatal(err)
+		}
+		if minimum != 75000 || maximum != 75000 || currency != "INR" ||
+			registrationURL != "https://in.bookmyshow.com/plays/12-angry-men/ET00400001" ||
+			len(languages) != 1 || languages[0] != "English" || ageNote != "12+ years" ||
+			imageURL != "https://www.jagrititheatre.com/uploads/images/thumbnails/0123456789abcdef0123456789abcdef.jpg" {
+			t.Fatalf("persisted Jagriti facts = price %d/%d %s registration=%q language=%v age=%q image=%q",
+				minimum, maximum, currency, registrationURL, languages, ageNote, imageURL)
+		}
+		starts = append(starts, startsAt)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if len(starts) != 2 || starts[0].Equal(starts[1]) {
+		t.Fatalf("persisted Jagriti starts = %v", starts)
+	}
+}
+
 func TestPublicationAbsenceBootstrapThresholdAndReappearance(t *testing.T) {
 	ctx, pool := migratedIntegrationPool(t)
 	source := integrationSource(t, ctx, pool)
@@ -383,7 +495,7 @@ func TestSchedulerOnlyReturnsActiveSources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(due) != 1 || due[0].ID != source.ID {
+	if !containsSource(due, source.ID) {
 		t.Fatalf("active due sources = %+v", due)
 	}
 	for _, state := range []string{"frozen", "disabled"} {
@@ -394,10 +506,64 @@ func TestSchedulerOnlyReturnsActiveSources(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(due) != 0 {
+		if containsSource(due, source.ID) {
 			t.Fatalf("%s source was scheduled: %+v", state, due)
 		}
 	}
+}
+
+func TestOperatorActiveIncidentDisappearsAfterAcknowledgement(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	source := integrationSource(t, ctx, pool)
+	at := time.Date(2026, time.August, 18, 12, 0, 0, 0, time.UTC)
+	runID := validatingRun(t, ctx, pool, source.ID, 0, at)
+	if err := NewPublication(pool).Reject(ctx, runID, source.ID, 0, collections.PreparedDataset{HealthCode: "empty_output"}, at.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	operator := NewOperator(pool)
+	listed, err := operator.ListSources(ctx, at.Add(2*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var projected *sources.OperatorSource
+	for index := range listed {
+		if listed[index].ID == source.ID {
+			projected = &listed[index]
+			break
+		}
+	}
+	if projected == nil || projected.SchemaVersion != "event-occurrence/v1" || projected.ActiveIncident == nil {
+		t.Fatalf("operator source projection = %+v", listed)
+	}
+	incidentID := projected.ActiveIncident.ID
+	if projected.ActiveIncident.Code != "empty_output" || projected.ActiveIncident.State != "open" {
+		t.Fatalf("active incident = %+v", projected.ActiveIncident)
+	}
+	acknowledged, err := operator.AcknowledgeIncident(ctx, incidentID, "test", uuid.NewString(), at.Add(3*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if acknowledged.State != "acknowledged" || acknowledged.AcknowledgedAt == nil {
+		t.Fatalf("acknowledged incident = %+v", acknowledged)
+	}
+	listed, err = operator.ListSources(ctx, at.Add(4*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for index := range listed {
+		if listed[index].ID == source.ID && listed[index].ActiveIncident != nil {
+			t.Fatalf("acknowledged incident remained active: %+v", listed[index].ActiveIncident)
+		}
+	}
+}
+
+func containsSource(configs []sources.Config, sourceID uuid.UUID) bool {
+	for _, source := range configs {
+		if source.ID == sourceID {
+			return true
+		}
+	}
+	return false
 }
 
 func migratedIntegrationPool(t *testing.T) (context.Context, *pgxpool.Pool) {

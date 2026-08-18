@@ -24,14 +24,14 @@ A feature is complete only when:
 One person may own several streams during the hackathon, but responsibility must
 remain explicit.
 
-| Stream | Accountable output | May change |
-| --- | --- | --- |
-| Product/release | scope, go/no-go decisions, live demo, submission evidence | docs, release checklist |
-| Contracts/domain | schemas, identity, time windows, versions, diffs, invariants | contracts, `internal/events` |
-| Collection/data | source manifests, Scraper Studio collectors, ingest, health, self-heal proof | sources, `internal/collections`, Bright Data |
-| API/platform | migrations, repositories, HTTP, jobs, object store, auth/operations | Go platform modules |
-| Experience/web | design system, feed/detail/saved routes, responsive/a11y/performance | `apps/web` |
-| Verification | live fixtures, integration/browser/release tests, quality reports | test suites and CI |
+| Stream           | Accountable output                                                           | May change                                   |
+| ---------------- | ---------------------------------------------------------------------------- | -------------------------------------------- |
+| Product/release  | scope, go/no-go decisions, live demo, submission evidence                    | docs, release checklist                      |
+| Contracts/domain | schemas, identity, time windows, versions, diffs, invariants                 | contracts, `internal/events`                 |
+| Collection/data  | source manifests, Scraper Studio collectors, ingest, health, self-heal proof | sources, `internal/collections`, Bright Data |
+| API/platform     | migrations, repositories, HTTP, jobs, object store, auth/operations          | Go platform modules                          |
+| Experience/web   | design system, feed/detail/saved routes, responsive/a11y/performance         | `apps/web`                                   |
+| Verification     | live fixtures, integration/browser/release tests, quality reports            | test suites and CI                           |
 
 Cross-stream contract changes begin with OpenAPI/JSON Schema and one written
 rationale. Frontend/backend types are generated from that contract rather than
@@ -45,14 +45,20 @@ flowchart LR
     B --> C["Normalize + publish"]
     C --> D["Real Bengaluru feed"]
     D --> E["Detail + save + ICS"]
-    E --> F["Varanasi source"]
-    F --> G["Diff + health gates"]
-    G --> H["Same-ID self-heal proof"]
-    H --> I["Polish, audit, release"]
+    E --> F["Second source: Jagriti"]
+    F --> G["Varanasi source"]
+    G --> H["Diff + health gates"]
+    H --> I["Same-ID self-heal proof"]
+    I --> J["Polish, audit, release"]
 ```
 
 No task that is not on, or directly unblocks, this path should consume the first
 three build days.
+
+Progress note, 18 August: BIC and Jagriti have completed their real vertical
+slices. Rudraksh was attempted next but failed inside Bright Data's proxy tunnel;
+its empty batch was quarantined. Varanasi remains disabled while the team ships
+the proven one-city, two-source product rather than weakening the data contract.
 
 ## 4. Checkpoint plan
 

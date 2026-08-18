@@ -169,6 +169,8 @@ func normalizeRecord(raw json.RawMessage, source SourcePolicy) (Candidate, error
 		if !pattern.MatchString(*record.SourceEventID) {
 			return Candidate{}, errors.New("source_event_id does not satisfy this source policy")
 		}
+	} else if record.SourceEventID != nil {
+		return Candidate{}, errors.New("source_event_id must be null for this source")
 	}
 	parsedURL, err := url.Parse(record.SourceURL)
 	if err != nil {

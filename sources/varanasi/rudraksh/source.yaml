@@ -1,0 +1,37 @@
+schema_version: source-manifest/v1
+source: rudraksh
+city: varanasi
+canonical_hosts:
+  - www.rudrakshcentre.com
+collector_id: c_msyvmnoxwjdg7xe0p
+output_schema: event-occurrence/v1
+publication_state: preview
+collection_state: blocked
+blocked_reason: bright_data_proxy_config
+schedule: "17 */6 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://www.rudrakshcentre.com/upcoming-event
+limits:
+  pages_per_run: 1
+  records_per_run: 50
+health:
+  minimum_records: 1
+  maximum_records_before_baseline: 50
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.4
+  high_count_ratio_after_baseline: 2.5
+identity:
+  source_event_id: null
+  fallback_fields:
+    - normalized_title
+    - canonical_source_url
+    - local_occurrence_date_time
+    - normalized_venue_key
+  exact_duplicates_allowed: false
+access:
+  robots_status: missing_404
+  pages_per_run: 1
+  facts_only: true

@@ -30,7 +30,7 @@ func (operator *Operator) ListSources(ctx context.Context, freshnessTime time.Ti
 			CASE WHEN s.last_healthy_at IS NOT NULL
 				AND s.last_healthy_at + make_interval(secs => s.freshness_ttl_seconds) >= $1
 				THEN 'fresh' ELSE 'stale' END,
-			s.last_healthy_at, s.collector_id, s.publication_state, s.next_due_at
+			s.last_healthy_at, s.collector_id, s.schema_version, s.publication_state, s.next_due_at
 		FROM sources s
 		JOIN cities c ON c.id = s.city_id
 		ORDER BY c.display_name, s.display_name, s.id`, freshnessTime)
@@ -54,6 +54,7 @@ func (operator *Operator) ListSources(ctx context.Context, freshnessTime time.Ti
 			&source.Freshness,
 			&source.LastHealthyAt,
 			&source.CollectorID,
+			&source.SchemaVersion,
 			&source.PublicationState,
 			&source.NextDueAt,
 		)
@@ -71,15 +72,51 @@ func (operator *Operator) ListSources(ctx context.Context, freshnessTime time.Ti
 			WHERE source_id = $1
 			ORDER BY triggered_at DESC, id DESC
 			LIMIT 1`, result[index].ID))
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return nil, err
+		}
+		if err == nil {
+			result[index].LatestRun = &latest
+		}
+
+		incident, err := latestOpenIncident(operator.pool.QueryRow(ctx, `
+			SELECT id, source_id, collection_run_id, health_code, state, opened_at, acknowledged_at
+			FROM operator_incidents
+			WHERE source_id = $1 AND state = 'open'
+			ORDER BY opened_at DESC, id DESC
+			LIMIT 1`, result[index].ID))
 		if errors.Is(err, pgx.ErrNoRows) {
 			continue
 		}
 		if err != nil {
 			return nil, err
 		}
-		result[index].LatestRun = &latest
+		result[index].ActiveIncident = &incident
 	}
 	return result, nil
+}
+
+type incidentScanner interface {
+	Scan(...any) error
+}
+
+func latestOpenIncident(scanner incidentScanner) (sources.Incident, error) {
+	var incident sources.Incident
+	if err := scanner.Scan(
+		&incident.ID,
+		&incident.SourceID,
+		&incident.RunID,
+		&incident.Code,
+		&incident.State,
+		&incident.CreatedAt,
+		&incident.AcknowledgedAt,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return sources.Incident{}, pgx.ErrNoRows
+		}
+		return sources.Incident{}, fmt.Errorf("scan active source incident: %w", err)
+	}
+	return incident, nil
 }
 
 func (operator *Operator) QueueCollection(ctx context.Context, sourceID uuid.UUID, idempotencyKey, actor, traceID string, now time.Time) (collections.Run, error) {

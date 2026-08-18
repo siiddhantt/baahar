@@ -23,6 +23,20 @@ describe('event formatting', () => {
     expect(priceLabel(event)).toBeNull();
   });
 
+  it('shows an exact INR amount without implying a wider price range', () => {
+    expect(
+      priceLabel({
+        ...event,
+        pricing: {
+          is_free: false,
+          minimum_minor: 50_000,
+          maximum_minor: 50_000,
+          currency: 'INR',
+        },
+      }),
+    ).toBe('₹500');
+  });
+
   it('formats exact time in the city timezone', () => {
     expect(eventTimeLabel(event)).toBe('6:00 pm');
   });

@@ -1,6 +1,6 @@
 {
   "schema_version": "event-occurrence/v1",
-  "source_event_id": "example-2026-08-18",
+  "source_event_id": "12345",
   "source_url": "https://bangaloreinternationalcentre.org/events/example-event/",
   "source_host": "bangaloreinternationalcentre.org",
   "city_slug": "bengaluru",

@@ -87,6 +87,28 @@ func TestDatasetTreatsEmptyAcceptedResponseAsPending(t *testing.T) {
 	}
 }
 
+func TestDatasetTreatsCollectorProgressStatusesAsPending(t *testing.T) {
+	for _, status := range []string{"building", "collecting", "running", "queued", "pending"} {
+		t.Run(status, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+				_, _ = writer.Write([]byte(`{"status":"` + status + `"}`))
+			}))
+			defer server.Close()
+			client, err := Open(Config{BaseURL: server.URL, Token: "test-token", Client: server.Client()})
+			if err != nil {
+				t.Fatal(err)
+			}
+			content, ready, err := client.Dataset(context.Background(), "d_batch/example")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if ready || content != nil {
+				t.Fatalf("pending response = (%q, %v), want (nil, false)", content, ready)
+			}
+		})
+	}
+}
+
 func TestDatasetReturnsExactReadyBytes(t *testing.T) {
 	want := []byte("[\r\n  {\"title\":\"ಬೆಂಗಳೂರು\"}\r\n]\n")
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {

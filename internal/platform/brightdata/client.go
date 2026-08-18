@@ -151,7 +151,7 @@ func (client *Client) Dataset(ctx context.Context, collectionID string) ([]byte,
 		return nil, false, errors.New("Bright Data dataset status is invalid")
 	}
 	switch strings.ToLower(status.Status) {
-	case "building", "running", "queued", "pending":
+	case "building", "collecting", "running", "queued", "pending":
 		return nil, false, nil
 	default:
 		return nil, false, fmt.Errorf("Bright Data dataset returned terminal status %q", status.Status)

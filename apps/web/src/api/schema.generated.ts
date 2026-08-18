@@ -319,11 +319,13 @@ export interface components {
       /** Format: date-time */
       last_healthy_at: string | null;
       collector_id: string;
+      schema_version: string;
       /** @enum {unknown} */
       publication_state: 'active' | 'frozen' | 'disabled';
       /** Format: date-time */
       next_due_at: string | null;
       latest_run: components['schemas']['CollectionRun'] | null;
+      active_incident: components['schemas']['Incident'] | null;
     };
     CollectionRun: {
       /** Format: uuid */

@@ -50,7 +50,7 @@ export function priceLabel(event: EventSummary) {
     maximumFractionDigits: 0,
   }).format(event.pricing.minimum_minor / 100);
 
-  return `From ${amount}`;
+  return event.pricing.maximum_minor === event.pricing.minimum_minor ? amount : `From ${amount}`;
 }
 
 export function freshnessLabel(timestamp: string) {

@@ -120,9 +120,11 @@ type operatorSourceDTO struct {
 	Freshness        string            `json:"freshness"`
 	LastHealthyAt    *time.Time        `json:"last_healthy_at"`
 	CollectorID      string            `json:"collector_id"`
+	SchemaVersion    string            `json:"schema_version"`
 	PublicationState string            `json:"publication_state"`
 	NextDueAt        *time.Time        `json:"next_due_at"`
 	LatestRun        *collectionRunDTO `json:"latest_run"`
+	ActiveIncident   *incidentDTO      `json:"active_incident"`
 }
 
 type incidentDTO struct {
@@ -232,12 +234,17 @@ func presentOperatorSource(source sources.OperatorSource) operatorSourceDTO {
 		Freshness:        source.Freshness,
 		LastHealthyAt:    source.LastHealthyAt,
 		CollectorID:      source.CollectorID,
+		SchemaVersion:    source.SchemaVersion,
 		PublicationState: source.PublicationState,
 		NextDueAt:        source.NextDueAt,
 	}
 	if source.LatestRun != nil {
 		latest := presentRun(*source.LatestRun)
 		result.LatestRun = &latest
+	}
+	if source.ActiveIncident != nil {
+		incident := presentIncident(*source.ActiveIncident)
+		result.ActiveIncident = &incident
 	}
 	return result
 }

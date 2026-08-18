@@ -8,19 +8,20 @@ university pages, government portals, and other long-tail sites rather than on
 the major ticketing platforms.
 
 The city roadmap starts with Bengaluru and Varanasi. The current release slice
-is deliberately narrower: one Bengaluru source, end to end. It uses a Bright
-Data Scraper Studio collector to turn that source into a verified event
-contract, then detects changes so that cancellations, closed registrations,
-and revised times do not silently leave stale cards in the feed.
+is deliberately narrower: two official Bengaluru sources, end to end. Bright
+Data Scraper Studio collectors turn BIC's public calendar and Jagriti Theatre's
+list/detail pages into one verified event contract. Baahar then detects changes
+so that cancellations, closed registrations, and revised times do not silently
+leave stale cards in the feed.
 
-There are no product-runtime LLM calls. Scraper Studio's generation and
-self-healing capabilities are used where they are valuable: keeping the source
-connectors alive as the web changes.
+There are no product-runtime LLM calls. Scraper Studio owns collection and
+reviewable connector repair; Baahar never auto-approves a generated repair or
+lets a changed collector bypass its schema and health gates.
 
 ## What the first release does
 
-- collects the next 31 days of official BIC events through one reviewed Bright
-  Data Scraper Studio Code worker;
+- collects the next 31 days of official BIC events and Jagriti Theatre's current
+  performances through two reviewed Scraper Studio Code workers;
 - preserves every returned batch byte in private S3-compatible storage before
   validation;
 - rejects structurally invalid, suspiciously small, duplicated, stale, or
@@ -29,8 +30,9 @@ connectors alive as the web changes.
   details, source links, change history, device-local saves, and calendar files.
 
 Varanasi remains the next city on the roadmap but is intentionally not exposed
-as a usable noticeboard yet. A second source is not added until the complete
-BIC path is green.
+as a usable noticeboard yet. The first Rudraksh collector attempt failed on an
+upstream Bright Data proxy-tunnel error and was quarantined instead of producing
+an empty or invented public feed.
 
 ## Repository map
 

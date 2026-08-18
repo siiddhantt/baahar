@@ -1,0 +1,46 @@
+INSERT INTO sources (
+    id,
+    city_id,
+    slug,
+    display_name,
+    canonical_host,
+    official_url,
+    manifest_version,
+    collector_id,
+    schema_version,
+    collection_input,
+    source_event_id_pattern,
+    enabled,
+    freshness_ttl_seconds,
+    cadence_seconds,
+    page_limit,
+    record_limit,
+    daily_run_limit,
+    absence_threshold,
+    publication_state,
+    next_due_at
+)
+SELECT
+    'de7c8acb-0185-5994-b1b4-290029c3ed5f',
+    city.id,
+    'jagriti',
+    'Jagriti Theatre',
+    'www.jagrititheatre.com',
+    'https://www.jagrititheatre.com/',
+    'source-manifest/v1',
+    'c_msywx7up19xi1xi8v',
+    'event-occurrence/v1',
+    '{"url":"https://www.jagrititheatre.com/jagriti-events-collections"}'::jsonb,
+    NULL,
+    true,
+    43200,
+    21600,
+    26,
+    50,
+    4,
+    2,
+    'active',
+    now()
+FROM cities city
+WHERE city.slug = 'bengaluru'
+ON CONFLICT (slug) DO NOTHING;

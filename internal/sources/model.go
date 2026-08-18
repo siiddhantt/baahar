@@ -39,9 +39,11 @@ type OperatorSource struct {
 	Freshness        string
 	LastHealthyAt    *time.Time
 	CollectorID      string
+	SchemaVersion    string
 	PublicationState string
 	NextDueAt        *time.Time
 	LatestRun        *collections.Run
+	ActiveIncident   *Incident
 }
 
 type Incident struct {

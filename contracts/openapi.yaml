@@ -682,9 +682,11 @@ components:
         - freshness
         - last_healthy_at
         - collector_id
+        - schema_version
         - publication_state
         - next_due_at
         - latest_run
+        - active_incident
       properties:
         id:
           type: string
@@ -706,6 +708,10 @@ components:
         collector_id:
           type: string
           pattern: "^c_[A-Za-z0-9_-]+$"
+        schema_version:
+          type: string
+          minLength: 1
+          maxLength: 100
         publication_state:
           enum: [active, frozen, disabled]
         next_due_at:
@@ -714,6 +720,10 @@ components:
         latest_run:
           oneOf:
             - $ref: "#/components/schemas/CollectionRun"
+            - type: "null"
+        active_incident:
+          oneOf:
+            - $ref: "#/components/schemas/Incident"
             - type: "null"
     CollectionRun:
       type: object

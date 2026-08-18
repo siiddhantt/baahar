@@ -20,14 +20,19 @@ policy where appropriate, and an example output fixture.
 
 ## 2. Launch recommendation
 
+Current release state: BIC and Jagriti are active and fresh in Bengaluru.
+Rudraksh has reviewed local extraction but remains disabled because its real
+Scraper Studio production request failed inside Bright Data's proxy tunnel.
+No Varanasi rows are hardcoded or published as a fallback.
+
 ### Bengaluru launch four
 
-| Priority | Source | Why it belongs | Scraper Studio shape | Cadence |
-| --- | --- | --- | --- | --- |
-| 1 | [Bangalore International Centre](https://bangaloreinternationalcentre.org/events/event-calendar/) | High-volume current talks, performances, workshops; native IDs/modified times in its public events JSON | Code worker: public JSON, optional detail follow | 2–4h |
-| 2 | [Jagriti Theatre](https://www.jagrititheatre.com/) | Multi-performance theatre with current dates and booking links | Code worker: list to detail | 2–4h |
-| 3 | [Atta Galatta](https://attagalatta.com/calendarpage.php) | Literary, workshop, and community events from a custom long-tail calendar | Code worker: calendar to detail | 2–4h |
-| 4 | [Goethe-Institut Bangalore](https://www.goethe.de/ins/in/en/rss/bag/ver.rss) | Official RSS correctness anchor plus detail pages | Code worker: RSS to detail | 6–12h |
+| Priority | Source                                                                                            | Why it belongs                                                                                          | Scraper Studio shape                             | Cadence |
+| -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------- |
+| 1        | [Bangalore International Centre](https://bangaloreinternationalcentre.org/events/event-calendar/) | High-volume current talks, performances, workshops; native IDs/modified times in its public events JSON | Code worker: public JSON, optional detail follow | 2–4h    |
+| 2        | [Jagriti Theatre](https://www.jagrititheatre.com/)                                                | Multi-performance theatre with current dates and booking links                                          | Code worker: list to detail                      | 2–4h    |
+| 3        | [Atta Galatta](https://attagalatta.com/calendarpage.php)                                          | Literary, workshop, and community events from a custom long-tail calendar                               | Code worker: calendar to detail                  | 2–4h    |
+| 4        | [Goethe-Institut Bangalore](https://www.goethe.de/ins/in/en/rss/bag/ver.rss)                      | Official RSS correctness anchor plus detail pages                                                       | Code worker: RSS to detail                       | 6–12h   |
 
 Current research examples include BIC's 18 August `Decoding Behavioural
 Insights`, Jagriti's 21 August `Confessions from Mental Asylum` and 22–23 August
@@ -36,12 +41,12 @@ must be rechecked at implementation time; this document is not feed data.
 
 ### Varanasi launch four
 
-| Priority | Source | Why it belongs | Scraper Studio shape | Cadence |
-| --- | --- | --- | --- | --- |
-| 1 | [Rudraksh Centre](https://www.rudrakshcentre.com/upcoming-event) | Clean official venue table with current Aug–Oct inventory | Code worker: static table | 4–6h |
-| 2 | [Subah-e-Banaras](https://subahebanaras.net/events/) | Distinct daily cultural programme; direct fetch reliability makes Bright Data useful | Code worker first: cards to detail, unblocking/retries | 2–4h |
-| 3 | [Kashi official portal](https://darshan.kashi.gov.in/listing/events) | Government city/event surface with rituals and cultural cards | Code worker against SSR first; Browser worker only if required | 6h |
-| 4 | [IIT (BHU)](https://www.iitbhu.ac.in/) and [event archive](https://www.iitbhu.ac.in/events) | Public institutional programmes split between current homepage rail and archive | Code worker: merge homepage/archive, follow detail/PDF | 12h |
+| Priority | Source                                                                                      | Why it belongs                                                                       | Scraper Studio shape                                           | Cadence |
+| -------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------- |
+| 1        | [Rudraksh Centre](https://www.rudrakshcentre.com/upcoming-event)                            | Clean official venue table with current Aug–Oct inventory                            | Code worker: static table                                      | 4–6h    |
+| 2        | [Subah-e-Banaras](https://subahebanaras.net/events/)                                        | Distinct daily cultural programme; direct fetch reliability makes Bright Data useful | Code worker first: cards to detail, unblocking/retries         | 2–4h    |
+| 3        | [Kashi official portal](https://darshan.kashi.gov.in/listing/events)                        | Government city/event surface with rituals and cultural cards                        | Code worker against SSR first; Browser worker only if required | 6h      |
+| 4        | [IIT (BHU)](https://www.iitbhu.ac.in/) and [event archive](https://www.iitbhu.ac.in/events) | Public institutional programmes split between current homepage rail and archive      | Code worker: merge homepage/archive, follow detail/PDF         | 12h     |
 
 Rudraksh currently lists an exhibition on 22–23 August, a satsang on 29–31
 August, and later September/October inventory. Kashi recurring rituals must not
@@ -105,46 +110,46 @@ functions](https://docs.brightdata.com/datasets/scraper-studio/functions) and
 
 ## 5. Bengaluru candidate matrix
 
-| # | Source | Feasibility and risk | Status |
-| ---: | --- | --- | --- |
-| 1 | [BIC calendar](https://bangaloreinternationalcentre.org/events/event-calendar/) | Public Tribe Events JSON exposes IDs, dates, categories, venue and modification time; detail HTML can add registration state. Bright Data is useful for a uniform managed pipeline, not for unblocking here. | Launch |
-| 2 | [Jagriti Theatre](https://www.jagrititheatre.com/) | Server-rendered cards and multiple performances; external booking may own sold-out truth. | Launch |
-| 3 | [Atta Galatta](https://attagalatta.com/calendarpage.php) | Custom PHP calendar; bound selectors carefully because the response also contains a bookstore catalogue. Detail URL is the stable source identity. | Launch |
-| 4 | [Goethe Bangalore RSS](https://www.goethe.de/ins/in/en/rss/bag/ver.rss) | Clean official XML discovery, then detail follow. Low-maintenance correctness anchor, not the self-heal showcase. | Launch |
-| 5 | [NGMA Bengaluru](https://ngmaindia.gov.in/ngma_bangaluru_activities.asp) | Very large static ASP activity page; posters and repeated address/hours require strict card boundaries. | Next |
-| 6 | [MAP](https://map-india.org/events/) | Rich detail pages and explicit free/closed/accessibility facts; discovery is fragmented across archive/search. Availability closed is not cancellation. | Next |
-| 7 | [IISc events](https://www.iisc.ac.in/events/categories/events/) | Good public talks/culture; some midnight end times and campus-only ambiguity require fail-closed audience handling. | Candidate |
-| 8 | [NCBS public events](https://www.ncbs.res.in/events/archives%40ncbs-public-opening) | Strong dates/organisers; public eligibility and registration windows require separate fields. | Candidate |
-| 9 | [ICTS](https://www.icts.res.in/) | Programmes, talks and outreach; distinguish multi-day research programmes from public events. | Candidate |
-| 10 | [Alliance Française](https://bangalore.afindia.org/events/categories/af-events/) | Event category mixes public events and course promotion; use a deterministic category allowlist. | Candidate |
-| 11 | [Science Gallery Bengaluru](https://bengaluru.sciencegallery.com/) | Exhibitions/travelling programmes spread across several sections; preserve explicit closed states. | Candidate |
-| 12 | [Ranga Shankara](https://rangashankara.org/book-tickets-show-all/) | Official theatre surface with repeated performances and occasional schedule PDFs; needs a collector spike. | Candidate |
-| 13 | [BIEC](https://biec.in/) | Current trade/exhibition cards but lower general-consumer relevance and thin details. | Later professional lane |
-| 14 | [Indian Music Experience](https://indianmusicexperience.org/mec-events/) | Event-capable archive, but latest indexed inventory appeared stale and access is inconsistent. | Hold |
-| 15 | [ICSI Bengaluru](https://www.icsi.edu/bengaluru/events/details/) | Current professional programmes but mixed chapters and member eligibility. | Later professional lane |
+|   # | Source                                                                              | Feasibility and risk                                                                                                                                                                                         | Status                  |
+| --: | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
+|   1 | [BIC calendar](https://bangaloreinternationalcentre.org/events/event-calendar/)     | Public Tribe Events JSON exposes IDs, dates, categories, venue and modification time; detail HTML can add registration state. Bright Data is useful for a uniform managed pipeline, not for unblocking here. | Launch                  |
+|   2 | [Jagriti Theatre](https://www.jagrititheatre.com/)                                  | Server-rendered cards and multiple performances; external booking may own sold-out truth.                                                                                                                    | Launch                  |
+|   3 | [Atta Galatta](https://attagalatta.com/calendarpage.php)                            | Custom PHP calendar; bound selectors carefully because the response also contains a bookstore catalogue. Detail URL is the stable source identity.                                                           | Launch                  |
+|   4 | [Goethe Bangalore RSS](https://www.goethe.de/ins/in/en/rss/bag/ver.rss)             | Clean official XML discovery, then detail follow. Low-maintenance correctness anchor, not the self-heal showcase.                                                                                            | Launch                  |
+|   5 | [NGMA Bengaluru](https://ngmaindia.gov.in/ngma_bangaluru_activities.asp)            | Very large static ASP activity page; posters and repeated address/hours require strict card boundaries.                                                                                                      | Next                    |
+|   6 | [MAP](https://map-india.org/events/)                                                | Rich detail pages and explicit free/closed/accessibility facts; discovery is fragmented across archive/search. Availability closed is not cancellation.                                                      | Next                    |
+|   7 | [IISc events](https://www.iisc.ac.in/events/categories/events/)                     | Good public talks/culture; some midnight end times and campus-only ambiguity require fail-closed audience handling.                                                                                          | Candidate               |
+|   8 | [NCBS public events](https://www.ncbs.res.in/events/archives%40ncbs-public-opening) | Strong dates/organisers; public eligibility and registration windows require separate fields.                                                                                                                | Candidate               |
+|   9 | [ICTS](https://www.icts.res.in/)                                                    | Programmes, talks and outreach; distinguish multi-day research programmes from public events.                                                                                                                | Candidate               |
+|  10 | [Alliance Française](https://bangalore.afindia.org/events/categories/af-events/)    | Event category mixes public events and course promotion; use a deterministic category allowlist.                                                                                                             | Candidate               |
+|  11 | [Science Gallery Bengaluru](https://bengaluru.sciencegallery.com/)                  | Exhibitions/travelling programmes spread across several sections; preserve explicit closed states.                                                                                                           | Candidate               |
+|  12 | [Ranga Shankara](https://rangashankara.org/book-tickets-show-all/)                  | Official theatre surface with repeated performances and occasional schedule PDFs; needs a collector spike.                                                                                                   | Candidate               |
+|  13 | [BIEC](https://biec.in/)                                                            | Current trade/exhibition cards but lower general-consumer relevance and thin details.                                                                                                                        | Later professional lane |
+|  14 | [Indian Music Experience](https://indianmusicexperience.org/mec-events/)            | Event-capable archive, but latest indexed inventory appeared stale and access is inconsistent.                                                                                                               | Hold                    |
+|  15 | [ICSI Bengaluru](https://www.icsi.edu/bengaluru/events/details/)                    | Current professional programmes but mixed chapters and member eligibility.                                                                                                                                   | Later professional lane |
 
 Bengaluru's first six sources alone span talks, performance, books, workshops,
 museums, and cultural programmes without copying BookMyShow or Instagram.
 
 ## 6. Varanasi candidate matrix
 
-| # | Source | Feasibility and risk | Status |
-| ---: | --- | --- | --- |
-| 1 | [Rudraksh Centre](https://www.rudrakshcentre.com/upcoming-event) | Clean from/to/organiser/name table. Some names are generic and no booking/detail URL exists, so show exactly what is known. | Launch |
-| 2 | [Subah-e-Banaras](https://subahebanaras.net/events/) | Daily performer cards, dates embedded in titles, ordering not reliable, direct audit fetch timed out. Strong resilience use case. | Launch |
-| 3 | [IIT(BHU)](https://www.iitbhu.ac.in/) | Homepage can be fresher than `/events`; merge both, follow details/PDFs, keep audience unknown when unstated. | Launch |
-| 4 | [Kashi portal](https://darshan.kashi.gov.in/listing/events) | Government Angular/SSR surface; recurring rituals and one-offs need different modelling. Several cards lack occurrence dates. | Launch |
-| 5 | [BHU activities](https://news.bhu.ac.in/activities) | Official article stream; must reject retrospectives and non-event announcements. Legacy EventsList requires browser execution. | Next |
-| 6 | [IGNCA Varanasi](https://ignca.gov.in/regional-centers/varanasi-events/) | Multilingual historical mega-list with infrequent updates; strong freshness gates required. | Candidate |
-| 7 | [ICAR-IIVR](https://icariivr.org.in/) | Training calendar and PDFs; timeout observed and homepage widget may be stale, so reconcile with current document. | Candidate |
-| 8 | [Vasant Kanya Mahavidyalaya](https://www.vkm.ac.in/) | Cards and cultural-calendar PDF; year/audience can be missing and many entries are student-facing. | Candidate |
-| 9 | [Varanasi district/NIC](https://varanasi.nic.in/events/) | Government cards and documents; facility/program records must not become 365-day events. | Candidate |
-| 10 | [NSD Varanasi](https://varanasi.nsd.gov.in/news/) | Event-capable news cards but current surface appeared stale and mixes admissions with performances. | Hold |
-| 11 | [School of Management Sciences](https://smsvaranasi.com/) | Mostly retrospective news rather than upcoming listings; require future-date and registration evidence. | Hold |
-| 12 | [Sampurnanand Sanskrit University](https://ssvv.ac.in/notice-board) | Large Hindi notice board with PDFs and audience ambiguity; a document pipeline, not launch inventory. | Later document lane |
-| 13 | [Kashi Vishwanath daily schedule](https://skvtcard.charvns.com/general/dailyschedule) | Stable service/aarti timetable. Model as recurring schedule, never newly announced one-off events. | Next recurring lane |
-| 14 | [Sankat Mochan Temple](https://sankatmochanmandirvaranasi.com/) | Important festival source but displayed dates were stale during research. | Seasonal hold |
-| 15 | [Banaras Culture Biennale](https://www.ciibanarasculturebiennale.in/) | High-value seasonal programme likely to restructure each edition; version by festival year. | Seasonal candidate |
+|   # | Source                                                                                | Feasibility and risk                                                                                                                         | Status              |
+| --: | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+|   1 | [Rudraksh Centre](https://www.rudrakshcentre.com/upcoming-event)                      | Clean from/to/organiser/name table. Local extraction is reviewed, but the production collector is blocked by an upstream proxy-tunnel error. | Blocked             |
+|   2 | [Subah-e-Banaras](https://subahebanaras.net/events/)                                  | Daily performer cards, dates embedded in titles, ordering not reliable, direct audit fetch timed out. Strong resilience use case.            | Launch              |
+|   3 | [IIT(BHU)](https://www.iitbhu.ac.in/)                                                 | Homepage can be fresher than `/events`; merge both, follow details/PDFs, keep audience unknown when unstated.                                | Launch              |
+|   4 | [Kashi portal](https://darshan.kashi.gov.in/listing/events)                           | Government Angular/SSR surface; recurring rituals and one-offs need different modelling. Several cards lack occurrence dates.                | Launch              |
+|   5 | [BHU activities](https://news.bhu.ac.in/activities)                                   | Official article stream; must reject retrospectives and non-event announcements. Legacy EventsList requires browser execution.               | Next                |
+|   6 | [IGNCA Varanasi](https://ignca.gov.in/regional-centers/varanasi-events/)              | Multilingual historical mega-list with infrequent updates; strong freshness gates required.                                                  | Candidate           |
+|   7 | [ICAR-IIVR](https://icariivr.org.in/)                                                 | Training calendar and PDFs; timeout observed and homepage widget may be stale, so reconcile with current document.                           | Candidate           |
+|   8 | [Vasant Kanya Mahavidyalaya](https://www.vkm.ac.in/)                                  | Cards and cultural-calendar PDF; year/audience can be missing and many entries are student-facing.                                           | Candidate           |
+|   9 | [Varanasi district/NIC](https://varanasi.nic.in/events/)                              | Government cards and documents; facility/program records must not become 365-day events.                                                     | Candidate           |
+|  10 | [NSD Varanasi](https://varanasi.nsd.gov.in/news/)                                     | Event-capable news cards but current surface appeared stale and mixes admissions with performances.                                          | Hold                |
+|  11 | [School of Management Sciences](https://smsvaranasi.com/)                             | Mostly retrospective news rather than upcoming listings; require future-date and registration evidence.                                      | Hold                |
+|  12 | [Sampurnanand Sanskrit University](https://ssvv.ac.in/notice-board)                   | Large Hindi notice board with PDFs and audience ambiguity; a document pipeline, not launch inventory.                                        | Later document lane |
+|  13 | [Kashi Vishwanath daily schedule](https://skvtcard.charvns.com/general/dailyschedule) | Stable service/aarti timetable. Model as recurring schedule, never newly announced one-off events.                                           | Next recurring lane |
+|  14 | [Sankat Mochan Temple](https://sankatmochanmandirvaranasi.com/)                       | Important festival source but displayed dates were stale during research.                                                                    | Seasonal hold       |
+|  15 | [Banaras Culture Biennale](https://www.ciibanarasculturebiennale.in/)                 | High-value seasonal programme likely to restructure each edition; version by festival year.                                                  | Seasonal candidate  |
 
 ## 7. Source-specific facts the core must support
 
@@ -225,4 +230,3 @@ A source cannot be enabled until all items pass:
 - health baseline/canary defined;
 - card/detail browser rendering checked in both themes;
 - official-source link and attribution verified.
-
