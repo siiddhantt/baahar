@@ -25,7 +25,9 @@ Rudraksh has reviewed local extraction but remains disabled because its real
 Scraper Studio production request failed inside Bright Data's proxy tunnel.
 EMINDIA subsequently passed a 13-row dashboard preview, but its sole production
 crawl failed before page load with Bright Data `proxy_config`/tunnel 403 and
-returned exact `[]`; it is blocked and has no database source row.
+returned exact `[]`. Bright Data ticket `#723252` confirmed that the target is
+not allowlisted for this account and requires registered-business Full Access
+KYC; it remains blocked and has no database source row.
 No Varanasi rows are hardcoded or published as a fallback.
 
 ### Bengaluru launch four
@@ -136,24 +138,24 @@ museums, and cultural programmes without copying BookMyShow or Instagram.
 
 ## 6. Varanasi candidate matrix
 
-|   # | Source                                                                                | Feasibility and risk                                                                                                                          | Status              |
-| --: | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-|   1 | [Rudraksh Centre](https://www.rudrakshcentre.com/upcoming-event)                      | Clean from/to/organiser/name table. Local extraction is reviewed, but the production collector is blocked by an upstream proxy-tunnel error.  | Blocked             |
-|   2 | [Subah-e-Banaras](https://subahebanaras.net/events/)                                  | Daily performer cards, dates embedded in titles, ordering not reliable, direct audit fetch timed out. Strong resilience use case.             | Launch              |
-|   3 | [IIT(BHU)](https://www.iitbhu.ac.in/)                                                 | Homepage can be fresher than `/events`; merge both, follow details/PDFs, keep audience unknown when unstated.                                 | Launch              |
-|   4 | [Kashi portal](https://darshan.kashi.gov.in/listing/events)                           | Government Angular/SSR surface; recurring rituals and one-offs need different modelling. Several cards lack occurrence dates.                 | Launch              |
-|   5 | [BHU activities](https://news.bhu.ac.in/activities)                                   | Official article stream; must reject retrospectives and non-event announcements. Legacy EventsList requires browser execution.                | Next                |
-|   6 | [IGNCA Varanasi](https://ignca.gov.in/regional-centers/varanasi-events/)              | Multilingual historical mega-list with infrequent updates; strong freshness gates required.                                                   | Candidate           |
-|   7 | [ICAR-IIVR](https://icariivr.org.in/)                                                 | Training calendar and PDFs; timeout observed and homepage widget may be stale, so reconcile with current document.                            | Candidate           |
-|   8 | [Vasant Kanya Mahavidyalaya](https://www.vkm.ac.in/)                                  | Cards and cultural-calendar PDF; year/audience can be missing and many entries are student-facing.                                            | Candidate           |
-|   9 | [Varanasi district/NIC](https://varanasi.nic.in/events/)                              | Government cards and documents; facility/program records must not become 365-day events.                                                      | Candidate           |
-|  10 | [NSD Varanasi](https://varanasi.nsd.gov.in/news/)                                     | Event-capable news cards but current surface appeared stale and mixes admissions with performances.                                           | Hold                |
-|  11 | [School of Management Sciences](https://smsvaranasi.com/)                             | Mostly retrospective news rather than upcoming listings; require future-date and registration evidence.                                       | Hold                |
-|  12 | [Sampurnanand Sanskrit University](https://ssvv.ac.in/notice-board)                   | Large Hindi notice board with PDFs and audience ambiguity; a document pipeline, not launch inventory.                                         | Later document lane |
-|  13 | [Kashi Vishwanath daily schedule](https://skvtcard.charvns.com/general/dailyschedule) | Stable service/aarti timetable. Model as recurring schedule, never newly announced one-off events.                                            | Next recurring lane |
-|  14 | [Sankat Mochan Temple](https://sankatmochanmandirvaranasi.com/)                       | Important festival source but displayed dates were stale during research.                                                                     | Seasonal hold       |
-|  15 | [Banaras Culture Biennale](https://www.ciibanarasculturebiennale.in/)                 | High-value seasonal programme likely to restructure each edition; version by festival year.                                                   | Seasonal candidate  |
-|  16 | [EMINDIA 2026](https://www.galaxyregistration.com/event/skill-school/)                | Exact 13-row preview passed; the sole production crawl failed before page load with Bright Data `proxy_config`/tunnel 403 and returned empty. | Blocked             |
+|   # | Source                                                                                | Feasibility and risk                                                                                                                         | Status              |
+| --: | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+|   1 | [Rudraksh Centre](https://www.rudrakshcentre.com/upcoming-event)                      | Clean from/to/organiser/name table. Local extraction is reviewed, but the production collector is blocked by an upstream proxy-tunnel error. | Blocked             |
+|   2 | [Subah-e-Banaras](https://subahebanaras.net/events/)                                  | Daily performer cards, dates embedded in titles, ordering not reliable, direct audit fetch timed out. Strong resilience use case.            | Launch              |
+|   3 | [IIT(BHU)](https://www.iitbhu.ac.in/)                                                 | Homepage can be fresher than `/events`; merge both, follow details/PDFs, keep audience unknown when unstated.                                | Launch              |
+|   4 | [Kashi portal](https://darshan.kashi.gov.in/listing/events)                           | Government Angular/SSR surface; recurring rituals and one-offs need different modelling. Several cards lack occurrence dates.                | Launch              |
+|   5 | [BHU activities](https://news.bhu.ac.in/activities)                                   | Official article stream; must reject retrospectives and non-event announcements. Legacy EventsList requires browser execution.               | Next                |
+|   6 | [IGNCA Varanasi](https://ignca.gov.in/regional-centers/varanasi-events/)              | Multilingual historical mega-list with infrequent updates; strong freshness gates required.                                                  | Candidate           |
+|   7 | [ICAR-IIVR](https://icariivr.org.in/)                                                 | Training calendar and PDFs; timeout observed and homepage widget may be stale, so reconcile with current document.                           | Candidate           |
+|   8 | [Vasant Kanya Mahavidyalaya](https://www.vkm.ac.in/)                                  | Cards and cultural-calendar PDF; year/audience can be missing and many entries are student-facing.                                           | Candidate           |
+|   9 | [Varanasi district/NIC](https://varanasi.nic.in/events/)                              | Government cards and documents; facility/program records must not become 365-day events.                                                     | Candidate           |
+|  10 | [NSD Varanasi](https://varanasi.nsd.gov.in/news/)                                     | Event-capable news cards but current surface appeared stale and mixes admissions with performances.                                          | Hold                |
+|  11 | [School of Management Sciences](https://smsvaranasi.com/)                             | Mostly retrospective news rather than upcoming listings; require future-date and registration evidence.                                      | Hold                |
+|  12 | [Sampurnanand Sanskrit University](https://ssvv.ac.in/notice-board)                   | Large Hindi notice board with PDFs and audience ambiguity; a document pipeline, not launch inventory.                                        | Later document lane |
+|  13 | [Kashi Vishwanath daily schedule](https://skvtcard.charvns.com/general/dailyschedule) | Stable service/aarti timetable. Model as recurring schedule, never newly announced one-off events.                                           | Next recurring lane |
+|  14 | [Sankat Mochan Temple](https://sankatmochanmandirvaranasi.com/)                       | Important festival source but displayed dates were stale during research.                                                                    | Seasonal hold       |
+|  15 | [Banaras Culture Biennale](https://www.ciibanarasculturebiennale.in/)                 | High-value seasonal programme likely to restructure each edition; version by festival year.                                                  | Seasonal candidate  |
+|  16 | [EMINDIA 2026](https://www.galaxyregistration.com/event/skill-school/)                | Exact 13-row preview passed; production was account-policy blocked because the target requires registered-business Full Access KYC.          | Blocked             |
 
 ## 7. Source-specific facts the core must support
 

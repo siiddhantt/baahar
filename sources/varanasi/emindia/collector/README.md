@@ -15,8 +15,11 @@ worker change.
 
 A **Collection and Delivery -> Delivery failure** issue is now attached to
 collection `j_mszq7kea7160itkzt`. The dashboard confirmed submission. Keep the
-source blocked until Bright Data resolves the production Code-worker proxy path
-or provides a supported configuration change for review.
+source blocked. Bright Data resolved ticket `#723252` by confirming that the
+target is not allowlisted for this account and requires Full Access KYC from a
+registered business with a company-domain email. This is an account compliance
+boundary, not a worker change: no retry, alternate routing, or personal KYC is
+part of this source's recovery plan.
 
 ## Manual dashboard recovery
 

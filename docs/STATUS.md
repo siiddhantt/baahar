@@ -134,5 +134,7 @@ Rudraksh remains disabled after its production request failed inside Bright
 Data's proxy tunnel. EMINDIA then produced a reviewed 13-row dashboard preview,
 but its sole production batch `j_mszq7kea7160itkzt` hit Bright Data
 `proxy_config`/tunnel 403 before loading the page and terminated as exact `[]`;
-the batch is quarantined and no migration was created. This is an explicit
+Bright Data ticket `#723252` confirmed that the target is not allowlisted for
+the account and requires registered-business Full Access KYC. The batch is
+quarantined and no migration was created. This is an explicit
 one-city release downgrade, not a hardcoded or preview-backed Varanasi demo.

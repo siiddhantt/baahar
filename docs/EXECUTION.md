@@ -64,8 +64,10 @@ Progress note, 19 August: the Upcoming-first feed, signed anchored cursors and
 explicit Load more journey are complete. A bounded EMINDIA collector passed a
 13-row dashboard preview on the same reviewed Collector ID, but its only
 production crawl failed with Bright Data `proxy_config`/tunnel 403 before the
-page loaded and returned exact `[]`. The empty artifact was quarantined; no
-source migration, preview import or Varanasi enablement occurred.
+page loaded and returned exact `[]`. Bright Data ticket `#723252` confirmed an
+account allowlist restriction requiring registered-business Full Access KYC.
+The empty artifact was quarantined; no source migration, preview import,
+personal KYC or Varanasi enablement occurred.
 
 ## 4. Checkpoint plan
 

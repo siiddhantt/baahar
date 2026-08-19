@@ -147,10 +147,26 @@ for the supported Code-worker configuration. The UI confirmed
 `Issue successfully submitted`. Submission did not retry or mutate the
 collector.
 
+Bright Data resolved ticket `#723252` on 19 August 2026: the target is not
+allowlisted for this account's current access level. Access requires a Full
+Access compliance review through KYC; Bright Data's documented eligibility is
+a registered business with a verified company-domain email, and the review may
+require company and government-issued identity documents. This confirms an
+account-policy restriction, not a collector, parser, or source-data defect.
+
+Baahar does not require or assume KYC for a personal hackathon account. Keep the
+source blocked unless Bright Data grants a written hackathon exception or the
+account owner independently qualifies as a registered business and deliberately
+completes the official KYC process. Never submit identity documents by email,
+use another person's company identity, or retry the collector to bypass the
+restriction.
+
 - [Scraper Studio error codes](https://docs.brightdata.com/datasets/scraper-studio/error-codes)
 - [Scraper Studio worker types](https://docs.brightdata.com/datasets/scraper-studio/worker-types)
 - [Scraper Studio function reference](https://docs.brightdata.com/datasets/scraper-studio/functions)
 - [Reporting a scraper issue](https://docs.brightdata.com/datasets/scraper-studio/faqs#how-to-report-issues)
+- [Residential network access and KYC](https://docs.brightdata.com/proxy-networks/residential/network-access)
+- [Bright Data KYC FAQ](https://brightdata.com/trustcenter/kyc-faq-residential-proxy-network)
 
 No production output is approved yet. Raw trigger and dataset
 responses, if a reviewed production proof is later authorized, belong in the
