@@ -1,0 +1,43 @@
+schema_version: source-manifest/v1
+source: emindia
+source_id: c976feba-5ca8-53e6-8d7b-45921f01d1ac
+display_name: EMINDIA 2026
+city: varanasi
+city_id: 019c5d13-c392-79d2-9012-3ed4242f771e
+canonical_hosts:
+  - www.galaxyregistration.com
+official_url: https://www.galaxyregistration.com/event/skill-school/
+collector_id: c_msz1tg0ls3ufml6ls
+output_schema: event-occurrence/v1
+publication_state: preview
+collection_state: blocked
+blocked_reason: bright_data_empty_production_batch
+schedule: "41 */6 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://www.galaxyregistration.com/event/skill-school/
+limits:
+  pages_per_run: 1
+  records_per_run: 20
+  window_days: 90
+health:
+  minimum_records: 1
+  maximum_records_before_baseline: 20
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.5
+  high_count_ratio_after_baseline: 2.0
+identity:
+  source_event_id: null
+  fallback_fields:
+    - normalized_title
+    - canonical_source_url
+    - local_occurrence_date_time
+    - normalized_venue_key
+  array_position_allowed: false
+  exact_duplicates_allowed: false
+access:
+  robots_status: allow_public_page
+  pages_per_run: 1
+  facts_only: true

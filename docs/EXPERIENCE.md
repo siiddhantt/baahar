@@ -14,9 +14,9 @@ BAAHAR                         Bengaluru ▾       Saved
 Find something worth stepping out for.
 Fresh plans from the city pages most people forget to check.
 
-[ Tonight ] [ Tomorrow ] [ This weekend ] [ Explicitly free ]
+[ Upcoming ] [ Today ] [ Tomorrow ] [ This weekend ] [ Explicitly free ]
 
-Tonight in Bengaluru                                  18 plans
+Coming up in Bengaluru                                18 plans
 ┌────────────────┐ ┌──────────┐ ┌─────────────────────┐
 │ event poster   │ │ event    │ │ event poster        │
 │ time + title   │ │ card     │ │ time + title        │
@@ -134,6 +134,7 @@ Routes:
 
 ```text
 /
+/bengaluru
 /bengaluru?window=weekend&category=theatre&free=true
 /varanasi?window=today
 /events/:occurrenceId/:slug
@@ -141,24 +142,26 @@ Routes:
 /operator/sources             protected, not linked publicly
 ```
 
-City, date window, category, and free state belong in the URL. Back navigation
-restores the filter and scroll position.
+City, non-default date window, category, and free state belong in the URL. An
+omitted window means Upcoming. Back navigation restores filters, cursor-loaded
+items, and scroll position.
 
 ## 5. Page composition
 
 ### Landing/Explore
 
-The landing and feed are one coherent page, not a marketing site followed by an
-app. Its first viewport contains:
+The root route is a concise city chooser, not a marketing site or a fake feed.
+It highlights the remembered city without navigating automatically. A city feed's
+first viewport contains:
 
 1. wordmark, city switcher, theme action, and Saved;
 2. a one-line promise and one supporting sentence;
-3. time/free/category quick choices;
+3. Upcoming-first time/free/category quick choices;
 4. at least the top portion of real event cards;
-5. a quiet live-data line such as `Fresh from 7 official city pages`.
+5. a quiet result/source count such as `27 plans from 2 official calendars`.
 
-If the city has no events today, automatically preview the next non-empty window
-and say exactly what happened: `Nothing listed for tonight — here is tomorrow.`
+If a selected window has no events, keep that choice visible and offer one clear
+reset to Upcoming. Never silently change the user's active window.
 
 ### Event quilt
 

@@ -1,6 +1,6 @@
 # Baahar checkpoint status
 
-Last updated: 18 August 2026
+Last updated: 19 August 2026
 
 ## Completed baseline
 
@@ -17,10 +17,10 @@ custom Scraper Studio collector
 
 ## Active checkpoint
 
-Checkpoint 3 — the second-source product loop is complete. BIC and Jagriti now
-pass Bright Data -> MinIO -> PostgreSQL -> API -> browser independently. The
-next expansion remains locked to one reviewed source; Varanasi is not exposed
-until a real collector passes the same gates.
+Checkpoint 3 — the second-source product loop and Upcoming-first discovery flow
+are complete. BIC and Jagriti pass Bright Data -> MinIO -> PostgreSQL -> API ->
+browser independently. Varanasi remains disabled after two fail-closed
+production attempts; preview output is never substituted for a healthy batch.
 
 ## Work lanes
 
@@ -55,8 +55,8 @@ announced to every consumer before implementation continues.
 - [x] Fresh local PostgreSQL/MinIO starts; exact-byte storage and migrations
       pass up/down/up against the real services.
 - [x] Go format/vet/test pass, including focused worker state-machine tests.
-- [x] Web format/lint/typecheck/test/build pass; 25 focused tests and the
-      89.02 KB gzip initial JavaScript bundle were independently verified.
+- [x] Web format/lint/typecheck/test/build pass; 30 focused tests and the
+      89.27 KB gzip initial JavaScript bundle were independently verified.
 - [x] Generated API types match the frozen OpenAPI.
 - [x] Secret/binary scan is clean; private raw source evidence remains ignored.
 
@@ -79,12 +79,13 @@ announced to every consumer before implementation continues.
       versions. Rejected, stale, and out-of-order candidates cannot publish.
 - [x] City, feed, detail, change, source-summary, and ICS endpoints return the
       OpenAPI shapes against the real PostgreSQL data.
-- [x] The live first-time chooser, today/tomorrow/weekend feeds, every category,
-      multi-select, free/empty/reset, detail/source, save/Saved, share, ICS link,
-      unavailable Varanasi, and missing-event recovery journeys pass in-browser.
+- [x] The live first-time chooser, Upcoming/today/tomorrow/weekend feeds, every
+      category, multi-select, free/empty/reset, explicit Load more,
+      detail/source, save/Saved, share, ICS link, unavailable Varanasi, and
+      missing-event recovery journeys pass in-browser.
 - [x] Light/dark, keyboard focus, reduced-motion, and 320/390/1440/2560
       responsive checks pass without horizontal overflow.
-- [x] Production build passes; initial JavaScript is 89.02 KB gzip and the
+- [x] Production build passes; initial JavaScript is 89.27 KB gzip and the
       production npm dependency audit reports zero vulnerabilities.
 
 ## Jagriti vertical-slice gate
@@ -103,6 +104,19 @@ announced to every consumer before implementation continues.
 - [x] The mixed weekend feed returns eight plans from two fresh official
       calendars; all four Jagriti showtimes have distinct IDs and start times.
 
+## Upcoming discovery gate
+
+- [x] Omitting `window` selects a server-owned 90-local-calendar-day Upcoming
+      horizon; every public window excludes occurrences already ended at the
+      signed first-page `as_of` anchor while preserving ongoing and all-day rows.
+- [x] Cursor v2 binds normalized filters, effective-start/occurrence boundary,
+      and `as_of`; real PostgreSQL and API tests prove stable equal-start ties and
+      gapless pages without duplicate IDs.
+- [x] The live Bengaluru API returned 27 chronological upcoming occurrences;
+      the second page preserved `as_of` and shared no ID with the first.
+- [x] City selection and feed routing are API-driven; valid unlaunched city slugs
+      fail safely without a Bengaluru/Varanasi branch in the public read path.
+
 ## Operations gate
 
 - [x] The protected, unlinked `/operator` workspace is lazy-loaded and keeps
@@ -117,5 +131,8 @@ announced to every consumer before implementation continues.
 Only one source may enter implementation next. It must pass the same artifact,
 publication, API, browser, and failure-isolation gates before another begins.
 Rudraksh remains disabled after its production request failed inside Bright
-Data's proxy tunnel; its empty response is recorded and never published. This
-is an explicit one-city release downgrade, not a hardcoded Varanasi demo.
+Data's proxy tunnel. EMINDIA then produced a reviewed 13-row dashboard preview,
+but its sole production batch `j_mszq7kea7160itkzt` hit Bright Data
+`proxy_config`/tunnel 403 before loading the page and terminated as exact `[]`;
+the batch is quarantined and no migration was created. This is an explicit
+one-city release downgrade, not a hardcoded or preview-backed Varanasi demo.

@@ -60,6 +60,13 @@ slices. Rudraksh was attempted next but failed inside Bright Data's proxy tunnel
 its empty batch was quarantined. Varanasi remains disabled while the team ships
 the proven one-city, two-source product rather than weakening the data contract.
 
+Progress note, 19 August: the Upcoming-first feed, signed anchored cursors and
+explicit Load more journey are complete. A bounded EMINDIA collector passed a
+13-row dashboard preview on the same reviewed Collector ID, but its only
+production crawl failed with Bright Data `proxy_config`/tunnel 403 before the
+page loaded and returned exact `[]`. The empty artifact was quarantined; no
+source migration, preview import or Varanasi enablement occurred.
+
 ## 4. Checkpoint plan
 
 ### Checkpoint 0 — product and source lock (18 August)
@@ -145,19 +152,21 @@ Exit gate:
 
 ### Checkpoint 4 — second city and real edge cases (20–21 August)
 
-Tasks, in order:
+Attempted tasks, in order:
 
-1. Rudraksh static table.
-2. Subah-e-Banaras cards/details and timeout resilience.
-3. Kashi portal Code-worker spike; Browser worker only if essential fields require it.
-4. IIT(BHU) homepage/archive reconciliation only after the first three are healthy.
-5. Implement recurring-versus-one-off modelling and unknown audience state.
-6. Run the complete Varanasi browser journey.
+1. Rudraksh static table: local contract passed; production request failed in
+   Bright Data's proxy tunnel and emitted no publishable rows.
+2. EMINDIA one-page Code worker: exact 13-row preview passed; the sole production
+   crawl failed before page load with `proxy_config`/tunnel 403, returned exact
+   `[]`, and was quarantined.
+3. Stop the source lane and record the explicit one-city release downgrade. Do
+   not import preview data, hardcode rows, retry batches or begin another source
+   without a new go/no-go decision.
 
 Exit gate:
 
 - three healthy Varanasi sources are live or an explicit release downgrade is
-  recorded;
+  recorded — the downgrade is recorded for this release;
 - a recurring ritual is not presented as a newly announced one-off;
 - an ambiguous missing-year or retrospective article is quarantined;
 - no Varanasi data is hardcoded into the web app.

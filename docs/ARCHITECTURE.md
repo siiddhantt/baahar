@@ -20,22 +20,22 @@ those costs now.
 
 ## 2. Technology choices
 
-| Concern | Choice | Reason |
-| --- | --- | --- |
-| Web | React + Vite + strict TypeScript | Direct dynamic-feed model, mature accessibility/testing, no Next.js operational coupling |
-| Routing | React Router | URL-owned city/window/filters and route-level code splitting |
-| Server state | TanStack Query | Cache, cancellation, retries, stale times; no bespoke global fetch store |
-| Motion | CSS/View Transitions first; Motion for React selectively | High-quality shared/layout motion without hydrating every decoration |
-| UI primitives | Base UI or reviewed unstyled primitives | Accessible behaviour with complete visual ownership |
-| Styling | Tokenized CSS with cascade layers and CSS Modules | Readable JSX, deterministic theme, no utility-class sprawl |
-| API/worker | Go current stable toolchain | Small binaries, clear concurrency, predictable operations |
-| HTTP | Standard `net/http` plus a small router | Minimal surface and standard middleware semantics |
-| Database | PostgreSQL with `pgx` | Transactions, row locking, JSON support, durable job queue |
-| Object storage | S3-compatible; MinIO locally | Immutable raw inputs independent of vendor retention |
-| Contracts | OpenAPI 3.1 + JSON Schema 2020-12 | One source of truth and generated TypeScript API types |
-| Collection | Bright Data Scraper Studio API/CLI | Required custom collectors, scheduling integration, unblocking and self-healing |
-| Local stack | Docker Compose for PostgreSQL + MinIO | Reproducible real integration tests |
-| Observability | Structured `slog`, Prometheus-format metrics, OpenTelemetry-ready IDs | Useful operations without a heavyweight platform dependency |
+| Concern        | Choice                                                                | Reason                                                                                   |
+| -------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Web            | React + Vite + strict TypeScript                                      | Direct dynamic-feed model, mature accessibility/testing, no Next.js operational coupling |
+| Routing        | React Router                                                          | URL-owned city/window/filters and route-level code splitting                             |
+| Server state   | TanStack Query                                                        | Cache, cancellation, retries, stale times; no bespoke global fetch store                 |
+| Motion         | CSS/View Transitions first; Motion for React selectively              | High-quality shared/layout motion without hydrating every decoration                     |
+| UI primitives  | Base UI or reviewed unstyled primitives                               | Accessible behaviour with complete visual ownership                                      |
+| Styling        | Tokenized CSS with cascade layers and CSS Modules                     | Readable JSX, deterministic theme, no utility-class sprawl                               |
+| API/worker     | Go current stable toolchain                                           | Small binaries, clear concurrency, predictable operations                                |
+| HTTP           | Standard `net/http` plus a small router                               | Minimal surface and standard middleware semantics                                        |
+| Database       | PostgreSQL with `pgx`                                                 | Transactions, row locking, JSON support, durable job queue                               |
+| Object storage | S3-compatible; MinIO locally                                          | Immutable raw inputs independent of vendor retention                                     |
+| Contracts      | OpenAPI 3.1 + JSON Schema 2020-12                                     | One source of truth and generated TypeScript API types                                   |
+| Collection     | Bright Data Scraper Studio API/CLI                                    | Required custom collectors, scheduling integration, unblocking and self-healing          |
+| Local stack    | Docker Compose for PostgreSQL + MinIO                                 | Reproducible real integration tests                                                      |
+| Observability  | Structured `slog`, Prometheus-format metrics, OpenTelemetry-ready IDs | Useful operations without a heavyweight platform dependency                              |
 
 PostGIS is deferred. City/time filtering needs ordinary indexed columns, not a
 spatial extension. Add PostGIS through an ADR only when the released product has
@@ -395,10 +395,16 @@ Bright Data CLI/dashboard instead of reimplementing it.
 ### Query limits
 
 - `limit` defaults to 24 and is capped at 60.
-- Cursor payloads are signed/opaque and bind the normalized filters plus stable
-  `(starts_at, occurrence_id)` boundary.
-- Time ranges are named server-owned windows in P0; clients cannot request
-  unbounded history.
+- Cursor payloads are signed/opaque and bind the normalized filters, first-page
+  `as_of` anchor, and stable `(effective_start, occurrence_id)` boundary.
+- Time ranges are named server-owned windows; omitted `window` selects the
+  bounded 90-local-calendar-day Upcoming view. Clients cannot request unbounded
+  history.
+- Every feed query excludes occurrences whose effective end is at or before the
+  anchored `as_of`. Window calculation uses the selected city's configured IANA
+  timezone; no city-specific branch exists in the read path.
+- Responses expose `page_size`, `has_more`, and `next_cursor` for explicit
+  keyset-based Load more behaviour. Page numbers and offsets are not supported.
 
 ## 11. Concurrency and failure handling
 

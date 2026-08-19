@@ -10,7 +10,7 @@ freshness_ttl: 12h
 limits:
   pages_per_run: 2
   records_per_run: 100
-  window_days: 45
+  window_days: 31
 health:
   minimum_records: 1
   maximum_records_before_baseline: 100

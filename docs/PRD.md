@@ -43,7 +43,7 @@ plan without checking many unrelated websites.
 
 Jobs:
 
-- show me what is on today, tomorrow, or this weekend;
+- show me what is coming up, today, tomorrow, or this weekend;
 - let me narrow the list by a few meaningful categories and explicit free entry;
 - tell me when registration closed, the time moved, or the event was cancelled;
 - take me to the official page to verify or register;
@@ -85,7 +85,8 @@ The operator experience is protected and never appears in the public navigation.
 ### P0: must ship end to end
 
 - Bengaluru and Varanasi city selection.
-- A current feed with Today, Tomorrow, and This weekend windows.
+- A current feed that defaults to Upcoming, with Today, Tomorrow, and This
+  weekend shortcuts.
 - Category filters: Arts, Talks, Theatre, Music, Books, Community, and Other.
 - An `Explicitly free` filter. Unknown price remains visible when the filter is
   off and is never relabelled.
@@ -136,8 +137,9 @@ The operator experience is protected and never appears in the public navigation.
 2. The hero immediately shows a compact live preview: three real event cards and
    the number of sources checked. It never displays made-up sample events.
 3. The primary action is `See what is on`; the secondary action is a city switch.
-4. The feed opens on the most useful non-empty window: Today, then Tomorrow,
-   then This weekend. The selected window is always clear and encoded in the URL.
+4. The feed opens on Upcoming, a bounded 90-local-calendar-day view. Today,
+   Tomorrow, and This weekend remain quick filters. The selected window is
+   encoded in the URL when it is not the default.
 5. Filters update the URL and results without a full page reload. A polite live
    region announces the result count.
 6. Selecting a card opens its detail route with a shared-element transition.
@@ -155,20 +157,29 @@ the visitor deliberately opens a contextual `About this source` disclosure.
 - A user can select one supported city and switch it at any time.
 - Time windows are calculated in the city's IANA timezone; both launch cities
   use `Asia/Kolkata`.
+- `Upcoming` begins at the first page's request-time anchor and ends at local
+  midnight 90 calendar days later.
 - `Today` includes occurrences that overlap the current local day.
 - `Tomorrow` includes occurrences that overlap the following local day.
 - `This weekend` is the next Saturday and Sunday, including the current weekend
   when today is Saturday or Sunday.
 - Multi-day events appear in every relevant window but only once per query.
+- Every public window excludes an occurrence whose effective end is at or before
+  the first page's request-time anchor. Ongoing timed events and the current day
+  of all-day events remain visible.
 
 ### FR-2 Feed
 
 - The feed is source-ordered semantic HTML before it is visually enhanced.
-- Default ordering is: active/starting soon, start time, then stable event ID.
+- Default ordering is effective start time, then stable occurrence ID. This puts
+  ongoing occurrences before the nearest future starts and gives equal starts a
+  deterministic tie-break.
   There is no engagement-ranking or hidden source-quality score in P0.
 - Cancelled occurrences remain visible when directly reached or saved, but are
   excluded from the default discovery feed.
-- Pagination uses an opaque cursor, never offset pagination.
+- Pagination uses an opaque signed cursor, never offset pagination. It binds the
+  normalized filters and preserves the first page's request-time anchor across
+  replicas and subsequent pages.
 - Empty states identify which filter caused the empty result and offer one clear
   reset action.
 
@@ -260,34 +271,34 @@ the visitor deliberately opens a contextual `About this source` disclosure.
 The canonical record represents a single occurrence. Optional means unknown or
 not supplied; it never implies a default.
 
-| Field | Type | Rule |
-| --- | --- | --- |
-| `schema_version` | string | exact supported contract version |
-| `source_event_id` | string/null | source's stable ID when present |
-| `source_url` | URI | canonical public event/detail URL |
-| `source_host` | string | must match the source manifest allowlist |
-| `city_slug` | enum | `bengaluru` or `varanasi` in MVP |
-| `title` | string | Unicode, trimmed, non-empty |
-| `category` | enum | reviewed deterministic mapping |
-| `start_date` | ISO date | required local occurrence date |
-| `starts_at` | RFC 3339/null | required for a timed event; null for date-only |
-| `end_date` | ISO date/null | required for multi-day/date-only end |
-| `ends_at` | RFC 3339/null | timed end; cannot precede start |
-| `time_precision` | enum | `timed` or `date`; TBA-without-date is quarantined |
-| `timezone` | IANA name | `Asia/Kolkata` for launch cities |
-| `venue_name` | string/null | preserve official spelling |
-| `venue_address` | string/null | no inferred geocode in P0 |
-| `is_free` | boolean/null | null when price is absent/unclear |
-| `price_min_minor`/`price_max_minor` | integer/null | paise for INR; no floating point |
-| `currency` | string/null | `INR` only when price is present |
-| `registration_url` | URI/null | official registration/booking URL |
-| `registration_state` | enum/null | open/sold_out/closed/not_required when evidenced |
-| `status` | enum | scheduled/cancelled/postponed; upcoming-list presence supports scheduled |
-| `language` | string[] | source-supplied only |
-| `age_note` | string/null | source-supplied display fact |
-| `accessibility_note` | string/null | source-supplied display fact |
-| `image_url` | URI/null | subject to source image policy |
-| `observed_at` | RFC 3339 | collection observation time |
+| Field                               | Type          | Rule                                                                     |
+| ----------------------------------- | ------------- | ------------------------------------------------------------------------ |
+| `schema_version`                    | string        | exact supported contract version                                         |
+| `source_event_id`                   | string/null   | source's stable ID when present                                          |
+| `source_url`                        | URI           | canonical public event/detail URL                                        |
+| `source_host`                       | string        | must match the source manifest allowlist                                 |
+| `city_slug`                         | enum          | `bengaluru` or `varanasi` in MVP                                         |
+| `title`                             | string        | Unicode, trimmed, non-empty                                              |
+| `category`                          | enum          | reviewed deterministic mapping                                           |
+| `start_date`                        | ISO date      | required local occurrence date                                           |
+| `starts_at`                         | RFC 3339/null | required for a timed event; null for date-only                           |
+| `end_date`                          | ISO date/null | required for multi-day/date-only end                                     |
+| `ends_at`                           | RFC 3339/null | timed end; cannot precede start                                          |
+| `time_precision`                    | enum          | `timed` or `date`; TBA-without-date is quarantined                       |
+| `timezone`                          | IANA name     | `Asia/Kolkata` for launch cities                                         |
+| `venue_name`                        | string/null   | preserve official spelling                                               |
+| `venue_address`                     | string/null   | no inferred geocode in P0                                                |
+| `is_free`                           | boolean/null  | null when price is absent/unclear                                        |
+| `price_min_minor`/`price_max_minor` | integer/null  | paise for INR; no floating point                                         |
+| `currency`                          | string/null   | `INR` only when price is present                                         |
+| `registration_url`                  | URI/null      | official registration/booking URL                                        |
+| `registration_state`                | enum/null     | open/sold_out/closed/not_required when evidenced                         |
+| `status`                            | enum          | scheduled/cancelled/postponed; upcoming-list presence supports scheduled |
+| `language`                          | string[]      | source-supplied only                                                     |
+| `age_note`                          | string/null   | source-supplied display fact                                             |
+| `accessibility_note`                | string/null   | source-supplied display fact                                             |
+| `image_url`                         | URI/null      | subject to source image policy                                           |
+| `observed_at`                       | RFC 3339      | collection observation time                                              |
 
 Long descriptions are not required for the public product. Copyrighted source
 copy is not republished wholesale; Baahar presents structured facts and sends
@@ -395,14 +406,14 @@ Baahar is designed around the six equally weighted criteria on the official
 [Scrape-Verse page](https://www.wemakedevs.org/hackathons/scrape-verse), subject
 to its published [rules](https://www.wemakedevs.org/hackathons/scrape-verse/rules):
 
-| Criterion | Demonstration |
-| --- | --- |
-| Potential impact | One obvious city-discovery job, including non-metro and public cultural sources |
-| Creativity | A living city feed built from pages people do not routinely monitor, not another scraper dashboard |
-| Technical excellence | Versioned contracts, idempotent ingestion, provenance, deterministic diffs, quarantine and recovery |
-| Scraper Studio use | Multi-stage custom collectors with real `c_*` IDs and API-triggered scheduled flows |
-| Reliability/self-healing | Health gates, frozen publication, same-ID reviewed heal, canary replay |
-| Presentation | Real two-city data, immediate visual feed, visible source changes, polished light/dark experience |
+| Criterion                | Demonstration                                                                                       |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| Potential impact         | One obvious city-discovery job, including non-metro and public cultural sources                     |
+| Creativity               | A living city feed built from pages people do not routinely monitor, not another scraper dashboard  |
+| Technical excellence     | Versioned contracts, idempotent ingestion, provenance, deterministic diffs, quarantine and recovery |
+| Scraper Studio use       | Multi-stage custom collectors with real `c_*` IDs and API-triggered scheduled flows                 |
+| Reliability/self-healing | Health gates, frozen publication, same-ID reviewed heal, canary replay                              |
+| Presentation             | Real two-city data, immediate visual feed, visible source changes, polished light/dark experience   |
 
 The required submission evidence includes the public repository, README, example
 structured output, live Collector IDs, one create/run flow, downstream database
