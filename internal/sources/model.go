@@ -10,24 +10,43 @@ import (
 	"github.com/siddhantk232/baahar/internal/events"
 )
 
-var ErrNotFound = errors.New("source operation not found")
+var (
+	ErrNotFound = errors.New("source operation not found")
+	ErrConflict = errors.New("source operation conflicts with reviewed state")
+)
 
 type Config struct {
-	ID                   uuid.UUID
-	CityID               uuid.UUID
-	CitySlug             string
-	Slug                 string
-	CanonicalHost        string
-	CollectorID          string
-	SchemaVersion        string
-	CollectionInput      json.RawMessage
-	SourceEventIDPattern *string
-	PageLimit            int
-	RecordLimit          int
-	DailyRunLimit        int
-	AbsenceThreshold     int
-	PublicationState     string
-	NextDueAt            *time.Time
+	ID                        uuid.UUID
+	CityID                    uuid.UUID
+	CitySlug                  string
+	Slug                      string
+	CanonicalHost             string
+	CollectorID               string
+	SchemaVersion             string
+	CollectionInput           json.RawMessage
+	SourceEventIDPattern      *string
+	PageLimit                 int
+	RecordLimit               int
+	MinimumRecords            int
+	MaximumQuarantineRatioBPS int
+	MaximumDuplicateRatioBPS  int
+	LowCountRatioBPS          int
+	HighCountRatioBPS         int
+	RegistrationHosts         []string
+	ImageHosts                []string
+	DailyRunLimit             int
+	AbsenceThreshold          int
+	PublicationState          string
+	NextDueAt                 *time.Time
+}
+
+type IdentityAlias struct {
+	SourceID           uuid.UUID
+	IncomingIdentity   string
+	OccurrenceID       uuid.UUID
+	MergedOccurrenceID *uuid.UUID
+	Reason             string
+	CreatedAt          time.Time
 }
 
 type OperatorSource struct {

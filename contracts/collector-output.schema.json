@@ -82,6 +82,10 @@
       "else": { "properties": { "starts_at": { "type": "null" }, "ends_at": { "type": "null" } } }
     },
     {
+      "if": { "properties": { "ends_at": { "type": "string" } }, "required": ["ends_at"] },
+      "then": { "properties": { "end_date": { "type": "string", "format": "date" } } }
+    },
+    {
       "if": {
         "anyOf": [
           { "required": ["price_min_minor"], "properties": { "price_min_minor": { "type": "integer" } } },

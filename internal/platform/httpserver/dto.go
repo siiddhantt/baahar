@@ -140,6 +140,15 @@ type incidentDTO struct {
 	AcknowledgedAt *time.Time `json:"acknowledged_at"`
 }
 
+type sourceAliasDTO struct {
+	SourceID           string    `json:"source_id"`
+	IncomingIdentity   string    `json:"incoming_identity"`
+	OccurrenceID       string    `json:"occurrence_id"`
+	MergedOccurrenceID *string   `json:"merged_occurrence_id"`
+	Reason             string    `json:"reason"`
+	CreatedAt          time.Time `json:"created_at"`
+}
+
 type problemDTO struct {
 	Type     string `json:"type"`
 	Title    string `json:"title"`
@@ -266,5 +275,18 @@ func presentIncident(incident sources.Incident) incidentDTO {
 		State:          incident.State,
 		CreatedAt:      incident.CreatedAt,
 		AcknowledgedAt: incident.AcknowledgedAt,
+	}
+}
+
+func presentSourceAlias(alias sources.IdentityAlias) sourceAliasDTO {
+	var mergedOccurrenceID *string
+	if alias.MergedOccurrenceID != nil {
+		value := alias.MergedOccurrenceID.String()
+		mergedOccurrenceID = &value
+	}
+	return sourceAliasDTO{
+		SourceID: alias.SourceID.String(), IncomingIdentity: alias.IncomingIdentity,
+		OccurrenceID: alias.OccurrenceID.String(), MergedOccurrenceID: mergedOccurrenceID,
+		Reason: alias.Reason, CreatedAt: alias.CreatedAt,
 	}
 }

@@ -154,6 +154,25 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/v1/operator/sources/{source_id}/aliases': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        source_id: components['parameters']['SourceID'];
+      };
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Review an incoming ID-less identity as the same occurrence */
+    post: operations['createSourceAlias'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/v1/operator/runs/{run_id}/replay': {
     parameters: {
       query?: never;
@@ -226,7 +245,7 @@ export interface components {
       precision: 'timed' | 'date';
       /** @constant */
       timezone: 'Asia/Kolkata';
-    } & unknown;
+    } & (unknown & unknown);
     Venue: {
       name: string;
       address: string | null;
@@ -345,7 +364,8 @@ export interface components {
       source_id: string;
       external_collection_id: string | null;
       /** @enum {unknown} */
-      status: 'queued' | 'collecting' | 'validating' | 'published' | 'rejected' | 'failed';
+      status:
+        'queued' | 'triggering' | 'collecting' | 'validating' | 'published' | 'rejected' | 'failed';
       /** Format: date-time */
       triggered_at: string;
       /** Format: date-time */
@@ -368,6 +388,24 @@ export interface components {
       created_at: string;
       /** Format: date-time */
       acknowledged_at: string | null;
+    };
+    CreateSourceAlias: {
+      incoming_identity: string;
+      /** Format: uuid */
+      occurrence_id: string;
+      reason: string;
+    };
+    SourceAlias: {
+      /** Format: uuid */
+      source_id: string;
+      incoming_identity: string;
+      /** Format: uuid */
+      occurrence_id: string;
+      /** Format: uuid */
+      merged_occurrence_id: string | null;
+      reason: string;
+      /** Format: date-time */
+      created_at: string;
     };
     Problem: {
       /** Format: uri */
@@ -633,6 +671,35 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['CollectionRun'];
+        };
+      };
+      default: components['responses']['Problem'];
+    };
+  };
+  createSourceAlias: {
+    parameters: {
+      query?: never;
+      header: {
+        'Idempotency-Key': components['parameters']['IdempotencyKey'];
+      };
+      path: {
+        source_id: components['parameters']['SourceID'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateSourceAlias'];
+      };
+    };
+    responses: {
+      /** @description Reviewed identity alias created or reconciled idempotently */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SourceAlias'];
         };
       };
       default: components['responses']['Problem'];

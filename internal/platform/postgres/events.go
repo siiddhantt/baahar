@@ -122,8 +122,13 @@ func (repository *Events) List(ctx context.Context, query events.FeedQuery) (eve
 }
 
 func (repository *Events) Get(ctx context.Context, occurrenceID uuid.UUID, freshnessTime, newSince time.Time) (events.PublicOccurrence, error) {
-	row := repository.pool.QueryRow(ctx, publicEventSelect("$2", "$3")+feedFrom+`
-		WHERE o.id = $1
+	row := repository.pool.QueryRow(ctx, `
+		WITH requested AS (
+			SELECT id, merged_into_occurrence_id FROM event_occurrences WHERE id = $1
+		)
+		`+publicEventSelect("$2", "$3")+feedFrom+`
+		JOIN requested ON o.id = COALESCE(requested.merged_into_occurrence_id, requested.id)
+		WHERE o.merged_into_occurrence_id IS NULL
 		  AND c.enabled
 		  AND s.enabled
 		  AND s.publication_state <> 'disabled'`, occurrenceID, freshnessTime, newSince)
@@ -138,46 +143,61 @@ func (repository *Events) Get(ctx context.Context, occurrenceID uuid.UUID, fresh
 }
 
 func (repository *Events) ListChanges(ctx context.Context, occurrenceID uuid.UUID) ([]events.PublicChange, error) {
-	var exists bool
-	if err := repository.pool.QueryRow(ctx, `
-		SELECT EXISTS (
-			SELECT 1
-			FROM event_occurrences occurrence
-			JOIN events event ON event.id = occurrence.event_id
+	rows, err := repository.pool.Query(ctx, `
+		WITH canonical AS (
+			SELECT resolved.id
+			FROM event_occurrences requested
+			JOIN event_occurrences resolved
+			  ON resolved.id = COALESCE(requested.merged_into_occurrence_id, requested.id)
+			JOIN events event ON event.id = resolved.event_id
 			JOIN cities city ON city.id = event.city_id
-			JOIN sources source ON source.id = occurrence.source_id
-			WHERE occurrence.id = $1
+			JOIN sources source ON source.id = resolved.source_id
+			WHERE requested.id = $1
+			  AND resolved.merged_into_occurrence_id IS NULL
 			  AND city.enabled
 			  AND source.enabled
 			  AND source.publication_state <> 'disabled'
-		)`, occurrenceID).Scan(&exists); err != nil {
-		return nil, fmt.Errorf("check occurrence: %w", err)
-	}
-	if !exists {
-		return nil, events.ErrNotFound
-	}
-	rows, err := repository.pool.Query(ctx, `
-		SELECT id, kind, changed_fields, created_at
-		FROM event_changes
-		WHERE occurrence_id = $1
-		ORDER BY created_at DESC, id DESC
-		LIMIT 50`, occurrenceID)
+		)
+		SELECT change.id, change.kind, change.changed_fields, change.created_at
+		FROM canonical
+		LEFT JOIN LATERAL (
+			SELECT id, kind, changed_fields, created_at
+			FROM event_changes
+			WHERE occurrence_id = canonical.id
+			ORDER BY created_at DESC, id DESC
+			LIMIT 50
+		) change ON true
+		ORDER BY change.created_at DESC, change.id DESC`, occurrenceID)
 	if err != nil {
 		return nil, fmt.Errorf("list event changes: %w", err)
 	}
 	defer rows.Close()
 	changes := make([]events.PublicChange, 0)
+	found := false
 	for rows.Next() {
+		found = true
 		var change events.PublicChange
+		var changeID *uuid.UUID
+		var kind *string
+		var changedAt *time.Time
 		var internalFields []string
-		if err := rows.Scan(&change.ID, &change.Kind, &internalFields, &change.ChangedAt); err != nil {
+		if err := rows.Scan(&changeID, &kind, &internalFields, &changedAt); err != nil {
 			return nil, fmt.Errorf("scan event change: %w", err)
 		}
+		if changeID == nil {
+			continue
+		}
+		change.ID = *changeID
+		change.Kind = *kind
+		change.ChangedAt = *changedAt
 		change.ChangedFields = publicChangedFields(internalFields)
 		changes = append(changes, change)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("read event changes: %w", err)
+	}
+	if !found {
+		return nil, events.ErrNotFound
 	}
 	return changes, nil
 }
@@ -258,6 +278,7 @@ func feedWhere(query events.FeedQuery, arguments []any) (string, []any) {
 		  AND s.enabled
 		  AND s.publication_state <> 'disabled'
 		  AND o.visible
+		  AND o.merged_into_occurrence_id IS NULL
 		  AND o.first_observed_at <= $4
 		  AND ev.status <> 'cancelled'
 		  AND COALESCE(o.starts_at, o.start_date::timestamp AT TIME ZONE o.timezone) < $3

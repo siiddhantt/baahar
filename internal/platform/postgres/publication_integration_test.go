@@ -99,6 +99,334 @@ func TestPublicationVersionTransitionsAndRejectedRunFreeze(t *testing.T) {
 	}
 }
 
+func TestRunTriggerIntentIsDurableBeforeExternalCollectionAttachment(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	source := integrationSource(t, ctx, pool)
+	runID := uuid.Must(uuid.NewV7())
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO collection_runs (id, source_id, trace_id, status, triggered_at)
+		VALUES ($1, $2, $3, 'queued', now())`, runID, source.ID, uuid.NewString()); err != nil {
+		t.Fatal(err)
+	}
+	runs := NewRuns(pool)
+	if err := runs.BeginTrigger(ctx, runID); err != nil {
+		t.Fatal(err)
+	}
+	triggering, err := runs.Find(ctx, runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if triggering.Status != collections.RunTriggering || triggering.ExternalCollectionID != nil {
+		t.Fatalf("durable pre-trigger state = %+v", triggering)
+	}
+	if err := runs.BeginTrigger(ctx, runID); err == nil {
+		t.Fatal("a second trigger intent was accepted")
+	}
+	if err := runs.AttachCollection(ctx, runID, "d_reviewed_collection"); err != nil {
+		t.Fatal(err)
+	}
+	collecting, err := runs.Find(ctx, runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if collecting.Status != collections.RunCollecting || collecting.ExternalCollectionID == nil || *collecting.ExternalCollectionID != "d_reviewed_collection" {
+		t.Fatalf("reconciled collection state = %+v", collecting)
+	}
+}
+
+func TestReviewedAliasRoutesIDLessCorrectionToExistingOccurrence(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	source, err := NewSourceConfigs(pool).Get(ctx, uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	publication := NewPublication(pool)
+	base := time.Date(2026, time.August, 19, 10, 0, 0, 0, time.UTC)
+	before := fallbackIntegrationCandidate(t, source, "Original title", 18, base)
+	firstRun := validatingRun(t, ctx, pool, source.ID, 1, base)
+	if err := publication.Publish(ctx, firstRun, source, healthyDataset(before, false), base.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	occurrenceID, _, _ := occurrenceState(t, ctx, pool, source.ID, before.Identity)
+	after := fallbackIntegrationCandidate(t, source, "Corrected title", 19, base.Add(time.Hour))
+	operator := NewOperator(pool)
+	reason := "Official source corrected the title and performance time."
+	alias, err := operator.CreateSourceAlias(ctx, source.ID, after.Identity, occurrenceID, reason, "alias-review-key-0001", "test", uuid.NewString(), base.Add(30*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	reconciled, err := operator.CreateSourceAlias(ctx, source.ID, after.Identity, occurrenceID, reason, "alias-review-key-0001", "test", uuid.NewString(), base.Add(31*time.Minute))
+	if err != nil || reconciled.SourceID != alias.SourceID || reconciled.IncomingIdentity != alias.IncomingIdentity ||
+		reconciled.OccurrenceID != alias.OccurrenceID || reconciled.Reason != alias.Reason || !reconciled.CreatedAt.Equal(alias.CreatedAt) {
+		t.Fatalf("idempotent alias = %+v, %v; want %+v", reconciled, err, alias)
+	}
+	if _, err := operator.CreateSourceAlias(ctx, source.ID, after.Identity, occurrenceID, "Different reason", "alias-review-key-0001", "test", uuid.NewString(), base.Add(32*time.Minute)); !errors.Is(err, sources.ErrConflict) {
+		t.Fatalf("idempotency conflict error = %v", err)
+	}
+	if _, err := operator.CreateSourceAlias(
+		ctx, source.ID,
+		"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+		uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f7799"), reason, "alias-review-key-0002", "test", uuid.NewString(), base.Add(33*time.Minute),
+	); !errors.Is(err, sources.ErrNotFound) {
+		t.Fatalf("cross-source alias ownership error = %v", err)
+	}
+	secondRun := validatingRun(t, ctx, pool, source.ID, 1, base.Add(time.Hour))
+	if err := publication.Publish(ctx, secondRun, source, healthyDataset(after, false), base.Add(time.Hour+time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	var occurrences int
+	var currentTitle string
+	if err := pool.QueryRow(ctx, `
+		SELECT COUNT(*), max(version.title)
+		FROM event_occurrences occurrence
+		JOIN event_versions version ON version.id = occurrence.current_version_id
+		WHERE occurrence.source_id = $1`, source.ID).Scan(&occurrences, &currentTitle); err != nil {
+		t.Fatal(err)
+	}
+	if occurrences != 1 || currentTitle != "Corrected title" {
+		t.Fatalf("alias publication occurrences/title = %d/%q", occurrences, currentTitle)
+	}
+	assertOccurrenceCounts(t, ctx, pool, occurrenceID, 2, 1)
+}
+
+func TestAliasTargetMergeRoutesExistingAliasesToCanonicalOccurrence(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	source, err := NewSourceConfigs(pool).Get(ctx, uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	publication := NewPublication(pool)
+	repository := NewEvents(pool)
+	operator := NewOperator(pool)
+	base := time.Date(2026, time.August, 19, 9, 0, 0, 0, time.UTC)
+	stateA := fallbackIntegrationCandidate(t, source, "Occurrence A", 16, base)
+	canonicalC := fallbackIntegrationCandidate(t, source, "Canonical C", 18, base)
+	initialRun := validatingRun(t, ctx, pool, source.ID, 2, base)
+	if err := publication.Publish(ctx, initialRun, source, healthyDatasetWithTracking(false, stateA, canonicalC), base.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	occurrenceA, _, observedA := occurrenceState(t, ctx, pool, source.ID, stateA.Identity)
+	occurrenceC, _, _ := occurrenceState(t, ctx, pool, source.ID, canonicalC.Identity)
+
+	aliasB := fallbackIntegrationCandidate(t, source, "Incoming alias B", 17, base.Add(time.Hour))
+	if _, err := operator.CreateSourceAlias(ctx, source.ID, aliasB.Identity, occurrenceA,
+		"Reviewed B as the same performance as A.", "alias-chain-key-0001", "test", uuid.NewString(), base.Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	merge, err := operator.CreateSourceAlias(ctx, source.ID, stateA.Identity, occurrenceC,
+		"Reviewed A as the same performance as canonical C.", "alias-chain-key-0002", "test", uuid.NewString(), base.Add(2*time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if merge.MergedOccurrenceID == nil || *merge.MergedOccurrenceID != occurrenceA {
+		t.Fatalf("A merge result = %+v, want merged occurrence %s", merge, occurrenceA)
+	}
+
+	futureB := changedFallbackCandidate(t, aliasB, "future B facts", base.Add(3*time.Hour))
+	futureRun := validatingRun(t, ctx, pool, source.ID, 1, base.Add(3*time.Hour))
+	if err := publication.Publish(ctx, futureRun, source, healthyDataset(futureB, false), base.Add(3*time.Hour+time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	assertOccurrenceCounts(t, ctx, pool, occurrenceA, 1, 0)
+	assertOccurrenceCounts(t, ctx, pool, occurrenceC, 2, 1)
+	var mergedInto *uuid.UUID
+	var visible bool
+	var lastObserved time.Time
+	if err := pool.QueryRow(ctx, `
+		SELECT merged_into_occurrence_id, visible, last_observed_at
+		FROM event_occurrences WHERE id = $1`, occurrenceA).Scan(&mergedInto, &visible, &lastObserved); err != nil {
+		t.Fatal(err)
+	}
+	if mergedInto == nil || *mergedInto != occurrenceC || visible || !lastObserved.Equal(observedA) {
+		t.Fatalf("hidden A changed after B publication: target=%v visible=%v observed=%s, want %s/false/%s",
+			mergedInto, visible, lastObserved, occurrenceC, observedA)
+	}
+	var occurrenceCount int
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM event_occurrences WHERE source_id = $1`, source.ID).Scan(&occurrenceCount); err != nil {
+		t.Fatal(err)
+	}
+	if occurrenceCount != 2 {
+		t.Fatalf("B publication created a third occurrence: count = %d", occurrenceCount)
+	}
+	oldLink, err := repository.Get(ctx, occurrenceA, base.Add(4*time.Hour), base.Add(-time.Hour))
+	if err != nil || oldLink.ID != occurrenceC || oldLink.Version.Title != futureB.Version.Title {
+		t.Fatalf("old A link = %s/%q, %v; want canonical %s/%q", oldLink.ID, oldLink.Version.Title, err, occurrenceC, futureB.Version.Title)
+	}
+	changes, err := repository.ListChanges(ctx, occurrenceA)
+	if err != nil || len(changes) != 1 {
+		t.Fatalf("old A change link resolved %d canonical changes, error = %v", len(changes), err)
+	}
+	var observedOccurrence uuid.UUID
+	if err := pool.QueryRow(ctx, `
+		SELECT occurrence_id FROM source_observations WHERE collection_run_id = $1`, futureRun).Scan(&observedOccurrence); err != nil {
+		t.Fatal(err)
+	}
+	if observedOccurrence != occurrenceC {
+		t.Fatalf("future B observation wrote to %s, want canonical %s", observedOccurrence, occurrenceC)
+	}
+	page, err := repository.List(ctx, events.FeedQuery{
+		CitySlug: "bengaluru", Window: events.WindowUpcoming, AsOf: base.Add(4 * time.Hour), Limit: 10,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(page.Items) != 1 || page.Items[0].ID != occurrenceC {
+		t.Fatalf("alias-chain feed = %+v, want only canonical %s", page.Items, occurrenceC)
+	}
+}
+
+func TestReviewedAliasMergesPublishedDuplicateWithoutLosingHistory(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	source, err := NewSourceConfigs(pool).Get(ctx, uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	publication := NewPublication(pool)
+	repository := NewEvents(pool)
+	base := time.Date(2026, time.August, 19, 10, 0, 0, 0, time.UTC)
+	target := fallbackIntegrationCandidate(t, source, "Original title", 18, base)
+	duplicate := fallbackIntegrationCandidate(t, source, "Corrected title", 19, base)
+	firstRun := validatingRun(t, ctx, pool, source.ID, 2, base)
+	if err := publication.Publish(ctx, firstRun, source, healthyDatasetWithTracking(false, target, duplicate), base.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	targetID, _, _ := occurrenceState(t, ctx, pool, source.ID, target.Identity)
+	duplicateID, _, _ := occurrenceState(t, ctx, pool, source.ID, duplicate.Identity)
+
+	targetChanged := changedFallbackCandidate(t, target, "target details reviewed", base.Add(time.Hour))
+	duplicateChanged := changedFallbackCandidate(t, duplicate, "duplicate details reviewed", base.Add(time.Hour))
+	secondRun := validatingRun(t, ctx, pool, source.ID, 2, base.Add(time.Hour))
+	if err := publication.Publish(ctx, secondRun, source, healthyDatasetWithTracking(false, targetChanged, duplicateChanged), base.Add(time.Hour+time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	assertOccurrenceCounts(t, ctx, pool, targetID, 2, 1)
+	assertOccurrenceCounts(t, ctx, pool, duplicateID, 2, 1)
+
+	operator := NewOperator(pool)
+	reason := "Reviewed correction: both records are the same official performance."
+	alias, err := operator.CreateSourceAlias(ctx, source.ID, duplicate.Identity, targetID, reason,
+		"published-merge-key-0001", "test", uuid.NewString(), base.Add(2*time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if alias.MergedOccurrenceID == nil || *alias.MergedOccurrenceID != duplicateID {
+		t.Fatalf("merged occurrence = %v, want %s", alias.MergedOccurrenceID, duplicateID)
+	}
+	replayed, err := operator.CreateSourceAlias(ctx, source.ID, duplicate.Identity, targetID, reason,
+		"published-merge-key-0001", "test", uuid.NewString(), base.Add(2*time.Hour+time.Minute))
+	if err != nil || replayed.MergedOccurrenceID == nil || *replayed.MergedOccurrenceID != duplicateID || !replayed.CreatedAt.Equal(alias.CreatedAt) {
+		t.Fatalf("idempotent published merge = %+v, %v; want %+v", replayed, err, alias)
+	}
+	var mergedInto *uuid.UUID
+	var duplicateVisible bool
+	if err := pool.QueryRow(ctx, `
+		SELECT merged_into_occurrence_id, visible FROM event_occurrences WHERE id = $1`, duplicateID).Scan(&mergedInto, &duplicateVisible); err != nil {
+		t.Fatal(err)
+	}
+	if mergedInto == nil || *mergedInto != targetID || duplicateVisible {
+		t.Fatalf("duplicate merge state = target %v visible %v", mergedInto, duplicateVisible)
+	}
+	assertOccurrenceCounts(t, ctx, pool, targetID, 2, 1)
+	assertOccurrenceCounts(t, ctx, pool, duplicateID, 2, 1)
+
+	oldLink, err := repository.Get(ctx, duplicateID, base.Add(2*time.Hour), base.Add(-time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if oldLink.ID != targetID || oldLink.Version.Title != targetChanged.Version.Title {
+		t.Fatalf("old duplicate link resolved to %s/%q, want %s/%q", oldLink.ID, oldLink.Version.Title, targetID, targetChanged.Version.Title)
+	}
+	changes, err := repository.ListChanges(ctx, duplicateID)
+	if err != nil || len(changes) != 1 {
+		t.Fatalf("old duplicate change history resolves to canonical changes: %d, %v", len(changes), err)
+	}
+	page, err := repository.List(ctx, events.FeedQuery{
+		CitySlug: "bengaluru", Window: events.WindowUpcoming, AsOf: base.Add(2 * time.Hour), Limit: 10,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(page.Items) != 1 || page.Items[0].ID != targetID {
+		t.Fatalf("public feed after merge = %+v, want only %s", page.Items, targetID)
+	}
+
+	incoming := changedFallbackCandidate(t, duplicateChanged, "future corrected facts", base.Add(3*time.Hour))
+	thirdRun := validatingRun(t, ctx, pool, source.ID, 1, base.Add(3*time.Hour))
+	if err := publication.Publish(ctx, thirdRun, source, healthyDataset(incoming, false), base.Add(3*time.Hour+time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	assertOccurrenceCounts(t, ctx, pool, targetID, 3, 2)
+	assertOccurrenceCounts(t, ctx, pool, duplicateID, 2, 1)
+
+	if _, err := operator.CreateSourceAlias(ctx, source.ID, target.Identity, targetID, "Self merge must fail.",
+		"published-merge-key-0002", "test", uuid.NewString(), base.Add(4*time.Hour)); !errors.Is(err, sources.ErrConflict) {
+		t.Fatalf("self merge error = %v", err)
+	}
+	if _, err := operator.CreateSourceAlias(ctx, source.ID, target.Identity, duplicateID, "Cycle must fail.",
+		"published-merge-key-0003", "test", uuid.NewString(), base.Add(4*time.Hour)); !errors.Is(err, sources.ErrConflict) {
+		t.Fatalf("cycle merge error = %v", err)
+	}
+	bic := integrationSource(t, ctx, pool)
+	bicCandidate := integrationCandidate(t, bic, "cross-source", "A", base.Add(4*time.Hour))
+	bicRun := validatingRun(t, ctx, pool, bic.ID, 1, base.Add(4*time.Hour))
+	if err := publication.Publish(ctx, bicRun, bic, healthyDataset(bicCandidate, false), base.Add(4*time.Hour+time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	bicOccurrenceID, _, _ := occurrenceState(t, ctx, pool, bic.ID, bicCandidate.Identity)
+	if _, err := operator.CreateSourceAlias(ctx, source.ID,
+		"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", bicOccurrenceID,
+		"Cross-source merge must fail.", "published-merge-key-0004", "test", uuid.NewString(), base.Add(5*time.Hour)); !errors.Is(err, sources.ErrNotFound) {
+		t.Fatalf("cross-source merge error = %v", err)
+	}
+	rollbackTarget := fallbackIntegrationCandidate(t, source, "Rollback target", 14, base.Add(5*time.Hour))
+	rollbackDuplicate := fallbackIntegrationCandidate(t, source, "Rollback duplicate", 15, base.Add(5*time.Hour))
+	rollbackRun := validatingRun(t, ctx, pool, source.ID, 2, base.Add(5*time.Hour))
+	if err := publication.Publish(ctx, rollbackRun, source, healthyDatasetWithTracking(false, rollbackTarget, rollbackDuplicate), base.Add(5*time.Hour+time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	rollbackTargetID, _, _ := occurrenceState(t, ctx, pool, source.ID, rollbackTarget.Identity)
+	rollbackDuplicateID, _, _ := occurrenceState(t, ctx, pool, source.ID, rollbackDuplicate.Identity)
+	if _, err := pool.Exec(ctx, `
+		CREATE FUNCTION reject_alias_audit() RETURNS trigger LANGUAGE plpgsql AS $$
+		BEGIN
+			IF NEW.action = 'create_source_alias' THEN
+				RAISE EXCEPTION 'test audit failure';
+			END IF;
+			RETURN NEW;
+		END $$`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `
+		CREATE TRIGGER reject_alias_audit
+		BEFORE INSERT ON operator_audit_log
+		FOR EACH ROW EXECUTE FUNCTION reject_alias_audit()`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := operator.CreateSourceAlias(ctx, source.ID, rollbackDuplicate.Identity, rollbackTargetID,
+		"Audit failure must roll back merge.", "published-merge-key-0005", "test", uuid.NewString(), base.Add(6*time.Hour)); err == nil {
+		t.Fatal("alias merge unexpectedly committed after audit failure")
+	}
+	var rollbackMergedInto *uuid.UUID
+	var rollbackVisible bool
+	if err := pool.QueryRow(ctx, `
+		SELECT merged_into_occurrence_id, visible FROM event_occurrences WHERE id = $1`, rollbackDuplicateID).Scan(&rollbackMergedInto, &rollbackVisible); err != nil {
+		t.Fatal(err)
+	}
+	if rollbackMergedInto != nil || !rollbackVisible {
+		t.Fatalf("failed alias did not roll back duplicate state: target=%v visible=%v", rollbackMergedInto, rollbackVisible)
+	}
+	var aliasCount, mergedCount int
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM source_aliases WHERE source_id = $1`, source.ID).Scan(&aliasCount); err != nil {
+		t.Fatal(err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM event_occurrences WHERE source_id = $1 AND merged_into_occurrence_id IS NOT NULL`, source.ID).Scan(&mergedCount); err != nil {
+		t.Fatal(err)
+	}
+	if aliasCount != 1 || mergedCount != 1 {
+		t.Fatalf("failed merge mutated state: aliases/merged = %d/%d, want 1/1", aliasCount, mergedCount)
+	}
+}
+
 func TestJagritiMultiPerformanceNormalizationAndPersistence(t *testing.T) {
 	ctx, pool := migratedIntegrationPool(t)
 	source, err := NewSourceConfigs(pool).Get(ctx, uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f"))
@@ -153,13 +481,20 @@ func TestJagritiMultiPerformanceNormalizationAndPersistence(t *testing.T) {
 		t.Fatal(err)
 	}
 	prepared, err := collections.PrepareDataset(dataset, collections.SourcePolicy{
-		ID:                  source.ID,
-		CitySlug:            source.CitySlug,
-		CanonicalHost:       source.CanonicalHost,
-		SchemaVersion:       source.SchemaVersion,
-		RecordLimit:         source.RecordLimit,
-		ObservationEarliest: observed.Add(-time.Minute),
-		ObservationLatest:   observed.Add(time.Minute),
+		ID:                        source.ID,
+		CitySlug:                  source.CitySlug,
+		CanonicalHost:             source.CanonicalHost,
+		SchemaVersion:             source.SchemaVersion,
+		RecordLimit:               source.RecordLimit,
+		MinimumRecords:            source.MinimumRecords,
+		MaximumQuarantineRatioBPS: source.MaximumQuarantineRatioBPS,
+		MaximumDuplicateRatioBPS:  source.MaximumDuplicateRatioBPS,
+		LowCountRatioBPS:          source.LowCountRatioBPS,
+		HighCountRatioBPS:         source.HighCountRatioBPS,
+		RegistrationHosts:         source.RegistrationHosts,
+		ImageHosts:                source.ImageHosts,
+		ObservationEarliest:       observed.Add(-time.Minute),
+		ObservationLatest:         observed.Add(time.Minute),
 	}, validator)
 	if err != nil {
 		t.Fatal(err)
@@ -655,6 +990,64 @@ func integrationCandidate(t *testing.T, source sources.Config, sourceEventID, st
 		Identity: identity, Fingerprint: fingerprint, Slug: "verified-event-" + sourceEventID,
 		Version: version, CanonicalRecord: record,
 	}
+}
+
+func fallbackIntegrationCandidate(t *testing.T, source sources.Config, title string, startHour int, observedAt time.Time) collections.Candidate {
+	t.Helper()
+	location, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		t.Fatal(err)
+	}
+	startsAt := time.Date(2026, time.September, 4, startHour, 0, 0, 0, location)
+	endDate := time.Date(2026, time.September, 4, 0, 0, 0, 0, location)
+	endsAt := startsAt.Add(2 * time.Hour)
+	venue := "Jagriti Theatre"
+	free := true
+	version := events.Version{
+		Title: title, Category: events.CategoryTheatre,
+		SourceURL: "https://www.jagrititheatre.com/events/reviewed-correction",
+		StartDate: endDate, EndDate: &endDate, StartsAt: &startsAt, EndsAt: &endsAt,
+		TimePrecision: events.TimePrecisionTimed, Timezone: "Asia/Kolkata", VenueName: &venue,
+		IsFree: &free, Status: events.StatusScheduled, Languages: []string{"English"}, ObservedAt: observedAt,
+	}
+	if err := version.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	identity, err := events.Identity(events.IdentityInput{
+		SourceID: source.ID, Title: title, SourceURL: version.SourceURL,
+		OccurrenceTime: startsAt, VenueKey: venue,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fingerprint, err := events.Fingerprint(version)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record, _ := json.Marshal(map[string]string{"title": title, "starts_at": startsAt.Format(time.RFC3339)})
+	return collections.Candidate{Identity: identity, Fingerprint: fingerprint, Slug: "reviewed-correction-" + identity[:8], Version: version, CanonicalRecord: record}
+}
+
+func changedFallbackCandidate(t *testing.T, candidate collections.Candidate, ageNote string, observedAt time.Time) collections.Candidate {
+	t.Helper()
+	changed := candidate
+	changed.Version = candidate.Version
+	changed.Version.AgeNote = &ageNote
+	registrationState := events.RegistrationOpen
+	if candidate.Version.RegistrationState != nil && *candidate.Version.RegistrationState == events.RegistrationOpen {
+		registrationState = events.RegistrationSoldOut
+	}
+	changed.Version.RegistrationState = &registrationState
+	changed.Version.ObservedAt = observedAt
+	fingerprint, err := events.Fingerprint(changed.Version)
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed.Fingerprint = fingerprint
+	changed.CanonicalRecord, _ = json.Marshal(map[string]string{
+		"identity": candidate.Identity, "age_note": ageNote, "observed_at": observedAt.Format(time.RFC3339),
+	})
+	return changed
 }
 
 func validatingRun(t *testing.T, ctx context.Context, pool *pgxpool.Pool, sourceID uuid.UUID, received int, triggeredAt time.Time) uuid.UUID {

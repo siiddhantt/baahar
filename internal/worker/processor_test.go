@@ -51,6 +51,44 @@ func TestProcessorResumesCollectingRunWithoutRetrigger(t *testing.T) {
 	}
 }
 
+func TestProcessorRecordsTriggerIntentBeforeBright(t *testing.T) {
+	dataset := validDataset(t)
+	runs := &fakeRuns{runs: map[uuid.UUID]collections.Run{testRunID: testRun(collections.RunQueued, nil, nil)}}
+	bright := &fakeBright{datasets: []datasetResult{{content: dataset, ready: true}}}
+	processor := newTestProcessor(t, bright, &fakeObjects{}, runs, &fakePublisher{})
+	if err := processor.Process(context.Background(), testJob("collect-source", nil)); err != nil {
+		t.Fatal(err)
+	}
+	if runs.beginTriggerCalls != 1 || bright.triggerCalls != 1 {
+		t.Fatalf("trigger intent/Bright calls = %d/%d, want 1/1", runs.beginTriggerCalls, bright.triggerCalls)
+	}
+}
+
+func TestProcessorNeverRetriggersAmbiguousTriggerState(t *testing.T) {
+	for name, runs := range map[string]*fakeRuns{
+		"resumed triggering": {runs: map[uuid.UUID]collections.Run{testRunID: testRun(collections.RunTriggering, nil, nil)}},
+		"attach failed":      {runs: map[uuid.UUID]collections.Run{testRunID: testRun(collections.RunQueued, nil, nil)}, attachError: errors.New("database unavailable")},
+	} {
+		t.Run(name, func(t *testing.T) {
+			bright := &fakeBright{}
+			processor := newTestProcessor(t, bright, &fakeObjects{}, runs, &fakePublisher{})
+			err := processor.Process(context.Background(), testJob("collect-source", nil))
+			assertProcessingCode(t, err, "collection_trigger_reconciliation_required")
+			var processing *ProcessingError
+			if !errors.As(err, &processing) || processing.Retryable {
+				t.Fatalf("ambiguous trigger error must fail closed: %v", err)
+			}
+			expectedCalls := 0
+			if name == "attach failed" {
+				expectedCalls = 1
+			}
+			if bright.triggerCalls != expectedCalls {
+				t.Fatalf("Bright trigger calls = %d, want %d", bright.triggerCalls, expectedCalls)
+			}
+		})
+	}
+}
+
 func TestProcessorResumesValidatingRunFromImmutableSnapshot(t *testing.T) {
 	dataset := validDataset(t)
 	snapshot := snapshotFor("sources/bic/run.json", dataset)
@@ -212,17 +250,23 @@ func validDataset(t *testing.T) []byte {
 func testSource() sources.Config {
 	pattern := `^[0-9]+$`
 	return sources.Config{
-		ID:                   testSourceID,
-		CityID:               uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f7700"),
-		CitySlug:             "bengaluru",
-		Slug:                 "bic",
-		CanonicalHost:        "bangaloreinternationalcentre.org",
-		CollectorID:          "c_msyr5ts21rq3nfjxrz",
-		SchemaVersion:        "event-occurrence/v1",
-		CollectionInput:      json.RawMessage(`{"url":"https://bangaloreinternationalcentre.org/events/"}`),
-		SourceEventIDPattern: &pattern,
-		RecordLimit:          100,
-		AbsenceThreshold:     2,
+		ID:                        testSourceID,
+		CityID:                    uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f7700"),
+		CitySlug:                  "bengaluru",
+		Slug:                      "bic",
+		CanonicalHost:             "bangaloreinternationalcentre.org",
+		CollectorID:               "c_msyr5ts21rq3nfjxrz",
+		SchemaVersion:             "event-occurrence/v1",
+		CollectionInput:           json.RawMessage(`{"url":"https://bangaloreinternationalcentre.org/events/"}`),
+		SourceEventIDPattern:      &pattern,
+		RecordLimit:               100,
+		MaximumQuarantineRatioBPS: 200,
+		MaximumDuplicateRatioBPS:  100,
+		LowCountRatioBPS:          4000,
+		HighCountRatioBPS:         25000,
+		RegistrationHosts:         []string{"bangaloreinternationalcentre.org"},
+		ImageHosts:                []string{"bangaloreinternationalcentre.org"},
+		AbsenceThreshold:          2,
 	}
 }
 
@@ -309,8 +353,15 @@ func (repository fakeSources) Get(context.Context, uuid.UUID) (sources.Config, e
 
 type fakeRuns struct {
 	runs                 map[uuid.UUID]collections.Run
+	beginTriggerCalls    int
+	attachError          error
 	beginValidationCalls int
 	beginReplayCalls     int
+}
+
+func (runs *fakeRuns) BeginTrigger(context.Context, uuid.UUID) error {
+	runs.beginTriggerCalls++
+	return nil
 }
 
 func (runs *fakeRuns) Find(_ context.Context, runID uuid.UUID) (collections.Run, error) {
@@ -321,7 +372,9 @@ func (runs *fakeRuns) Find(_ context.Context, runID uuid.UUID) (collections.Run,
 	return run, nil
 }
 
-func (runs *fakeRuns) AttachCollection(context.Context, uuid.UUID, string) error { return nil }
+func (runs *fakeRuns) AttachCollection(context.Context, uuid.UUID, string) error {
+	return runs.attachError
+}
 
 func (runs *fakeRuns) BeginValidation(context.Context, uuid.UUID, string, string, int64, int) error {
 	runs.beginValidationCalls++

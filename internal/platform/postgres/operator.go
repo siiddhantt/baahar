@@ -182,6 +182,156 @@ func (operator *Operator) AcknowledgeIncident(ctx context.Context, incidentID uu
 	return incident, nil
 }
 
+func (operator *Operator) CreateSourceAlias(
+	ctx context.Context,
+	sourceID uuid.UUID,
+	incomingIdentity string,
+	occurrenceID uuid.UUID,
+	reason string,
+	idempotencyKey string,
+	actor string,
+	traceID string,
+	now time.Time,
+) (sources.IdentityAlias, error) {
+	tx, err := operator.pool.Begin(ctx)
+	if err != nil {
+		return sources.IdentityAlias{}, fmt.Errorf("begin source alias review: %w", err)
+	}
+	defer tx.Rollback(ctx)
+	if alias, err := findAliasByIdempotency(ctx, tx, sourceID, idempotencyKey); err == nil {
+		if alias.IncomingIdentity != incomingIdentity || alias.OccurrenceID != occurrenceID || alias.Reason != reason {
+			return sources.IdentityAlias{}, sources.ErrConflict
+		}
+		return alias, tx.Commit(ctx)
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return sources.IdentityAlias{}, err
+	}
+	var fallbackIdentity bool
+	if err := tx.QueryRow(ctx, `
+		SELECT source_event_id_pattern IS NULL FROM sources WHERE id = $1 FOR UPDATE`, sourceID).Scan(&fallbackIdentity); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return sources.IdentityAlias{}, sources.ErrNotFound
+		}
+		return sources.IdentityAlias{}, fmt.Errorf("validate alias source policy: %w", err)
+	}
+	if !fallbackIdentity {
+		return sources.IdentityAlias{}, sources.ErrConflict
+	}
+	var targetMergedInto *uuid.UUID
+	if err := tx.QueryRow(ctx, `
+		SELECT merged_into_occurrence_id
+		FROM event_occurrences
+		WHERE id = $1 AND source_id = $2
+		FOR UPDATE`, occurrenceID, sourceID).Scan(&targetMergedInto); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return sources.IdentityAlias{}, sources.ErrNotFound
+		}
+		return sources.IdentityAlias{}, fmt.Errorf("validate alias occurrence ownership: %w", err)
+	}
+	if targetMergedInto != nil {
+		return sources.IdentityAlias{}, sources.ErrConflict
+	}
+	if existing, err := findAliasByIdentity(ctx, tx, sourceID, incomingIdentity); err == nil {
+		if existing.OccurrenceID != occurrenceID || existing.Reason != reason {
+			return sources.IdentityAlias{}, sources.ErrConflict
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return sources.IdentityAlias{}, fmt.Errorf("commit reconciled source alias: %w", err)
+		}
+		return existing, nil
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return sources.IdentityAlias{}, fmt.Errorf("find existing source alias: %w", err)
+	}
+	var mergedOccurrenceID *uuid.UUID
+	var primaryID uuid.UUID
+	var primaryMergedInto *uuid.UUID
+	if err := tx.QueryRow(ctx, `
+		SELECT id, merged_into_occurrence_id
+		FROM event_occurrences
+		WHERE source_id = $1 AND source_identity = $2
+		FOR UPDATE`, sourceID, incomingIdentity).Scan(&primaryID, &primaryMergedInto); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return sources.IdentityAlias{}, fmt.Errorf("check alias primary identity: %w", err)
+	} else if err == nil {
+		if primaryID == occurrenceID || primaryMergedInto != nil {
+			return sources.IdentityAlias{}, sources.ErrConflict
+		}
+		var hasDependants bool
+		if err := tx.QueryRow(ctx, `
+			SELECT EXISTS (
+				SELECT 1 FROM event_occurrences
+				WHERE merged_into_occurrence_id = $1
+			)`, primaryID).Scan(&hasDependants); err != nil {
+			return sources.IdentityAlias{}, fmt.Errorf("check occurrence merge dependants: %w", err)
+		}
+		if hasDependants {
+			return sources.IdentityAlias{}, sources.ErrConflict
+		}
+		if _, err := tx.Exec(ctx, `
+			UPDATE event_occurrences
+			SET merged_into_occurrence_id = $2, merged_at = $3, visible = false, updated_at = $3
+			WHERE id = $1`, primaryID, occurrenceID, now); err != nil {
+			return sources.IdentityAlias{}, fmt.Errorf("merge duplicate occurrence: %w", err)
+		}
+		mergedOccurrenceID = &primaryID
+	}
+	result, err := tx.Exec(ctx, `
+		INSERT INTO source_aliases (
+			source_id, old_identity, occurrence_id, merged_occurrence_id, reason, idempotency_key, created_at
+		) VALUES ($1, $2, $3, $4, $5, $6, $7)
+		ON CONFLICT DO NOTHING`,
+		sourceID, incomingIdentity, occurrenceID, mergedOccurrenceID, reason, idempotencyKey, now)
+	if err != nil {
+		return sources.IdentityAlias{}, fmt.Errorf("create source alias: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		alias, err := findAliasByIdempotency(ctx, tx, sourceID, idempotencyKey)
+		if errors.Is(err, pgx.ErrNoRows) {
+			alias, err = findAliasByIdentity(ctx, tx, sourceID, incomingIdentity)
+		}
+		if err != nil {
+			return sources.IdentityAlias{}, fmt.Errorf("reconcile source alias: %w", err)
+		}
+		if alias.IncomingIdentity != incomingIdentity || alias.OccurrenceID != occurrenceID || alias.Reason != reason {
+			return sources.IdentityAlias{}, sources.ErrConflict
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return sources.IdentityAlias{}, fmt.Errorf("commit reconciled source alias: %w", err)
+		}
+		return alias, nil
+	}
+	if err := recordAudit(ctx, tx, actor, "create_source_alias", "event_occurrence", occurrenceID, traceID, now); err != nil {
+		return sources.IdentityAlias{}, err
+	}
+	alias := sources.IdentityAlias{
+		SourceID: sourceID, IncomingIdentity: incomingIdentity,
+		OccurrenceID: occurrenceID, MergedOccurrenceID: mergedOccurrenceID, Reason: reason, CreatedAt: now,
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return sources.IdentityAlias{}, fmt.Errorf("commit source alias: %w", err)
+	}
+	return alias, nil
+}
+
+func findAliasByIdempotency(ctx context.Context, tx pgx.Tx, sourceID uuid.UUID, key string) (sources.IdentityAlias, error) {
+	return scanAlias(tx.QueryRow(ctx, `
+		SELECT source_id, old_identity, occurrence_id, merged_occurrence_id, reason, created_at
+		FROM source_aliases WHERE source_id = $1 AND idempotency_key = $2`, sourceID, key))
+}
+
+func findAliasByIdentity(ctx context.Context, tx pgx.Tx, sourceID uuid.UUID, identity string) (sources.IdentityAlias, error) {
+	return scanAlias(tx.QueryRow(ctx, `
+		SELECT source_id, old_identity, occurrence_id, merged_occurrence_id, reason, created_at
+		FROM source_aliases WHERE source_id = $1 AND old_identity = $2`, sourceID, identity))
+}
+
+func scanAlias(row pgx.Row) (sources.IdentityAlias, error) {
+	var alias sources.IdentityAlias
+	if err := row.Scan(&alias.SourceID, &alias.IncomingIdentity, &alias.OccurrenceID, &alias.MergedOccurrenceID, &alias.Reason, &alias.CreatedAt); err != nil {
+		return sources.IdentityAlias{}, err
+	}
+	return alias, nil
+}
+
 func (operator *Operator) queueRun(
 	ctx context.Context,
 	kind string,

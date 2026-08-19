@@ -6,12 +6,14 @@ city: varanasi
 city_id: 019c5d13-c392-79d2-9012-3ed4242f771e
 canonical_hosts:
   - www.galaxyregistration.com
+registration_hosts:
+  - www.galaxyregistration.com
 official_url: https://www.galaxyregistration.com/event/skill-school/
 collector_id: c_msz1tg0ls3ufml6ls
 output_schema: event-occurrence/v1
 publication_state: preview
 collection_state: blocked
-blocked_reason: bright_data_empty_production_batch
+blocked_reason: bright_data_proxy_config
 schedule: "41 */6 * * *"
 freshness_ttl: 12h
 collection_input:
@@ -22,7 +24,6 @@ limits:
   window_days: 90
 health:
   minimum_records: 1
-  maximum_records_before_baseline: 20
   maximum_parse_error_ratio: 0
   maximum_duplicate_ratio: 0
   missing_observations_before_removal: 2

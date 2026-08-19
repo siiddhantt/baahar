@@ -8,7 +8,9 @@ import (
 
 func TestRunTransitionsAreTerminal(t *testing.T) {
 	allowed := [][2]RunStatus{
-		{RunQueued, RunCollecting},
+		{RunQueued, RunTriggering},
+		{RunTriggering, RunCollecting},
+		{RunTriggering, RunFailed},
 		{RunQueued, RunFailed},
 		{RunCollecting, RunValidating},
 		{RunCollecting, RunFailed},

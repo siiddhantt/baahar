@@ -229,7 +229,7 @@ func (publication *Publication) Fail(ctx context.Context, runID, sourceID uuid.U
 		UPDATE collection_runs
 		SET status = 'failed', completed_at = $3, error_code = $2,
 			health_summary = jsonb_build_object('code', $2::text, 'out_of_order', $4::boolean)
-		WHERE id = $1 AND status IN ('queued', 'collecting', 'validating')`, runID, errorCode, completedAt, outOfOrder)
+		WHERE id = $1 AND status IN ('queued', 'triggering', 'collecting', 'validating')`, runID, errorCode, completedAt, outOfOrder)
 	if err != nil {
 		return fmt.Errorf("fail collection run: %w", err)
 	}
@@ -270,11 +270,23 @@ func publishCandidate(
 	var eventID uuid.UUID
 	var currentVersionID *uuid.UUID
 	var lastObservedAt time.Time
-	err := tx.QueryRow(ctx, `
+	aliasedOccurrenceID, aliasErr := aliasOccurrence(ctx, tx, source.ID, candidate.Identity)
+	var err error
+	if aliasErr == nil {
+		err = tx.QueryRow(ctx, `
+			SELECT id, event_id, current_version_id, last_observed_at
+			FROM event_occurrences
+			WHERE id = $1 AND source_id = $2
+			FOR UPDATE`, aliasedOccurrenceID, source.ID).Scan(&occurrenceID, &eventID, &currentVersionID, &lastObservedAt)
+	} else if errors.Is(aliasErr, pgx.ErrNoRows) {
+		err = tx.QueryRow(ctx, `
 		SELECT id, event_id, current_version_id, last_observed_at
 		FROM event_occurrences
 		WHERE source_id = $1 AND source_identity = $2
 		FOR UPDATE`, source.ID, candidate.Identity).Scan(&occurrenceID, &eventID, &currentVersionID, &lastObservedAt)
+	} else {
+		return aliasErr
+	}
 	newOccurrence := errors.Is(err, pgx.ErrNoRows)
 	if err != nil && !newOccurrence {
 		return fmt.Errorf("find occurrence for publication: %w", err)
@@ -376,12 +388,35 @@ func publishCandidate(
 	return nil
 }
 
+func aliasOccurrence(ctx context.Context, tx pgx.Tx, sourceID uuid.UUID, incomingIdentity string) (uuid.UUID, error) {
+	var occurrenceID uuid.UUID
+	if err := tx.QueryRow(ctx, `
+		SELECT canonical.id
+		FROM source_aliases alias
+		JOIN event_occurrences reviewed
+		  ON reviewed.id = alias.occurrence_id
+		 AND reviewed.source_id = alias.source_id
+		JOIN event_occurrences canonical
+		  ON canonical.id = COALESCE(reviewed.merged_into_occurrence_id, reviewed.id)
+		 AND canonical.source_id = alias.source_id
+		WHERE alias.source_id = $1
+		  AND alias.old_identity = $2
+		  AND canonical.merged_into_occurrence_id IS NULL`, sourceID, incomingIdentity).Scan(&occurrenceID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return uuid.Nil, pgx.ErrNoRows
+		}
+		return uuid.Nil, fmt.Errorf("resolve reviewed source alias: %w", err)
+	}
+	return occurrenceID, nil
+}
+
 func recordMissingObservations(ctx context.Context, tx pgx.Tx, runID uuid.UUID, source sources.Config, observedAt time.Time) error {
 	rows, err := tx.Query(ctx, `
 		SELECT occurrence.id
 		FROM event_occurrences occurrence
 		WHERE occurrence.source_id = $1
 		  AND occurrence.current_version_id IS NOT NULL
+		  AND occurrence.merged_into_occurrence_id IS NULL
 		  AND NOT EXISTS (
 			SELECT 1
 			FROM source_observations observation

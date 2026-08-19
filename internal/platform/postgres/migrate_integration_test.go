@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/siddhantk232/baahar/internal/sources"
 )
 
 func TestMigrationUpDownUpOnPostgres(t *testing.T) {
@@ -73,10 +75,176 @@ func TestMigrationUpDownUpOnPostgres(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	bicID := uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f771f")
+	if _, err := pool.Exec(ctx, `UPDATE sources SET maximum_duplicate_ratio_bps = 101 WHERE id = $1`, bicID); err != nil {
+		t.Fatal(err)
+	}
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
-		t.Fatal("Jagriti down migration removed a source with collection history")
+		t.Fatal("health policy migration discarded a non-recoverable reviewed ratio")
 	}
 	assertVersion(t, ctx, pool, int64(len(migrations)))
+	if _, err := pool.Exec(ctx, `UPDATE sources SET maximum_duplicate_ratio_bps = 100 WHERE id = $1`, bicID); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatalf("remove merge/policy migration over compatible history: %v", err)
+	}
+	assertVersion(t, ctx, pool, 4)
+	if _, err := pool.Exec(ctx, `UPDATE sources SET minimum_records = 2 WHERE id = $1`, bicID); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err == nil {
+		t.Fatal("source hardening migration discarded a non-recoverable reviewed policy")
+	}
+	assertVersion(t, ctx, pool, 4)
+	if _, err := pool.Exec(ctx, `UPDATE sources SET minimum_records = 1 WHERE id = $1`, bicID); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatalf("remove source hardening migration over compatible history: %v", err)
+	}
+	assertVersion(t, ctx, pool, 3)
+	var preserved int
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM collection_runs WHERE source_id = $1`, jagritiID).Scan(&preserved); err != nil {
+		t.Fatal(err)
+	}
+	if preserved != 1 {
+		t.Fatalf("collection history after down = %d, want 1", preserved)
+	}
+	if err := MigrateUp(ctx, pool, migrations); err != nil {
+		t.Fatalf("reapply policy migrations over existing history: %v", err)
+	}
+	assertVersion(t, ctx, pool, int64(len(migrations)))
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM collection_runs WHERE source_id = $1`, jagritiID).Scan(&preserved); err != nil || preserved != 1 {
+		t.Fatalf("collection history after up = %d, error = %v", preserved, err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE collection_runs SET status = 'triggering' WHERE source_id = $1`, jagritiID); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatalf("remove merge migration before triggering-state guard: %v", err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err == nil {
+		t.Fatal("source hardening migration removed an unreconciled triggering state")
+	}
+	assertVersion(t, ctx, pool, 4)
+}
+
+func TestAliasIdempotencyProvenanceSurvivesAllowedMigrationRoundTrip(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	migrations, err := ReadMigrations(os.DirFS("../../../migrations"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatal(err)
+	}
+	assertVersion(t, ctx, pool, 3)
+	sourceID := uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f")
+	cityID := uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f771d")
+	eventID := uuid.Must(uuid.NewV7())
+	occurrenceID := uuid.Must(uuid.NewV7())
+	legacyIdentity := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO events (id, city_id, slug, canonical_title)
+		VALUES ($1, $2, 'migration-alias-target', 'Migration alias target')`, eventID, cityID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO event_occurrences (
+			id, event_id, source_id, source_identity, start_date, time_precision, timezone,
+			first_observed_at, last_observed_at
+		) VALUES ($1, $2, $3, $4, '2026-09-10', 'date', 'Asia/Kolkata', now(), now())`,
+		occurrenceID, eventID, sourceID, legacyIdentity); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO source_aliases (source_id, old_identity, occurrence_id, reason)
+		VALUES ($1, $2, $3, 'Pre-hardening reviewed alias.')`, sourceID, legacyIdentity, occurrenceID); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateUp(ctx, pool, migrations); err != nil {
+		t.Fatal(err)
+	}
+	legacyKey := "legacy-alias-" + legacyIdentity
+	assertAliasIdempotencyProvenance(t, ctx, pool, sourceID, legacyIdentity, legacyKey, true)
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatalf("remove merge migration over legacy alias: %v", err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatalf("remove hardening migration over legacy-only aliases: %v", err)
+	}
+	assertVersion(t, ctx, pool, 3)
+	var legacyRows int
+	if err := pool.QueryRow(ctx, `
+		SELECT COUNT(*) FROM source_aliases WHERE source_id = $1 AND old_identity = $2`, sourceID, legacyIdentity).Scan(&legacyRows); err != nil {
+		t.Fatal(err)
+	}
+	if legacyRows != 1 {
+		t.Fatalf("legacy alias rows after down = %d, want 1", legacyRows)
+	}
+	if err := MigrateUp(ctx, pool, migrations); err != nil {
+		t.Fatal(err)
+	}
+	assertAliasIdempotencyProvenance(t, ctx, pool, sourceID, legacyIdentity, legacyKey, true)
+
+	operator := NewOperator(pool)
+	customIdentity := "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+	customKey := "operator-owned-alias-key-0001"
+	createdAt := time.Date(2026, time.August, 19, 14, 0, 0, 0, time.UTC)
+	created, err := operator.CreateSourceAlias(ctx, sourceID, customIdentity, occurrenceID,
+		"Operator-owned prepublication alias.", customKey, "test", uuid.NewString(), createdAt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertAliasIdempotencyProvenance(t, ctx, pool, sourceID, customIdentity, customKey, false)
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatalf("remove merge migration before custom-key guard: %v", err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err == nil {
+		t.Fatal("hardening migration discarded an operator-owned idempotency key")
+	}
+	assertVersion(t, ctx, pool, 4)
+	assertAliasIdempotencyProvenance(t, ctx, pool, sourceID, customIdentity, customKey, false)
+	if err := MigrateUp(ctx, pool, migrations); err != nil {
+		t.Fatal(err)
+	}
+	reconciled, err := operator.CreateSourceAlias(ctx, sourceID, customIdentity, occurrenceID,
+		"Operator-owned prepublication alias.", customKey, "test", uuid.NewString(), createdAt.Add(time.Hour))
+	if err != nil || !reconciled.CreatedAt.Equal(created.CreatedAt) {
+		t.Fatalf("preserved custom key did not reconcile: %+v, %v; want %+v", reconciled, err, created)
+	}
+	if _, err := operator.CreateSourceAlias(ctx, sourceID,
+		"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", occurrenceID,
+		"Different identity must not reuse the key.", customKey, "test", uuid.NewString(), createdAt.Add(2*time.Hour)); !errors.Is(err, sources.ErrConflict) {
+		t.Fatalf("reused custom key error = %v, want conflict", err)
+	}
+}
+
+func assertAliasIdempotencyProvenance(
+	t *testing.T,
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	sourceID uuid.UUID,
+	identity string,
+	wantKey string,
+	wantLegacy bool,
+) {
+	t.Helper()
+	var key string
+	var legacy bool
+	if err := pool.QueryRow(ctx, `
+		SELECT idempotency_key, idempotency_is_legacy
+		FROM source_aliases
+		WHERE source_id = $1 AND old_identity = $2`, sourceID, identity).Scan(&key, &legacy); err != nil {
+		t.Fatal(err)
+	}
+	if key != wantKey || legacy != wantLegacy {
+		t.Fatalf("alias idempotency provenance = %q/%v, want %q/%v", key, legacy, wantKey, wantLegacy)
+	}
 }
 
 func assertVersion(t *testing.T, ctx context.Context, pool *pgxpool.Pool, want int64) {
@@ -110,6 +278,21 @@ func assertMigrationInvariants(t *testing.T, ctx context.Context, pool *pgxpool.
 	}
 	if pageLimit != 2 || recordLimit != 100 || eventIDPattern != `^[0-9]+$` {
 		t.Fatalf("BIC launch policy pages/records/id = %d/%d/%q", pageLimit, recordLimit, eventIDPattern)
+	}
+	var minimumRecords, quarantineBPS, duplicateBPS, lowCountBPS, highCountBPS int
+	var registrationHosts, imageHosts []string
+	if err := pool.QueryRow(ctx, `
+		SELECT minimum_records, maximum_quarantine_ratio_bps, maximum_duplicate_ratio_bps,
+			low_count_ratio_bps, high_count_ratio_bps, registration_hosts, image_hosts
+		FROM sources WHERE slug = 'bic'`).Scan(&minimumRecords, &quarantineBPS, &duplicateBPS,
+		&lowCountBPS, &highCountBPS, &registrationHosts, &imageHosts); err != nil {
+		t.Fatal(err)
+	}
+	if minimumRecords != 1 || quarantineBPS != 200 || duplicateBPS != 100 || lowCountBPS != 4000 || highCountBPS != 25000 ||
+		len(registrationHosts) != 1 || registrationHosts[0] != "bangaloreinternationalcentre.org" ||
+		len(imageHosts) != 1 || imageHosts[0] != "bangaloreinternationalcentre.org" {
+		t.Fatalf("BIC health/URL policy = min %d parse/duplicate/low/high %d/%d/%d/%d registration %v image %v",
+			minimumRecords, quarantineBPS, duplicateBPS, lowCountBPS, highCountBPS, registrationHosts, imageHosts)
 	}
 	assertJagritiMigration(t, ctx, pool, cityID)
 	for index := range 2 {
@@ -169,6 +352,16 @@ func assertMigrationInvariants(t *testing.T, ctx context.Context, pool *pgxpool.
 		"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
 	if err == nil {
 		t.Fatal("is_free=true with a known price must violate the database contract")
+	}
+	_, err = pool.Exec(ctx, `INSERT INTO event_versions (
+		id, occurrence_id, collection_run_id, fingerprint, title, category, source_url, start_date,
+		starts_at, time_precision, timezone, status, observed_at, canonical_record
+	) VALUES ($1, $2, $3, $4, 'Wrong local date', 'talks', 'https://integration.example.org/events/test/',
+		'2026-08-21', '2026-08-20T18:30:00+05:30', 'timed', 'Asia/Kolkata',
+		'scheduled', now(), '{}'::jsonb)`, uuid.Must(uuid.NewV7()), occurrenceID, runID,
+		"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+	if err == nil {
+		t.Fatal("start_date inconsistent with starts_at must violate the database contract")
 	}
 }
 

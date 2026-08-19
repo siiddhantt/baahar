@@ -87,9 +87,22 @@ func (runs *Runs) AttachCollection(ctx context.Context, runID uuid.UUID, externa
 	result, err := runs.pool.Exec(ctx, `
 		UPDATE collection_runs
 		SET external_collection_id = $2, status = 'collecting'
-		WHERE id = $1 AND status = 'queued'`, runID, externalCollectionID)
+		WHERE id = $1 AND status = 'triggering'`, runID, externalCollectionID)
 	if err != nil {
 		return fmt.Errorf("attach external collection: %w", err)
+	}
+	if result.RowsAffected() != 1 {
+		return errors.New("collection run is no longer awaiting trigger reconciliation")
+	}
+	return nil
+}
+
+func (runs *Runs) BeginTrigger(ctx context.Context, runID uuid.UUID) error {
+	result, err := runs.pool.Exec(ctx, `
+		UPDATE collection_runs SET status = 'triggering'
+		WHERE id = $1 AND status = 'queued'`, runID)
+	if err != nil {
+		return fmt.Errorf("record collection trigger intent: %w", err)
 	}
 	if result.RowsAffected() != 1 {
 		return errors.New("collection run is no longer queued")

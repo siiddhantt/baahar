@@ -49,6 +49,10 @@
       "else": { "properties": { "timing": { "properties": { "starts_at": { "type": "null" }, "ends_at": { "type": "null" } } } } }
     },
     {
+      "if": { "properties": { "timing": { "properties": { "ends_at": { "type": "string" } }, "required": ["ends_at"] } }, "required": ["timing"] },
+      "then": { "properties": { "timing": { "properties": { "end_date": { "type": "string", "format": "date" } } } }
+    },
+    {
       "if": { "properties": { "pricing": { "anyOf": [{ "properties": { "minimum_minor": { "type": "integer" } }, "required": ["minimum_minor"] }, { "properties": { "maximum_minor": { "type": "integer" } }, "required": ["maximum_minor"] }] } }, "required": ["pricing"] },
       "then": { "properties": { "pricing": { "properties": { "currency": { "const": "INR" }, "is_free": { "const": false } } } } }
     },

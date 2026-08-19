@@ -115,6 +115,17 @@ func (v Version) Validate() error {
 	if err := validateTime(v); err != nil {
 		return err
 	}
+	if v.StartsAt != nil && !sameLocalDate(v.StartDate, *v.StartsAt, location) {
+		return errors.New("start_date must match starts_at in the event timezone")
+	}
+	if v.EndsAt != nil {
+		if v.EndDate == nil {
+			return errors.New("ends_at requires end_date")
+		}
+		if !sameLocalDate(*v.EndDate, *v.EndsAt, location) {
+			return errors.New("end_date must match ends_at in the event timezone")
+		}
+	}
 	if err := validatePrice(v); err != nil {
 		return err
 	}
@@ -135,6 +146,12 @@ func (v Version) Validate() error {
 		}
 	}
 	return nil
+}
+
+func sameLocalDate(date time.Time, instant time.Time, location *time.Location) bool {
+	localDate := date.In(location)
+	localInstant := instant.In(location)
+	return localDate.Year() == localInstant.Year() && localDate.Month() == localInstant.Month() && localDate.Day() == localInstant.Day()
 }
 
 func validatePublicURL(raw string) error {

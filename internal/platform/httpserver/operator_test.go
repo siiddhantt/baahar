@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log/slog"
@@ -71,6 +72,30 @@ func TestOperatorHTTPProjectsAndAcknowledgesActiveIncident(t *testing.T) {
 	}
 }
 
+func TestOperatorHTTPCreatesReviewedSourceAlias(t *testing.T) {
+	now := time.Date(2026, time.August, 19, 12, 0, 0, 0, time.UTC)
+	sourceID := uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f")
+	occurrenceID := uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f7791")
+	store := &operatorHTTPStore{}
+	server := &Server{operatorToken: "operator-token-with-enough-bytes", operator: store, logger: slog.Default(), now: func() time.Time { return now }}
+	body := []byte(`{"incoming_identity":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","occurrence_id":"019c5d13-c392-79d2-9012-3ed4242f7791","reason":"Official page corrected the performance time."}`)
+	request := httptest.NewRequest(http.MethodPost, "/v1/operator/sources/"+sourceID.String()+"/aliases", bytes.NewReader(body))
+	request.Header.Set("Authorization", "Bearer operator-token-with-enough-bytes")
+	request.Header.Set("Idempotency-Key", "alias-review-0001")
+	response := httptest.NewRecorder()
+	server.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusCreated {
+		t.Fatalf("create alias status = %d, body = %s", response.Code, response.Body.String())
+	}
+	var alias sourceAliasDTO
+	if err := json.Unmarshal(response.Body.Bytes(), &alias); err != nil {
+		t.Fatal(err)
+	}
+	if alias.SourceID != sourceID.String() || alias.OccurrenceID != occurrenceID.String() || alias.Reason == "" {
+		t.Fatalf("alias response = %+v", alias)
+	}
+}
+
 func performOperatorRequest(t *testing.T, handler http.Handler, method, path string) *httptest.ResponseRecorder {
 	t.Helper()
 	request := httptest.NewRequest(method, path, nil)
@@ -119,4 +144,8 @@ func (store *operatorHTTPStore) AcknowledgeIncident(_ context.Context, incidentI
 	store.incident = incident
 	store.acked = true
 	return incident, nil
+}
+
+func (store *operatorHTTPStore) CreateSourceAlias(_ context.Context, sourceID uuid.UUID, identity string, occurrenceID uuid.UUID, reason, _, _, _ string, now time.Time) (sources.IdentityAlias, error) {
+	return sources.IdentityAlias{SourceID: sourceID, IncomingIdentity: identity, OccurrenceID: occurrenceID, Reason: reason, CreatedAt: now}, nil
 }

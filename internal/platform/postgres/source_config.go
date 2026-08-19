@@ -24,7 +24,9 @@ func (configs *SourceConfigs) Get(ctx context.Context, sourceID uuid.UUID) (sour
 	var source sources.Config
 	err := configs.pool.QueryRow(ctx, `
 		SELECT s.id, s.city_id, c.slug, s.slug, s.canonical_host, s.collector_id,
-			s.schema_version, s.collection_input, s.source_event_id_pattern, s.page_limit, s.record_limit, s.daily_run_limit,
+			s.schema_version, s.collection_input, s.source_event_id_pattern, s.page_limit, s.record_limit,
+			s.minimum_records, s.maximum_quarantine_ratio_bps, s.maximum_duplicate_ratio_bps,
+			s.low_count_ratio_bps, s.high_count_ratio_bps, s.registration_hosts, s.image_hosts, s.daily_run_limit,
 			s.absence_threshold, s.publication_state, s.next_due_at
 		FROM sources s
 		JOIN cities c ON c.id = s.city_id
@@ -40,6 +42,13 @@ func (configs *SourceConfigs) Get(ctx context.Context, sourceID uuid.UUID) (sour
 		&source.SourceEventIDPattern,
 		&source.PageLimit,
 		&source.RecordLimit,
+		&source.MinimumRecords,
+		&source.MaximumQuarantineRatioBPS,
+		&source.MaximumDuplicateRatioBPS,
+		&source.LowCountRatioBPS,
+		&source.HighCountRatioBPS,
+		&source.RegistrationHosts,
+		&source.ImageHosts,
 		&source.DailyRunLimit,
 		&source.AbsenceThreshold,
 		&source.PublicationState,
@@ -60,7 +69,9 @@ func (configs *SourceConfigs) Due(ctx context.Context, now time.Time, limit int)
 	}
 	rows, err := configs.pool.Query(ctx, `
 		SELECT s.id, s.city_id, c.slug, s.slug, s.canonical_host, s.collector_id,
-			s.schema_version, s.collection_input, s.source_event_id_pattern, s.page_limit, s.record_limit, s.daily_run_limit,
+			s.schema_version, s.collection_input, s.source_event_id_pattern, s.page_limit, s.record_limit,
+			s.minimum_records, s.maximum_quarantine_ratio_bps, s.maximum_duplicate_ratio_bps,
+			s.low_count_ratio_bps, s.high_count_ratio_bps, s.registration_hosts, s.image_hosts, s.daily_run_limit,
 			s.absence_threshold, s.publication_state, s.next_due_at
 		FROM sources s
 		JOIN cities c ON c.id = s.city_id
@@ -94,6 +105,13 @@ func (configs *SourceConfigs) Due(ctx context.Context, now time.Time, limit int)
 			&source.SourceEventIDPattern,
 			&source.PageLimit,
 			&source.RecordLimit,
+			&source.MinimumRecords,
+			&source.MaximumQuarantineRatioBPS,
+			&source.MaximumDuplicateRatioBPS,
+			&source.LowCountRatioBPS,
+			&source.HighCountRatioBPS,
+			&source.RegistrationHosts,
+			&source.ImageHosts,
 			&source.DailyRunLimit,
 			&source.AbsenceThreshold,
 			&source.PublicationState,

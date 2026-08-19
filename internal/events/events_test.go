@@ -177,6 +177,32 @@ func TestPriceRequiresExplicitPaidState(t *testing.T) {
 	}
 }
 
+func TestTimedDatesMustMatchInstantsInConfiguredTimezone(t *testing.T) {
+	version := validTimedVersion()
+	wrongStart := time.Date(2026, time.August, 21, 0, 0, 0, 0, kolkata)
+	version.StartDate = wrongStart
+	if err := version.Validate(); err == nil || !strings.Contains(err.Error(), "start_date") {
+		t.Fatalf("mismatched local start date error = %v", err)
+	}
+
+	version = validTimedVersion()
+	endsAt := time.Date(2026, time.August, 21, 0, 30, 0, 0, kolkata)
+	version.EndsAt = &endsAt
+	if err := version.Validate(); err == nil || !strings.Contains(err.Error(), "end_date") {
+		t.Fatalf("missing exact end date error = %v", err)
+	}
+	endDate := time.Date(2026, time.August, 20, 0, 0, 0, 0, kolkata)
+	version.EndDate = &endDate
+	if err := version.Validate(); err == nil || !strings.Contains(err.Error(), "end_date") {
+		t.Fatalf("mismatched local end date error = %v", err)
+	}
+	endDate = time.Date(2026, time.August, 21, 0, 0, 0, 0, kolkata)
+	version.EndDate = &endDate
+	if err := version.Validate(); err != nil {
+		t.Fatalf("matching cross-midnight dates should validate: %v", err)
+	}
+}
+
 func TestFingerprintIgnoresCosmeticNormalization(t *testing.T) {
 	first := validTimedVersion()
 	second := first

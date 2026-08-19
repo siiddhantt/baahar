@@ -1,15 +1,21 @@
 package httpserver
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
+	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/siddhantk232/baahar/internal/sources"
 )
 
 const operatorActor = "operator-token"
+
+var sourceIdentityPattern = regexp.MustCompile(`^[0-9a-f]{64}$`)
 
 func (server *Server) handleOperatorSources(writer http.ResponseWriter, request *http.Request) {
 	if !server.requireOperator(writer, request) {
@@ -107,6 +113,50 @@ func (server *Server) handleAcknowledgeIncident(writer http.ResponseWriter, requ
 	writeJSON(writer, request, http.StatusOK, presentIncident(incident), "no-store")
 }
 
+func (server *Server) handleCreateSourceAlias(writer http.ResponseWriter, request *http.Request) {
+	if !server.requireOperator(writer, request) {
+		return
+	}
+	sourceID, ok := parseOperatorUUID(writer, request, "source_id")
+	if !ok {
+		return
+	}
+	idempotencyKey, ok := requireIdempotencyKey(writer, request)
+	if !ok {
+		return
+	}
+	var body struct {
+		IncomingIdentity string `json:"incoming_identity"`
+		OccurrenceID     string `json:"occurrence_id"`
+		Reason           string `json:"reason"`
+	}
+	decoder := json.NewDecoder(request.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&body); err != nil {
+		writeProblem(writer, request, http.StatusBadRequest, "invalid_alias_request", "Invalid alias request", "Provide one reviewed incoming identity, occurrence ID, and reason.")
+		return
+	}
+	var trailing any
+	if err := decoder.Decode(&trailing); !errors.Is(err, io.EOF) {
+		writeProblem(writer, request, http.StatusBadRequest, "invalid_alias_request", "Invalid alias request", "The request body must contain exactly one JSON object.")
+		return
+	}
+	occurrenceID, err := uuid.Parse(body.OccurrenceID)
+	if err != nil || !sourceIdentityPattern.MatchString(body.IncomingIdentity) || strings.TrimSpace(body.Reason) != body.Reason || utf8.RuneCountInString(body.Reason) < 1 || utf8.RuneCountInString(body.Reason) > 1000 {
+		writeProblem(writer, request, http.StatusBadRequest, "invalid_alias_request", "Invalid alias request", "The identity, occurrence ID, or review reason is invalid.")
+		return
+	}
+	alias, err := server.operator.CreateSourceAlias(
+		request.Context(), sourceID, body.IncomingIdentity, occurrenceID, body.Reason,
+		idempotencyKey, operatorActor, traceID(request), server.now().UTC(),
+	)
+	if err != nil {
+		server.operatorError(writer, request, "create source alias", err)
+		return
+	}
+	writeJSON(writer, request, http.StatusCreated, presentSourceAlias(alias), "no-store")
+}
+
 func parseOperatorUUID(writer http.ResponseWriter, request *http.Request, name string) (uuid.UUID, bool) {
 	value, err := uuid.Parse(request.PathValue(name))
 	if err != nil {
@@ -128,6 +178,10 @@ func requireIdempotencyKey(writer http.ResponseWriter, request *http.Request) (s
 func (server *Server) operatorError(writer http.ResponseWriter, request *http.Request, operation string, err error) {
 	if errors.Is(err, sources.ErrNotFound) {
 		writeProblem(writer, request, http.StatusNotFound, "operator_resource_not_found", "Resource not found", "The operator resource does not exist.")
+		return
+	}
+	if errors.Is(err, sources.ErrConflict) {
+		writeProblem(writer, request, http.StatusConflict, "source_alias_conflict", "Alias conflicts with reviewed state", "The incoming identity or idempotency key is already assigned differently.")
 		return
 	}
 	server.internalError(writer, request, operation, err)

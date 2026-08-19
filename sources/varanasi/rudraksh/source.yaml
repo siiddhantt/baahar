@@ -1,8 +1,12 @@
 schema_version: source-manifest/v1
 source: rudraksh
+source_id: b45b3991-649f-58e9-a95f-c1a2a75848f3
+display_name: Rudraksh International Cooperation and Convention Centre
 city: varanasi
+city_id: 019c5d13-c392-79d2-9012-3ed4242f771e
 canonical_hosts:
   - www.rudrakshcentre.com
+official_url: https://www.rudrakshcentre.com/upcoming-event
 collector_id: c_msyvmnoxwjdg7xe0p
 output_schema: event-occurrence/v1
 publication_state: preview
@@ -17,7 +21,6 @@ limits:
   records_per_run: 50
 health:
   minimum_records: 1
-  maximum_records_before_baseline: 50
   maximum_parse_error_ratio: 0
   maximum_duplicate_ratio: 0
   missing_observations_before_removal: 2
@@ -30,6 +33,7 @@ identity:
     - canonical_source_url
     - local_occurrence_date_time
     - normalized_venue_key
+  array_position_allowed: false
   exact_duplicates_allowed: false
 access:
   robots_status: missing_404

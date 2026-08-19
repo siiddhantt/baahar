@@ -262,6 +262,32 @@ paths:
                 $ref: "#/components/schemas/CollectionRun"
         default:
           $ref: "#/components/responses/Problem"
+  /v1/operator/sources/{source_id}/aliases:
+    parameters:
+      - $ref: "#/components/parameters/SourceID"
+    post:
+      operationId: createSourceAlias
+      tags: [operator]
+      security:
+        - operatorToken: []
+      summary: Review an incoming ID-less identity as the same occurrence
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSourceAlias"
+      responses:
+        "201":
+          description: Reviewed identity alias created or reconciled idempotently
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceAlias"
+        default:
+          $ref: "#/components/responses/Problem"
   /v1/operator/runs/{run_id}/replay:
     parameters:
       - $ref: "#/components/parameters/RunID"
@@ -435,6 +461,16 @@ components:
                 type: "null"
               ends_at:
                 type: "null"
+        - if:
+            properties:
+              ends_at:
+                type: string
+            required: [ends_at]
+          then:
+            properties:
+              end_date:
+                type: string
+                format: date
     Venue:
       type: [object, "null"]
       additionalProperties: false
@@ -777,7 +813,7 @@ components:
         external_collection_id:
           type: [string, "null"]
         status:
-          enum: [queued, collecting, validating, published, rejected, failed]
+          enum: [queued, triggering, collecting, validating, published, rejected, failed]
         triggered_at:
           type: string
           format: date-time
@@ -817,6 +853,45 @@ components:
           format: date-time
         acknowledged_at:
           type: [string, "null"]
+          format: date-time
+    CreateSourceAlias:
+      type: object
+      additionalProperties: false
+      required: [incoming_identity, occurrence_id, reason]
+      properties:
+        incoming_identity:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+        occurrence_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    SourceAlias:
+      type: object
+      additionalProperties: false
+      required: [source_id, incoming_identity, occurrence_id, merged_occurrence_id, reason, created_at]
+      properties:
+        source_id:
+          type: string
+          format: uuid
+        incoming_identity:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+        occurrence_id:
+          type: string
+          format: uuid
+        merged_occurrence_id:
+          type: [string, "null"]
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        created_at:
+          type: string
           format: date-time
     Problem:
       type: object

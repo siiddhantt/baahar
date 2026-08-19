@@ -12,6 +12,7 @@ type RunStatus string
 
 const (
 	RunQueued     RunStatus = "queued"
+	RunTriggering RunStatus = "triggering"
 	RunCollecting RunStatus = "collecting"
 	RunValidating RunStatus = "validating"
 	RunPublished  RunStatus = "published"
@@ -98,6 +99,8 @@ func NewJob(kind, dedupeKey string, payload json.RawMessage, availableAt time.Ti
 func ValidRunTransition(from, to RunStatus) bool {
 	switch from {
 	case RunQueued:
+		return to == RunTriggering || to == RunFailed
+	case RunTriggering:
 		return to == RunCollecting || to == RunFailed
 	case RunCollecting:
 		return to == RunValidating || to == RunFailed

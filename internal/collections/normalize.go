@@ -17,14 +17,21 @@ import (
 )
 
 type SourcePolicy struct {
-	ID                   uuid.UUID
-	CitySlug             string
-	CanonicalHost        string
-	SchemaVersion        string
-	SourceEventIDPattern *string
-	RecordLimit          int
-	ObservationEarliest  time.Time
-	ObservationLatest    time.Time
+	ID                        uuid.UUID
+	CitySlug                  string
+	CanonicalHost             string
+	SchemaVersion             string
+	SourceEventIDPattern      *string
+	RecordLimit               int
+	MinimumRecords            int
+	MaximumQuarantineRatioBPS int
+	MaximumDuplicateRatioBPS  int
+	LowCountRatioBPS          int
+	HighCountRatioBPS         int
+	RegistrationHosts         []string
+	ImageHosts                []string
+	ObservationEarliest       time.Time
+	ObservationLatest         time.Time
 }
 
 type CollectorRecord struct {
@@ -99,7 +106,21 @@ func PrepareDataset(dataset []byte, source SourcePolicy, validator *CollectorVal
 		prepared.HealthCode = "record_limit_exceeded"
 		return prepared, nil
 	}
+	if source.MinimumRecords < 0 || source.MinimumRecords > source.RecordLimit {
+		return PreparedDataset{}, errors.New("source minimum-record policy is invalid")
+	}
+	if len(records) < source.MinimumRecords {
+		prepared.HealthCode = "minimum_records_not_met"
+		return prepared, nil
+	}
+	if source.MaximumQuarantineRatioBPS < 0 || source.MaximumQuarantineRatioBPS > 10000 {
+		return PreparedDataset{}, errors.New("source quarantine-ratio policy is invalid")
+	}
+	if source.MaximumDuplicateRatioBPS < 0 || source.MaximumDuplicateRatioBPS > 10000 {
+		return PreparedDataset{}, errors.New("source duplicate-ratio policy is invalid")
+	}
 	identities := make(map[string]int, len(records))
+	duplicateCount := 0
 	for index, raw := range records {
 		if err := validator.ValidateRecord(raw); err != nil {
 			prepared.Quarantined = append(prepared.Quarantined, Quarantine{Index: index, Code: "schema_invalid", Diagnostic: err.Error()})
@@ -111,17 +132,23 @@ func PrepareDataset(dataset []byte, source SourcePolicy, validator *CollectorVal
 			continue
 		}
 		if previous, exists := identities[candidate.Identity]; exists {
-			prepared.HealthCode = "duplicate_identity"
+			duplicateCount++
 			prepared.Quarantined = append(prepared.Quarantined, Quarantine{Index: index, Code: "duplicate_identity", Diagnostic: fmt.Sprintf("same occurrence identity as record %d", previous)})
 			continue
 		}
 		identities[candidate.Identity] = index
 		prepared.Candidates = append(prepared.Candidates, candidate)
 	}
+	if prepared.HealthCode == "" && duplicateCount*10000 > len(records)*source.MaximumDuplicateRatioBPS {
+		prepared.HealthCode = "duplicate_threshold_exceeded"
+	}
 	if prepared.HealthCode == "" && len(prepared.Candidates) == 0 {
 		prepared.HealthCode = "no_valid_records"
 	}
-	if prepared.HealthCode == "" && len(prepared.Quarantined)*100 > len(records)*2 {
+	if prepared.HealthCode == "" && len(prepared.Candidates) < source.MinimumRecords {
+		prepared.HealthCode = "minimum_records_not_met"
+	}
+	if prepared.HealthCode == "" && len(prepared.Quarantined)*10000 > len(records)*source.MaximumQuarantineRatioBPS {
 		prepared.HealthCode = "quarantine_threshold_exceeded"
 	}
 	return prepared, nil
@@ -130,8 +157,12 @@ func PrepareDataset(dataset []byte, source SourcePolicy, validator *CollectorVal
 // ApplyRecordCountBaseline freezes large count changes only after three complete
 // published runs exist. The rolling median tolerates normal calendar churn while
 // preventing a structurally broken one-row scrape from hiding the verified feed.
-func ApplyRecordCountBaseline(prepared PreparedDataset, publishedCounts []int) PreparedDataset {
+func ApplyRecordCountBaseline(prepared PreparedDataset, publishedCounts []int, lowRatioBPS, highRatioBPS int) PreparedDataset {
 	if prepared.HealthCode != "" || len(publishedCounts) < 3 {
+		return prepared
+	}
+	if lowRatioBPS < 1 || lowRatioBPS > 10000 || highRatioBPS < 10000 || highRatioBPS > 100000 || lowRatioBPS > highRatioBPS {
+		prepared.HealthCode = "source_policy_invalid"
 		return prepared
 	}
 	prepared.TrackAbsence = true
@@ -139,7 +170,7 @@ func ApplyRecordCountBaseline(prepared PreparedDataset, publishedCounts []int) P
 	slices.Sort(counts)
 	median := counts[len(counts)/2]
 	received := len(prepared.Candidates) + len(prepared.Quarantined)
-	if median > 0 && (received*2 < median || received > median*2) {
+	if median > 0 && (received*10000 < median*lowRatioBPS || received*10000 > median*highRatioBPS) {
 		prepared.HealthCode = "record_count_deviation"
 	}
 	return prepared
@@ -230,6 +261,12 @@ func normalizeRecord(raw json.RawMessage, source SourcePolicy) (Candidate, error
 	if err := version.Validate(); err != nil {
 		return Candidate{}, err
 	}
+	if err := validateOptionalReviewedHost(version.RegistrationURL, source.RegistrationHosts, "registration URL"); err != nil {
+		return Candidate{}, err
+	}
+	if err := validateOptionalReviewedHost(version.ImageURL, source.ImageHosts, "image URL"); err != nil {
+		return Candidate{}, err
+	}
 	occurrenceTime := startDate
 	if record.StartsAt != nil {
 		occurrenceTime = *record.StartsAt
@@ -257,6 +294,24 @@ func normalizeRecord(raw json.RawMessage, source SourcePolicy) (Candidate, error
 		Version:         version,
 		CanonicalRecord: canonical,
 	}, nil
+}
+
+func validateOptionalReviewedHost(raw *string, reviewed []string, field string) error {
+	if raw == nil {
+		return nil
+	}
+	parsed, err := url.Parse(*raw)
+	if err != nil {
+		return fmt.Errorf("%s: parse host: %w", field, err)
+	}
+	host := strings.ToLower(parsed.Hostname())
+	for _, allowed := range reviewed {
+		allowed = strings.ToLower(strings.TrimSpace(allowed))
+		if allowed != "" && (host == allowed || strings.HasSuffix(host, "."+allowed)) {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s host is not allowlisted", field)
 }
 
 func eventSlug(title, identity string) string {

@@ -47,6 +47,7 @@ type SourceRepository interface {
 
 type RunRepository interface {
 	Find(context.Context, uuid.UUID) (collections.Run, error)
+	BeginTrigger(context.Context, uuid.UUID) error
 	AttachCollection(context.Context, uuid.UUID, string) error
 	BeginValidation(context.Context, uuid.UUID, string, string, int64, int) error
 	BeginReplayValidation(context.Context, uuid.UUID, string, string, int64, int) error
@@ -108,15 +109,22 @@ func (processor *Processor) Process(ctx context.Context, job collections.Job) er
 
 func (processor *Processor) processCollection(ctx context.Context, run collections.Run, source sources.Config) error {
 	if run.Status == collections.RunQueued {
+		if err := processor.Runs.BeginTrigger(ctx, run.ID); err != nil {
+			return processingFailure(run.ID, source.ID, "collection_trigger_intent_failed", true, err)
+		}
+		run.Status = collections.RunTriggering
 		collectionID, err := processor.Bright.Trigger(ctx, source.CollectorID, source.CollectionInput)
 		if err != nil {
-			return classifyBrightError(run.ID, source.ID, "collection_trigger_failed", err)
+			return processingFailure(run.ID, source.ID, "collection_trigger_reconciliation_required", false, err)
 		}
 		if err := processor.Runs.AttachCollection(ctx, run.ID, collectionID); err != nil {
-			return processingFailure(run.ID, source.ID, "collection_reconcile_failed", true, err)
+			return processingFailure(run.ID, source.ID, "collection_trigger_reconciliation_required", false, err)
 		}
 		run.ExternalCollectionID = &collectionID
 		run.Status = collections.RunCollecting
+	}
+	if run.Status == collections.RunTriggering {
+		return processingFailure(run.ID, source.ID, "collection_trigger_reconciliation_required", false, errors.New("external trigger outcome requires operator reconciliation"))
 	}
 	if run.Status == collections.RunCollecting {
 		if run.ExternalCollectionID == nil {
@@ -218,14 +226,21 @@ func (processor *Processor) validateAndPublish(
 		return nil
 	}
 	prepared, err := collections.PrepareDataset(validationView, collections.SourcePolicy{
-		ID:                   source.ID,
-		CitySlug:             source.CitySlug,
-		CanonicalHost:        source.CanonicalHost,
-		SchemaVersion:        source.SchemaVersion,
-		SourceEventIDPattern: source.SourceEventIDPattern,
-		RecordLimit:          source.RecordLimit,
-		ObservationEarliest:  earliest,
-		ObservationLatest:    latest,
+		ID:                        source.ID,
+		CitySlug:                  source.CitySlug,
+		CanonicalHost:             source.CanonicalHost,
+		SchemaVersion:             source.SchemaVersion,
+		SourceEventIDPattern:      source.SourceEventIDPattern,
+		RecordLimit:               source.RecordLimit,
+		MinimumRecords:            source.MinimumRecords,
+		MaximumQuarantineRatioBPS: source.MaximumQuarantineRatioBPS,
+		MaximumDuplicateRatioBPS:  source.MaximumDuplicateRatioBPS,
+		LowCountRatioBPS:          source.LowCountRatioBPS,
+		HighCountRatioBPS:         source.HighCountRatioBPS,
+		RegistrationHosts:         source.RegistrationHosts,
+		ImageHosts:                source.ImageHosts,
+		ObservationEarliest:       earliest,
+		ObservationLatest:         latest,
 	}, processor.Validator)
 	if err != nil {
 		return processingFailure(run.ID, source.ID, "dataset_prepare_failed", false, err)
@@ -234,7 +249,7 @@ func (processor *Processor) validateAndPublish(
 	if err != nil {
 		return processingFailure(run.ID, source.ID, "health_baseline_failed", true, err)
 	}
-	prepared = collections.ApplyRecordCountBaseline(prepared, baseline)
+	prepared = collections.ApplyRecordCountBaseline(prepared, baseline, source.LowCountRatioBPS, source.HighCountRatioBPS)
 	now := processor.now()
 	if prepared.HealthCode != "" {
 		received, _ := datasetCount(dataset)

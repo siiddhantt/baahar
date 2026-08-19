@@ -36,6 +36,7 @@ type OperatorStore interface {
 	QueueCollection(context.Context, uuid.UUID, string, string, string, time.Time) (collections.Run, error)
 	QueueReplay(context.Context, uuid.UUID, string, string, string, time.Time) (collections.Run, error)
 	AcknowledgeIncident(context.Context, uuid.UUID, string, string, time.Time) (sources.Incident, error)
+	CreateSourceAlias(context.Context, uuid.UUID, string, uuid.UUID, string, string, string, string, time.Time) (sources.IdentityAlias, error)
 }
 
 type Config struct {
@@ -101,6 +102,7 @@ func (server *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/operator/sources", server.handleOperatorSources)
 	mux.HandleFunc("GET /v1/operator/sources/{source_id}/runs", server.handleCollectionRuns)
 	mux.HandleFunc("POST /v1/operator/sources/{source_id}/runs", server.handleTriggerCollection)
+	mux.HandleFunc("POST /v1/operator/sources/{source_id}/aliases", server.handleCreateSourceAlias)
 	mux.HandleFunc("POST /v1/operator/runs/{run_id}/replay", server.handleReplayCollection)
 	mux.HandleFunc("POST /v1/operator/incidents/{incident_id}/acknowledge", server.handleAcknowledgeIncident)
 	return server.middleware(mux)

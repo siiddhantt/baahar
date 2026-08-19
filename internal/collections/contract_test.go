@@ -90,3 +90,26 @@ func TestCollectorContractRequiresExplicitSourceEventID(t *testing.T) {
 		t.Fatal("missing source_event_id must fail the collector contract")
 	}
 }
+
+func TestCollectorContractRequiresEndDateForExactEndTime(t *testing.T) {
+	validator, err := NewCollectorValidator()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixture, err := os.ReadFile(filepath.Join("..", "..", "contracts", "examples", "bic-event.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var record map[string]json.RawMessage
+	if err := json.Unmarshal(fixture, &record); err != nil {
+		t.Fatal(err)
+	}
+	record["end_date"] = json.RawMessage("null")
+	invalid, err := json.Marshal(record)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := validator.ValidateRecord(invalid); err == nil {
+		t.Fatal("ends_at without end_date must fail the collector contract")
+	}
+}

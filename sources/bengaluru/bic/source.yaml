@@ -1,19 +1,30 @@
 schema_version: source-manifest/v1
 source: bic
+source_id: 019c5d13-c392-79d2-9012-3ed4242f771f
+display_name: Bangalore International Centre
 city: bengaluru
+city_id: 019c5d13-c392-79d2-9012-3ed4242f771d
 canonical_hosts:
   - bangaloreinternationalcentre.org
+registration_hosts:
+  - bangaloreinternationalcentre.org
+image_hosts:
+  - bangaloreinternationalcentre.org
+official_url: https://bangaloreinternationalcentre.org/
 collector_id: c_msyr5ts21rq3nfjxrz
 output_schema: event-occurrence/v1
+publication_state: active
+collection_state: verified
 schedule: "0 */4 * * *"
 freshness_ttl: 12h
+collection_input:
+  url: https://bangaloreinternationalcentre.org/wp-json/tribe/events/v1/events
 limits:
   pages_per_run: 2
   records_per_run: 100
   window_days: 31
 health:
   minimum_records: 1
-  maximum_records_before_baseline: 100
   maximum_parse_error_ratio: 0.02
   maximum_duplicate_ratio: 0.01
   missing_observations_before_removal: 2
@@ -21,6 +32,7 @@ health:
   high_count_ratio_after_baseline: 2.5
 identity:
   source_event_id: id
+  source_event_id_pattern: "^[0-9]+$"
   stable_when_time_changes: true
   array_position_allowed: false
   multi_performance_requirement: stable_performance_id_or_reviewed_fallback
