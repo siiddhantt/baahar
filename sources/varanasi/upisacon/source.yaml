@@ -1,0 +1,48 @@
+schema_version: source-manifest/v1
+source: upisacon
+source_id: 38b1744a-4b79-56b1-9009-50cedfb69820
+display_name: UPISACON 2026 Workshops
+city: varanasi
+city_id: 019c5d13-c392-79d2-9012-3ed4242f771e
+canonical_hosts:
+  - upisaconvaranasi2026.com
+registration_hosts:
+  - registration.upisaconvaranasi2026.com
+official_url: https://upisaconvaranasi2026.com/workshops
+collector_id: c_mszryghfxuyinkfe6
+output_schema: event-occurrence/v1
+publication_state: preview
+collection_state: local_verified
+worker_type: browser
+schedule: "53 */6 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://upisaconvaranasi2026.com/workshops
+limits:
+  pages_per_run: 1
+  records_per_run: 7
+  window_days: 90
+  browser_navigations_per_run: 1
+  browser_actions_per_run: 0
+  browser_fanout_per_run: 0
+  maximum_physical_requests_in_live_preflight: 12
+health:
+  minimum_records: 7
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.5
+  high_count_ratio_after_baseline: 2.0
+identity:
+  source_event_id: null
+  fallback_fields:
+    - normalized_title
+    - canonical_source_url
+    - local_occurrence_date_time
+    - normalized_venue_key
+  array_position_allowed: false
+  exact_duplicates_allowed: false
+access:
+  robots_status: allow
+  pages_per_run: 1
+  facts_only: true

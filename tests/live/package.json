@@ -1,0 +1,14 @@
+{
+  "name": "@baahar/source-live-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:browser": "playwright install chromium",
+    "test:upisacon": "node --test upisacon-worker.test.mjs"
+  },
+  "devDependencies": {
+    "parse5": "8.0.1",
+    "playwright": "1.62.1"
+  }
+}
