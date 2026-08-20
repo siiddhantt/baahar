@@ -1,0 +1,61 @@
+schema_version: source-manifest/v1
+source: india-habitat-centre
+source_id: 61f49230-ea6a-5a96-aeb8-c481d806978b
+display_name: India Habitat Centre
+city: delhi
+city_id: 19f16354-f054-53e8-bfb6-2b1e1acdcd00
+canonical_hosts:
+  - indiahabitat.org
+image_hosts:
+  - indiahabitat.org
+official_url: https://indiahabitat.org/Events
+collector_id: c_mt1gyvqb8ftcpex5b
+output_schema: event-occurrence/v1
+publication_state: preview
+collection_state: local_verified
+worker_type: code
+schedule: "23 */6 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://indiahabitat.org/Events
+limits:
+  pages_per_run: 1
+  records_per_run: 100
+  window_days: 90
+  browser_navigations_per_run: 0
+  browser_actions_per_run: 0
+  browser_fanout_per_run: 0
+  maximum_physical_requests_in_live_preflight: 1
+health:
+  minimum_records: 1
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.4
+  high_count_ratio_after_baseline: 2.5
+identity:
+  source_event_id: detail_path_numeric_id
+  source_event_id_pattern: "^[0-9]+$"
+  stable_when_time_changes: true
+  array_position_allowed: false
+  exact_duplicates_allowed: false
+  multi_performance_requirement: distinct_numeric_detail_id_per_listed_occurrence
+image_preference:
+  - all-events.event-img.img
+category_map:
+  Music: music
+  Dance: arts
+  Film: arts
+  Film & Talk: talks
+  Film & Theatre: theatre
+  Theatre: theatre
+  Talk: talks
+  Music & Dance: arts
+  Walk: community
+  Workshop: workshops
+  Online: other
+  Other: other
+access:
+  robots_status: missing_404
+  pages_per_run: 1
+  facts_only: true
