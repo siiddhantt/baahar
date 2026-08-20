@@ -201,14 +201,14 @@ func TestIHCManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 	}
 }
 
-func TestPianoManManifestKeepsTheReviewedLocalOnlyBoundary(t *testing.T) {
+func TestPianoManManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 	manifest, err := LoadManifest(filepath.Join("..", "..", "sources", "delhi", "the-piano-man", "source.yaml"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if manifest.SourceID != "7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3" ||
 		manifest.CityID != "19f16354-f054-53e8-bfb6-2b1e1acdcd00" ||
-		manifest.CollectorID != "" || manifest.WorkerType != "code" ||
+		manifest.CollectorID != "c_mt1rkddl1dmh5iiok6" || manifest.WorkerType != "code" ||
 		manifest.PublicationState != "preview" || manifest.CollectionState != "local_verified" ||
 		len(manifest.CanonicalHosts) != 1 || manifest.CanonicalHosts[0] != "www.thepianoman.in" ||
 		len(manifest.RegistrationHosts) != 1 || manifest.RegistrationHosts[0] != "www.thepianoman.in" ||

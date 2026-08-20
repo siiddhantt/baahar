@@ -11,7 +11,7 @@ registration_hosts:
 image_hosts:
   - www.thepianoman.in
 official_url: https://www.thepianoman.in/event/list
-collector_id: null
+collector_id: c_mt1rkddl1dmh5iiok6
 output_schema: event-occurrence/v1
 publication_state: preview
 collection_state: local_verified

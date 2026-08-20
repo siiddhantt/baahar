@@ -1,7 +1,8 @@
 # The Piano Man Delhi collector
 
-This is a local-only, source-scoped Code worker for the official rolling Delhi
-event board. It has no Bright or backend resource.
+This is the reviewed source-scoped Code worker for the official rolling Delhi
+event board. Development collector `c_mt1rkddl1dmh5iiok6` exists but its
+generated template remains frozen and untrusted. It has no backend resource.
 
 ## Independent gate
 
@@ -16,8 +17,9 @@ event board. It has no Bright or backend resource.
    start/end time.
 7. Fail atomically on source, shape, identity, venue, category, price, URL,
    image, horizon, request, duplicate, or schema drift.
-8. Stop after local verification. Bright create/preview/save/production, backend
-   registration, Delhi enablement, and browser acceptance are separate gates.
+8. Stop before generated-template inspection or mutation. Explicit Bright
+   preview, save, run, production, backend registration, Delhi enablement, and
+   browser acceptance are separate gates.
 
 Run from `baahar/`:
 
