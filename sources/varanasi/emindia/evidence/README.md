@@ -154,9 +154,9 @@ a registered business with a verified company-domain email, and the review may
 require company and government-issued identity documents. This confirms an
 account-policy restriction, not a collector, parser, or source-data defect.
 
-Baahar does not require or assume KYC for a personal hackathon account. Keep the
-source blocked unless Bright Data grants a written hackathon exception or the
-account owner independently qualifies as a registered business and deliberately
+Baahar does not require or assume KYC for a personal developer account. Keep the
+source blocked unless Bright Data grants written account access or the account
+owner independently qualifies as a registered business and deliberately
 completes the official KYC process. Never submit identity documents by email,
 use another person's company identity, or retry the collector to bypass the
 restriction.

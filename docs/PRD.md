@@ -1,6 +1,6 @@
 # Baahar product requirements
 
-Status: build-ready for the Scrape-Verse MVP  
+Status: build-ready for the first public release
 Working title: Baahar  
 Initial cities: Bengaluru and Varanasi  
 Target release: 23 August 2026
@@ -16,7 +16,7 @@ to check: theatres, museums, bookshops, cultural centres, universities,
 government cultural portals, and community institutions. It presents the
 result as a fast, visual feed with the original source attached to every event.
 
-Baahar is not another event-submission marketplace. Organisers do not need to
+Baahar is not another event-listing marketplace. Organisers do not need to
 list an event with us for it to become discoverable. It is also not a general
 web-search wrapper: its value is the continuously maintained data pipeline,
 common event model, deterministic change detection, and useful time-based feed.
@@ -117,7 +117,7 @@ The operator experience is protected and never appears in the public navigation.
 - More cities and source templates.
 - Public JSON or iCalendar city feeds.
 
-### Explicitly not in the hackathon MVP
+### Explicitly not in the first release
 
 - Ticket sales or payments.
 - User-generated event listings and organiser accounts.
@@ -378,7 +378,7 @@ Title similarity or performance-array position alone must never merge events.
 
 ## 11. Success measures
 
-Hackathon release success is not vanity traffic. It is demonstrated correctness:
+Release success is not vanity traffic. It is demonstrated correctness:
 
 - at least six live, healthy long-tail collectors across both cities, with eight
   as the target;
@@ -392,7 +392,7 @@ Hackathon release success is not vanity traffic. It is demonstrated correctness:
 - a first-time tester can choose a city, find a real plan, and reach its official
   page without an explanation from the presenter.
 
-Post-hackathon product measures:
+Long-term product measures:
 
 - official-link click-through per feed session;
 - save/calendar rate;
@@ -401,43 +401,20 @@ Post-hackathon product measures:
 - events discovered outside mainstream ticketing feeds, measured by a reviewed
   sample rather than a marketing claim.
 
-## 12. Hackathon alignment
+## 12. Product quality principles
 
-Baahar is designed around the six equally weighted criteria on the official
-[Scrape-Verse page](https://www.wemakedevs.org/hackathons/scrape-verse), subject
-to its published [rules](https://www.wemakedevs.org/hackathons/scrape-verse/rules):
-
-| Criterion                | Demonstration                                                                                       |
-| ------------------------ | --------------------------------------------------------------------------------------------------- |
-| Potential impact         | One obvious city-discovery job, including non-metro and public cultural sources                     |
-| Creativity               | A living city feed built from pages people do not routinely monitor, not another scraper dashboard  |
-| Technical excellence     | Versioned contracts, idempotent ingestion, provenance, deterministic diffs, quarantine and recovery |
-| Scraper Studio use       | Multi-stage custom collectors with real `c_*` IDs and API-triggered scheduled flows                 |
-| Reliability/self-healing | Health gates, frozen publication, same-ID reviewed heal, canary replay                              |
-| Presentation             | Real two-city data, immediate visual feed, visible source changes, polished light/dark experience   |
-
-The required submission evidence includes the public repository, README, example
-structured output, live Collector IDs, one create/run flow, downstream database
-and dashboard integration, self-heal proof, disclosure of AI coding-assistant use,
-and a demo video.
-
-### Prize-track strategy
-
-- **Web-Slinger / Best Use of Bright Data:** eight source-specific custom
-  collectors, scheduled API ingestion, Code/Browser worker decisions, immutable
-  outputs, and a same-Collector-ID reviewed self-heal whose downstream contract
-  remains stable.
-- **Suit-Up / Best UI:** the living-noticeboard feed, distinctive two-city art
-  system, light/dark parity, meaningful shared-element motion, and complete live
-  edge states under accessibility/performance budgets.
-- **Spider-Sense / Best Clean Code:** the bounded modular monolith, generated
-  contract types, consumer-owned ports, explicit invariants, real-infrastructure
-  integration tests, no speculative services/AI/state libraries, and enforced
-  lint/security/release gates.
-- **Daily Bugle / Best LinkedIn post:** a concise before/after story—eight pages
-  residents had to remember, one current feed, and a real source redesign repaired
-  without changing the Collector ID. The post must use real screenshots/metrics
-  and avoid exaggerated coverage claims.
+- **Useful coverage:** one obvious city-discovery job, including non-metro and
+  public cultural sources.
+- **Source integrity:** a living city feed built from pages people do not
+  routinely monitor, with the official source attached to every event.
+- **Technical quality:** versioned contracts, idempotent ingestion, provenance,
+  deterministic diffs, quarantine, and recovery.
+- **Collection discipline:** reviewed source-specific collectors with stable
+  IDs, bounded page budgets, and API-triggered scheduled flows.
+- **Reliability:** health gates, frozen publication, reviewed same-ID repair, and
+  canary replay.
+- **Experience:** real city data, immediate visual feed, visible source changes,
+  and polished light/dark behaviour.
 
 ## 13. Acceptance journeys
 

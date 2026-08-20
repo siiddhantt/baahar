@@ -39,7 +39,3 @@ would test code Baahar neither owns nor ships.
   promoted, run, healed, or blocked.
 - A source is not described as active until its immutable batch, normalization,
   publication, API, and browser gates have all passed.
-
-AI-assisted changes follow the same review bar as human-written changes. The
-author remains responsible for understanding the implementation, reviewing the
-diff, and recording the verification evidence.

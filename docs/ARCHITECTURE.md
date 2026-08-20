@@ -328,8 +328,9 @@ category_map:
   Books: books
 ```
 
-The actual Collector ID is committed only when the official hackathon proof
-requires it. Secrets and access tokens are never part of a manifest.
+The actual Collector ID is committed only after the reviewed source reaches its
+external collector proof gate. Secrets and access tokens are never part of a
+manifest.
 
 ## 9. Health policy
 

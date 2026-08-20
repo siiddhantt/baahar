@@ -1,7 +1,7 @@
 # Baahar execution and quality plan
 
 Planning date: 18 August 2026  
-Submission date: 23 August 2026
+Release checkpoint: 23 August 2026
 
 ## 1. Delivery rule
 
@@ -21,12 +21,11 @@ A feature is complete only when:
 
 ## 2. Workstreams and ownership
 
-One person may own several streams during the hackathon, but responsibility must
-remain explicit.
+One person may own several streams, but responsibility must remain explicit.
 
 | Stream           | Accountable output                                                           | May change                                   |
 | ---------------- | ---------------------------------------------------------------------------- | -------------------------------------------- |
-| Product/release  | scope, go/no-go decisions, live demo, submission evidence                    | docs, release checklist                      |
+| Product/release  | scope, go/no-go decisions, live demo, release evidence                       | docs, release checklist                      |
 | Contracts/domain | schemas, identity, time windows, versions, diffs, invariants                 | contracts, `internal/events`                 |
 | Collection/data  | source manifests, Scraper Studio collectors, ingest, health, self-heal proof | sources, `internal/collections`, Bright Data |
 | API/platform     | migrations, repositories, HTTP, jobs, object store, auth/operations          | Go platform modules                          |
@@ -101,7 +100,7 @@ Outputs:
 - PRD, architecture, experience, source catalog and this execution plan;
 - working-name and collision note;
 - launch eight plus release floor;
-- hackathon requirements and judging matrix;
+- product constraints and release-quality matrix;
 - preliminary robots/terms/access notes for the first source in each city.
 
 Exit gate:
@@ -147,7 +146,7 @@ Tasks:
 4. Serve city and feed endpoints with cursor/ETag/cache headers.
 5. Render the live Bengaluru cards and detail route in both themes.
 6. Preserve one exact live artifact privately and a sanitized structured example
-   publicly for hackathon proof.
+   publicly for reproducibility.
 
 Exit gate:
 
@@ -245,7 +244,7 @@ Exit gate:
   target viewport;
 - live API/worker logs contain no token or raw content leak.
 
-### Checkpoint 7 — freeze and submission (22–23 August)
+### Checkpoint 7 — release-candidate freeze (22–23 August)
 
 No new product features after freeze.
 
@@ -254,17 +253,17 @@ Tasks:
 1. Deploy a release candidate and run one live source per city end to end.
 2. Run migrations from a clean production-like database and rollback rehearsal.
 3. Finish README, architecture diagram, source policy, local setup, example output,
-   Collector ID evidence and AI-assistant disclosure.
-4. Record a short demo: user value first, then live pipeline, then controlled heal.
-5. Prepare presentation and LinkedIn post without making unsupported coverage or
-   sponsor-location claims.
+   and Collector ID evidence.
+4. Record a short product walkthrough: user value first, then live pipeline, then
+   controlled repair.
+5. Prepare release notes without making unsupported coverage or location claims.
 6. Tag the exact commit used in the video/deployment and retain raw evidence.
 
 Exit gate:
 
 - a new evaluator can understand and run the product from the README;
 - live URL and repository are public and point to the tagged release;
-- all six judging criteria receive explicit evidence in the submission;
+- impact, reliability, operability, and experience claims have explicit evidence;
 - no known P0 correctness/security issue is hidden behind demo data.
 
 ## 5. Test portfolio

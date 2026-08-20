@@ -67,7 +67,7 @@ or features discovered.
 - Consider public feeds, PWA/digest, or other bounded enhancements only when the
   active cities remain healthy.
 
-### P2 — not hackathon release work
+### P2 — not first-release work
 
 - Delhi or Mumbai city enablement, cross-device saves/accounts, Clerk or another
   identity provider, maps/geocoding/distance ordering, precise location, Redis,
@@ -275,8 +275,8 @@ public fallback.
 Delhi and Mumbai are research-only future expansions. Their reviewed matrix is
 recorded in `docs/SOURCES.md`; no source row, migration or city flag exists for
 either. India Habitat Centre is Delhi's reviewed first candidate, while JNU and
-other government sites are product-later only under the hackathon source
-policy. The current one-source expansion lock still applies. Research and a
+other government sites are product-later while account access and source policy
+remain unresolved. The current one-source expansion lock still applies. Research and a
 separately authorized development-template proof do not enable a city. NCPA
 requires written permission. Any future source must pass Studio, immutable
 publication, API, and browser acceptance before its city is enabled.

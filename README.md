@@ -95,7 +95,7 @@ The web app is served at `http://127.0.0.1:5174` and proxies `/v1` to the API at
 `http://127.0.0.1:8080`. The worker schedules shared source collections; public
 visitors never trigger a scrape.
 
-## Submission proof
+## Engineering proof
 
 The repository keeps claims close to executable evidence:
 
@@ -110,8 +110,8 @@ The repository keeps claims close to executable evidence:
   cursor tests;
 - private batch payloads and credentials are deliberately excluded from Git.
 
-See [the submission evidence map](docs/SUBMISSION.md) for the judging narrative
-and the exact boundaries of the public demo.
+See [the quality evidence map](docs/QUALITY.md) for the system-level verification
+story and the boundaries of the public product.
 
 ## Quality gates
 
@@ -138,13 +138,6 @@ production worker path.
 - [Execution and quality plan](docs/EXECUTION.md)
 - [Deployment contract](docs/DEPLOYMENT.md)
 - [Current checkpoint status](docs/STATUS.md)
-
-## Development disclosure
-
-Baahar was developed with an AI coding agent. Every change in the public history
-is reviewed by the author and must pass the same contracts, tests, live-source
-checks, and production gates described above. The product itself performs no
-runtime AI inference and never auto-approves a collector repair.
 
 ## Working-name note
 

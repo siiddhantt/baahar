@@ -27,6 +27,9 @@ tmp/
 # Tooling and OS
 .idea/
 .vscode/
+.vercel/
 .DS_Store
 Thumbs.db
 
+.vercel
+.env*
