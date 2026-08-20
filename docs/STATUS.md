@@ -52,7 +52,10 @@ or features discovered.
       floor through two independently useful official sources, one complete
       vertical slice at a time. If that cannot be done safely, narrow the public
       release claim instead of padding it with aggregators or one-off events.
-- [ ] Complete and record the same-Collector-ID, human-reviewed self-heal proof.
+- [ ] Complete and record a successful same-Collector-ID, human-reviewed
+      self-heal proof. BIEC's first controlled attempt correctly stopped at the
+      human gate: the broader two-selector proposal was rejected, and the
+      complete healthy nine-row Development output was reverified afterward.
 - [x] Re-run the production browser journeys for native share/clipboard fallback,
       real ICS download, device-local saves, detail/Back/filter state, loading,
       empty and error states, keyboard, reduced motion, and target viewports.
@@ -128,7 +131,7 @@ pagination is not pre-built into a generic scraping abstraction.
       `Other` occurrences, four source summaries, correct details/images/official
       links, unique cursor pages, and valid ICS; after an occurrence ends, the
       time-window rule removes it naturally rather than changing its status.
-- [ ] Browser acceptance passes image and missing-image cards, equal card rhythm,
+- [x] Browser acceptance passes image and missing-image cards, equal card rhythm,
       detail, Save/Saved, Share, Add to calendar, Back, filter/cursor state, both
       themes, keyboard/reduced-motion, and 320/390/1440/2560 widths.
 

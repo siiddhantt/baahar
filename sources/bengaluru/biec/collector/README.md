@@ -22,8 +22,8 @@ as the Scraper Studio presentation schema. This source keeps no copy.
 5. Preserve unknown registration, price, free, audience, and accessibility facts
    as null/empty; do not copy descriptions or infer categories.
 6. Keep collector creation, preview, production proof, and backend registration
-   as separate authorization gates. Production proof is complete; backend
-   registration remains separate.
+   as separate authorization gates. Production proof and backend registration
+   are complete and recorded independently.
 
 An undefined input URL is accepted only for Scraper Studio's internal save probe
 and compiles to the exact constant. Every present input must match byte-for-byte.
@@ -39,3 +39,9 @@ and fallback identities all passed. The manifest is now `active` / `verified`:
 the independent application activation published 9/9 with zero quarantine,
 then replayed the same immutable object without another Bright call or any
 occurrence, version, change, or raw-object duplication.
+
+The controlled repair ledger in `../evidence/README.md` records one rejected
+same-ID proposal and a healthy post-rejection Development verification. Never
+approve a repair merely because it reaches the approval gate: require the exact
+tracked selector, complete output, schema, semantic, request-budget, and
+Production gates first.

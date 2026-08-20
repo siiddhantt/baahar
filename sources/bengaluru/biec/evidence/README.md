@@ -52,7 +52,8 @@ The API token was mapped into the CLI process only.
 
 The private envelope is ignored under `../private/create-envelope.json`. The
 CLI envelope exposes status and completed generation steps, not the generated
-stage/code shape. No retry, duplicate create, heal, or approval occurred.
+stage/code shape. No retry, duplicate create, heal, or approval occurred during
+this creation gate.
 
 ## Studio development proof — 20 August 2026
 
@@ -96,6 +97,44 @@ and did not retain or expose that final save-preview ID. Reloading the saved Cod
 page shows the one tracked stage, empty parser, and `No errors found`. Earlier
 failed previews were limited to the now-reviewed `job.created` presentation
 shapes; they were not source or transport failures.
+
+## Controlled repair review — 20 August 2026
+
+A controlled development-only selector drift changed the single reviewed
+`event-tit` selector to `event-title`. Production and Baahar's last-known-good
+publication remained untouched. Development preview
+`preview_mt1mwg2b17sl30ku7a` performed one request, collected zero rows, and
+failed atomically with `BIEC eligible box left the modern card contract`.
+
+Official CLI 0.3.5 then ran one same-Collector-ID repair with `--no-retry` and
+without auto-approval. It reached `awaiting_approval` after 458 polls. The
+private 2,889-byte envelope has SHA-256
+`7108342753f1197b6e4c02a4605eb44587f351e6e54caf3c6e25ad42f8f4a59c`.
+The account login created the CLI's standard `cli_unlocker` and `cli_browser`
+zones; no credential was printed or committed.
+
+Human review rejected the proposal. Its one-stage candidate was not an exact
+repair: it added both `event-title` and `event-tit` selectors plus explanatory
+code instead of restoring the single reviewed selector, changed template
+metadata, and exposed only two preview samples. The proposed worker was 22,585
+bytes with SHA-256
+`26459baeb5663667128ea684ea5e643c569f3c45c0aef0ef91b87748fd23ccbb`,
+while the healthy tracked worker remained byte-identical at SHA-256
+`e595ba1ea564bdf7c60d9ef27ad5bfe8d8640c2647d6fb1ea04bf9deef025998`.
+The private 532-byte rejection envelope has SHA-256
+`89999b98c219670dcd9db8eb7f0d996e776005732e8c43258754031e0abe507`.
+
+One post-rejection Development verification returned the complete healthy nine
+rows. Its private output is 7,598 bytes with SHA-256
+`56b9eca4839572a9f13bf460e02db80b1f38a91182a7e3676d4d6bc163bfe8d1`:
+each row has the exact 27 canonical fields plus the reviewed `input` transport
+member, all nine pass the authoritative Go schema and BIEC semantic gates, and
+the uniform observation is `2026-08-20T15:09:10.862Z`. The focused live,
+mutation, and schema suite also remains 6/6 green.
+
+This is evidence that the human approval boundary works; it is not claimed as a
+successful repair. No proposed change was approved, saved to Production, run
+through the application worker, or published.
 
 ## Immutable production batch — 20 August 2026
 
