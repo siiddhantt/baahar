@@ -37,8 +37,9 @@ part of this source's recovery plan.
    ```
 
 4. In **Output schema -> Edit schema**, replace the generated schema with
-   `output-schema.json`: exactly 27 active canonical fields, explicit null
-   defaults for unknowns, and no `input`, wrapper, description, or extra field.
+   `../../../../contracts/scraper-studio-output-schema.json`: exactly 27 active
+   canonical fields, explicit null defaults for unknowns, and no `input`,
+   wrapper, description, or extra field.
 5. Run an explicit preview for that one canonical input. Require one page load,
    13 collect calls and 13 output rows: nine `timed`, four `date`, zero WECAN,
    exact `BHU Varanasi`, and no error.
