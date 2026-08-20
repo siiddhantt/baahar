@@ -27,3 +27,19 @@ code and obsolete comments instead of leaving them for a future cleanup.
 Run Go checks with `./cmd/... ./contracts ./internal/...`. The frontend's npm
 dependency tree contains third-party `.go` source, so an unscoped `go test ./...`
 would test code Baahar neither owns nor ships.
+
+## Change history
+
+- Branch from `main` with `feat/`, `fix/`, or `release/`.
+- Keep one product concern per commit and use Conventional Commit subjects such
+  as `feat:`, `fix:`, `test:`, `docs:`, or `chore:`.
+- Stage explicit paths. Never mix private evidence, generated binaries, or an
+  unrelated working-tree change into a commit.
+- Update the relevant source evidence ledger whenever a collector is previewed,
+  promoted, run, healed, or blocked.
+- A source is not described as active until its immutable batch, normalization,
+  publication, API, and browser gates have all passed.
+
+AI-assisted changes follow the same review bar as human-written changes. The
+author remains responsible for understanding the implementation, reviewing the
+diff, and recording the verification evidence.

@@ -2,26 +2,32 @@
 
 > Find something worth stepping out for.
 
-Baahar is a source-first city discovery feed for public events that are easy to
-miss because they live on venue calendars, cultural-institution websites,
-university pages, government portals, and other long-tail sites rather than on
-the major ticketing platforms.
+[![Quality](https://github.com/siiddhantt/baahar/actions/workflows/ci.yml/badge.svg)](https://github.com/siiddhantt/baahar/actions/workflows/ci.yml)
 
-The city roadmap starts with Bengaluru and Varanasi. The current release slice
-is deliberately narrower: two official Bengaluru sources, end to end. Bright
-Data Scraper Studio collectors turn BIC's public calendar and Jagriti Theatre's
-list/detail pages into one verified event contract. Baahar then detects changes
-so that cancellations, closed registrations, and revised times do not silently
-leave stale cards in the feed.
+Baahar is a source-first city discovery feed for public events that are easy to
+miss because they live on venue calendars, cultural-institution websites, and
+other long-tail pages rather than on the major ticketing platforms.
+
+The launch cities are Bengaluru and Varanasi. The current verified release path
+publishes BIC, Jagriti Theatre, Atta Galatta, and BIEC for Bengaluru, plus BHU
+Academic Events for Varanasi. Every active source passes through the same
+immutable raw artifact, validation, normalization, publication, API, and browser
+gates. The current bounded checkpoint is closing Varanasi's two-source coverage
+gap one complete official-source vertical slice at a time.
 
 There are no product-runtime LLM calls. Scraper Studio owns collection and
 reviewable connector repair; Baahar never auto-approves a generated repair or
 lets a changed collector bypass its schema and health gates.
 
+```text
+Official page -> Scraper Studio -> immutable raw bytes -> validation
+              -> normalization -> PostgreSQL -> public API -> city feed
+```
+
 ## What the first release does
 
-- collects the next 31 days of official BIC events and Jagriti Theatre's current
-  performances through two reviewed Scraper Studio Code workers;
+- collects a bounded upcoming horizon from the five currently verified official
+  sources through reviewed Scraper Studio Code workers;
 - preserves every returned batch byte in private S3-compatible storage before
   validation;
 - rejects structurally invalid, suspiciously small, duplicated, stale, or
@@ -29,10 +35,10 @@ lets a changed collector bypass its schema and health gates.
 - publishes a responsive Bengaluru feed with date/category/free filters, event
   details, source links, change history, device-local saves, and calendar files.
 
-Varanasi remains the next city on the roadmap but is intentionally not exposed
-as a usable noticeboard yet. The first Rudraksh collector attempt failed on an
-upstream Bright Data proxy-tunnel error and was quarantined instead of producing
-an empty or invented public feed.
+Varanasi is enabled from BHU's verified official event surface. Other attempted
+Varanasi sources that hit Bright Data's account-level proxy/allowlist boundary
+remain quarantined and unpublished; an empty preview or failed crawl is never
+used to pad city coverage.
 
 ## Repository map
 
@@ -89,6 +95,24 @@ The web app is served at `http://127.0.0.1:5174` and proxies `/v1` to the API at
 `http://127.0.0.1:8080`. The worker schedules shared source collections; public
 visitors never trigger a scrape.
 
+## Submission proof
+
+The repository keeps claims close to executable evidence:
+
+- every collector has a manifest, field mapping, operator notes, and an evidence
+  ledger under `sources/`;
+- live-source harnesses prove request/page budgets, atomic failure, identity,
+  schema, and representative source facts;
+- real PostgreSQL and S3-compatible integration tests cover migrations,
+  immutable artifacts, idempotent replay, normalization, and public routes;
+- the frontend is contract-generated, keyboard accessible, responsive from
+  320px to wide desktop, and verified with route, share, save, calendar, and
+  cursor tests;
+- private batch payloads and credentials are deliberately excluded from Git.
+
+See [the submission evidence map](docs/SUBMISSION.md) for the judging narrative
+and the exact boundaries of the public demo.
+
 ## Quality gates
 
 ```powershell
@@ -114,6 +138,13 @@ production worker path.
 - [Execution and quality plan](docs/EXECUTION.md)
 - [Deployment contract](docs/DEPLOYMENT.md)
 - [Current checkpoint status](docs/STATUS.md)
+
+## Development disclosure
+
+Baahar was developed with an AI coding agent. Every change in the public history
+is reviewed by the author and must pass the same contracts, tests, live-source
+checks, and production gates described above. The product itself performs no
+runtime AI inference and never auto-approves a collector repair.
 
 ## Working-name note
 
