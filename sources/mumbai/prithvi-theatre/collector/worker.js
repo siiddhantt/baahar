@@ -145,12 +145,21 @@ function ptBoundedInput(value) {
 }
 
 function ptResponseText(value) {
-  const text =
-    typeof value === "string"
-      ? value
-      : value && typeof value.body === "string"
-        ? value.body
-        : null;
+  let text = null;
+  if (typeof value === "string") {
+    text = value;
+  } else if (value && typeof value === "object" && !Array.isArray(value)) {
+    const payload = Object.hasOwn(value, "body") ? value.body : value;
+    if (typeof payload === "string") {
+      text = payload;
+    } else if (
+      payload &&
+      typeof payload === "object" &&
+      !Array.isArray(payload)
+    ) {
+      text = JSON.stringify(payload);
+    }
+  }
   if (
     text === null ||
     text.length < PT_MIN_RESPONSE_CHARACTERS ||

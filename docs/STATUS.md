@@ -275,11 +275,14 @@ second viable coverage source once Bright account access is cleared. AllEvents
 and ticketing sites remain discovery-only. Preview data is never used as a
 public fallback.
 
-Delhi and Mumbai are research-only future expansions. Their reviewed matrix is
-recorded in `docs/SOURCES.md`; no source row, migration or city flag exists for
-either. India Habitat Centre is Delhi's reviewed first candidate, while JNU and
-other government sites are product-later while account access and source policy
-remain unresolved. The current one-source expansion lock still applies. Research and a
-separately authorized development-template proof do not enable a city. NCPA
-requires written permission. Any future source must pass Studio, immutable
-publication, API, and browser acceptance before its city is enabled.
+Delhi and Mumbai remain disabled future expansions. Their reviewed matrix is
+recorded in `docs/SOURCES.md`; no runtime source row, migration, or enabled city
+flag exists for either. India Habitat Centre is Delhi's reviewed first
+candidate, while JNU and other government sites are product-later while account
+access and source policy remain unresolved. Prithvi Theatre is now Mumbai's
+first Production-verified collector: its same-ID one-stage worker, schema,
+previews, and one 49-row Production batch pass, but it is not Baahar-published.
+The one-source expansion lock still applies. Research or Studio proof does not
+enable a city. NCPA requires written permission. Every future source must pass
+immutable backend publication, API, and browser acceptance before its city is
+enabled.

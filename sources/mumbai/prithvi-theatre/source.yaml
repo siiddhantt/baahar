@@ -14,7 +14,7 @@ official_url: https://prithvitheatre.org/booktickets
 collector_id: c_mt1qtstu9kmw95k4q
 output_schema: event-occurrence/v1
 publication_state: preview
-collection_state: local_verified
+collection_state: verified
 worker_type: code
 schedule: "17 */6 * * *"
 freshness_ttl: 12h

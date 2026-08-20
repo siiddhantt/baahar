@@ -13,13 +13,19 @@ Paste `worker.js` into the worker editor and use the repository-wide
 routing. Do not add a Browser stage, pagination, detail fan-out, or a second
 input.
 
-The independently reviewed local worker is not installed in Bright yet. The
-single authorized development create completed as collector
-`c_mt1qtstu9kmw95k4q`, and that collector is frozen. Its generated template is
-not the implementation and has not been inspected or approved. Do not retry,
-create a duplicate, inspect or edit generated stages, preview, save, run, heal,
-promote, register the backend source, enable Mumbai, or publish anything
-without a separate reviewed gate.
+The reviewed implementation is installed on collector
+`c_mt1qtstu9kmw95k4q` as exactly one Code stage with an empty parser and the
+shared 27-field schema. The redundant generated stage was deleted. Development
+preview `preview_mt1scuki642uv3x7g` returned 49 exact rows from one request;
+the Development save and Production save repeated the same 49-row/no-error
+gate. Production batch `j_mt1sl5pg1t6ag3miax` then delivered 49 validated rows
+in 63,009 bytes (SHA-256
+`aeb3fb59126eb1d68d55738fbe2c7db482dfc10264d42428a363496354020d42`).
+
+Do not create a duplicate or add stages, parser code, pagination, fan-out,
+retries, inferred fields, or alternate inputs. Mumbai is still disabled: the
+next separate gate is backend migration, immutable store/replay, API, and
+frontend acceptance.
 
 Local proof:
 

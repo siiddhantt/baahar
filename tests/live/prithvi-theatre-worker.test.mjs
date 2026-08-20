@@ -133,6 +133,12 @@ async function executeWorker(responseBody, options = {}) {
     request(url) {
       assert.equal(arguments.length, 1);
       requests.push(url);
+      if (options.responseObjectWithParsedBody) {
+        return { body: JSON.parse(responseBody) };
+      }
+      if (options.parsedResponseObject) {
+        return JSON.parse(responseBody);
+      }
       return options.responseObject ? { body: responseBody } : responseBody;
     },
     bad_input(message) {
@@ -386,6 +392,18 @@ test("Prithvi worker accepts Studio response objects and drops ended sessions", 
   });
   assert.ifError(responseObject.error);
   assert.equal(responseObject.records.length, 49);
+
+  const parsedBodyObject = await executeWorker(live.text, {
+    responseObjectWithParsedBody: true,
+  });
+  assert.ifError(parsedBodyObject.error);
+  assert.equal(parsedBodyObject.records.length, 49);
+
+  const parsedResponseObject = await executeWorker(live.text, {
+    parsedResponseObject: true,
+  });
+  assert.ifError(parsedResponseObject.error);
+  assert.equal(parsedResponseObject.records.length, 49);
 
   const afterFirstPerformance = await executeWorker(live.text, {
     creationTime: "2026-08-21T13:01:00.000Z",

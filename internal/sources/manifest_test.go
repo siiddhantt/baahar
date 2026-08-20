@@ -240,7 +240,7 @@ func TestPrithviManifestKeepsTheReviewedMumbaiPreviewBoundary(t *testing.T) {
 	if manifest.SourceID != "7bb2b2bf-66bb-5cfe-8269-ea811552d9c7" ||
 		manifest.CityID != "7eb386b1-1bf5-5cd4-828f-a288683eef55" ||
 		manifest.CollectorID != "c_mt1qtstu9kmw95k4q" || manifest.WorkerType != "code" ||
-		manifest.PublicationState != "preview" || manifest.CollectionState != "local_verified" ||
+		manifest.PublicationState != "preview" || manifest.CollectionState != "verified" ||
 		len(manifest.CanonicalHosts) != 1 || manifest.CanonicalHosts[0] != "prithvitheatre.org" ||
 		len(manifest.RegistrationHosts) != 1 || manifest.RegistrationHosts[0] != "in.bookmyshow.com" ||
 		len(manifest.ImageHosts) != 1 || manifest.ImageHosts[0] != "in.bmscdn.com" ||
@@ -257,6 +257,6 @@ func TestPrithviManifestKeepsTheReviewedMumbaiPreviewBoundary(t *testing.T) {
 		t.Fatalf("Prithvi reserved city_id = %s, want URL UUIDv5 %s", manifest.CityID, got)
 	}
 	if _, err := manifest.Projection(); err == nil {
-		t.Fatal("preview/local-verified Prithvi manifest unexpectedly has a runtime projection")
+		t.Fatal("preview/verified Prithvi manifest unexpectedly has a runtime projection")
 	}
 }

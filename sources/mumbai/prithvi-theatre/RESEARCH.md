@@ -70,13 +70,17 @@ robots and site terms before activation.
 
 ## Known launch gates
 
-This lane intentionally stops at `local_verified`:
+The source is `verified` in Bright Data but remains unpublished:
 
-1. Mumbai is accepted by the staging collector contract but is not yet
+1. The same collector has the exact one-stage tracked worker and shared schema,
+   and both development and Production-save previews returned 49 rows from one
+   request with no errors.
+2. One Production API batch delivered 49 schema-valid rows and is preserved as
+   immutable private evidence.
+3. Mumbai is accepted by the staging collector contract but is not yet
    provisioned in the backend city registry/database.
-2. No Bright Data collector has been created or tested.
-3. No immutable Bright batch or backend replay exists.
-4. The source is not active and the frontend is unchanged.
+4. No backend migration, immutable MinIO capture/replay, public API acceptance,
+   city enablement, or frontend publication exists yet.
 
-Those gates must be completed in order; the local worker must not be presented
-as published production coverage.
+The remaining gates must be completed in order; Production collector proof is
+not the same as published Baahar coverage.

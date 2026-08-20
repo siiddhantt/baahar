@@ -10,9 +10,12 @@ It rejects alternate hosts, explicit ports, credentials, reordered or extra
 query parameters, fragments, and every other path before transport. Scraper
 Studio's undefined save probe may compile only to the same constant URL.
 
-One response supplies the complete schedule. There is one request, one JSON
-parse, no HTML parse, browser navigation, detail fan-out, pagination, runtime
-discovery, retry loop, or LLM step.
+One response supplies the complete schedule. Studio may return that JSON as a
+raw string, a response object's string or parsed `body`, or the parsed root
+object. The worker normalizes only those observed Studio runtime shapes to JSON
+text, then applies the same byte, parse, and payload gates. There is one request,
+one JSON parse, no HTML parse, browser navigation, detail fan-out, pagination,
+runtime discovery, retry loop, or LLM step.
 
 ## Join and occurrence model
 

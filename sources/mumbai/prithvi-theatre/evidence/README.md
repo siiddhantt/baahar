@@ -97,12 +97,55 @@ poll attempts and returned:
 - envelope SHA-256:
   `00ff29becc74af0f2fa467c4db4ec2c8d17e5aa4c13f5f8327346850d4071f84`
 
-The collector ID is now frozen. This create does not prove or approve its
-generated template; the tracked worker remains the sole reviewed implementation
-candidate for a later, separately authorized install-and-preview gate.
+The collector ID was frozen after creation. Its generated two-stage template
+was not accepted: one stage failed the tracked response boundary and the other
+was an unrelated BookMyShow movie parser. The unrelated stage was deleted, and
+the tracked worker plus shared schema were installed on the same collector.
 
-No duplicate create, retry, heal, generated-template inspection, explicit
-preview, save, run, production promotion, backend registration, Mumbai city
-enablement, API exposure, or frontend publication is authorized in this gate.
-Private create transport must remain ignored under
-`../private/create-envelope.json`.
+## Studio and Production proof
+
+- tracked worker SHA-256:
+  `a8c7f4d9e3e90e92b67f2fb799607e2ad7975152e42e3702ba060a5dc2215eed`
+- shared Studio schema SHA-256:
+  `4a9c2a71d510806fcd2495c2120d6ee523375ce974d74df2a8fb88027c7ea71d`
+- topology: one Code stage, empty parser, one exact input, no navigation,
+  pagination, fan-out, or retry
+- first tracked preview: `preview_mt1s7pth2cghdifmlv`; it correctly failed
+  before collect because Studio returned parsed JSON rather than the locally
+  simulated string body
+- correction: accept only raw-string, response-body, or parsed-object JSON
+  runtime shapes, then reapply the same strict byte/shape/semantic gates
+- accepted preview: `preview_mt1scuki642uv3x7g`
+- accepted preview output: 49 rows, one request/page, no errors, 48,696 bytes,
+  SHA-256
+  `bed4d939fa37f076d345f1b97014f5f931bccbd627f9990ea522ae6e249e666e`
+- all 49 accepted preview rows have exactly 27 keys, 49 unique native session
+  IDs, and pass the authoritative Go collector schema
+- every accepted preview field matched a fresh execution of the tracked worker
+  at the same `observed_at`; zero missing, extra, or mismatched IDs
+- Development save preview: `preview_mt1sgsc9obo3inwfn`, 49 rows, one request,
+  no errors
+- Production-save preview: `preview_mt1si0oo2q8cr6gb0z`, 49 rows, one request,
+  no errors
+
+Exactly one Production API trigger was then issued for the canonical input:
+
+- collection ID: `j_mt1sl5pg1t6ag3miax`
+- trigger: HTTP 200, 79 bytes, SHA-256
+  `680815448e2b18cfc973d8735be272cbbd6fd4f5cabf5fe4a510411a317ad26c`
+- poll 1: HTTP 202, 55 bytes, SHA-256
+  `ff2f8ff073c6aaf37e2601dde6c32c5add156123847cb54ac04ad7a5791d2210`
+- poll 2: HTTP 200 terminal dataset
+- dataset: 63,009 bytes, SHA-256
+  `aeb3fb59126eb1d68d55738fbe2c7db482dfc10264d42428a363496354020d42`
+- transport: 49 uniform 28-key rows; the only extra key is Bright's exact
+  one-member canonical `input` envelope
+- canonical validation: 49 uniform 27-key rows, 49 unique IDs, Go schema
+  49/49, categories `theatre 44 / music 2 / arts 2 / talks 1`, free/priced
+  `4 / 45`, and zero field mismatches against a fresh tracked-worker execution
+- Production `observed_at`: `2026-08-20T17:26:23.967Z`
+
+There was no retry, duplicate create, heal, second Production trigger, backend
+registration, Mumbai enablement, API exposure, or frontend publication. Private
+create, preview, trigger, poll, and dataset bytes remain ignored under
+`../private/`.
