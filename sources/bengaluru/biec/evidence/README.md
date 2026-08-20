@@ -136,6 +136,77 @@ This is evidence that the human approval boundary works; it is not claimed as a
 successful repair. No proposed change was approved, saved to Production, run
 through the application worker, or published.
 
+## Successful same-ID repair — 21 August 2026
+
+The controlled repair was repeated against the same collector
+`c_mt199f5m1k5i18ud1i`. Production Version 3 and Baahar's last-known-good nine
+events remained live while Development alone changed the single reviewed
+`event-tit` selector to `event-title`. Development preview
+`preview_mt1we8zf2cu9dsvky6` made one request and one page load, emitted zero
+rows, and failed atomically with the exact error
+`BIEC eligible box left the modern card contract`.
+
+The first bounded CLI 0.3.5 repair reached `awaiting_approval` after 795 polls.
+Its private 3,081-byte envelope has SHA-256
+`b13602f1cc134c9959bcdc5799f4d1888756deb07edc2f1697f5892910dca7fa`.
+The proposed selector was functional and its two samples were correct, but it
+also added a backwards explanatory comment. The approval request failed safely,
+left the collector unchanged, and produced a private 799-byte failure envelope
+with SHA-256
+`337623abf35464d83f39cb49553e80d625f75c6aeca18007565e24fc760e26f7`.
+It was not promoted or run.
+
+One narrower no-retry repair then required exactly the one selector literal and
+forbade comments or any other code, schema, stage, input, request, or mapping
+change. It reached `awaiting_approval` after ten polls. The proposed worker was
+byte-identical to the reviewed repository worker at SHA-256
+`e595ba1ea564bdf7c60d9ef27ad5bfe8d8640c2647d6fb1ea04bf9deef025998`,
+and the two exposed samples were the correct Franchise India and India Med Expo
+records with the exact 27-field contract. The private 2,547-byte heal envelope
+has SHA-256
+`ae8a83760d7ec08c4a41b7845d120b3b2d23fb92b01498af344ebf57da6d04d0`.
+
+Human review approved that exact proposal without auto-approval or auto-save.
+The same collector reached terminal `done` with `user_approval` recorded; the
+private 302-byte approval envelope has SHA-256
+`d1110a4cb7d076a32dfc7ecff23e2ae928f47e104263828046ad2962976dfa08`.
+Studio did not apply the accepted proposal to its already-broken Development
+editor, so the reviewed worker was copied back exactly and saved manually
+instead of trusting the terminal status. That Development save became Version
+4 and preview `preview_mt1xk29b1f45g6xhe6` returned nine rows, one request,
+one page load, and no errors. The independent live, mutation, and schema suite
+passed 6/6 with canonical nine-row SHA-256
+`a86c9104fd86bc42e45edafe84b8510227d6ea7b642b01b597dc5d7cdb2285f2`.
+Version 4 was then explicitly promoted to Production; Version 3 remains
+available for rollback.
+
+The protected application run fenced all seven sources, queued only BIEC, and
+used exactly one worker:
+
+- application run: `01a020b9-99bd-76bf-a2a4-9909649bbf7b`;
+- job: `01a020b9-99be-7107-bb51-f63c1f22ce6e`, completed on attempt one;
+- Bright collection: `j_mt1xqy0i1vdvnkczhv`;
+- immutable object:
+  `sources/520e6232-ab55-5c71-8918-bb68a659ae61/runs/01a020b9-99bd-76bf-a2a4-9909649bbf7b.json`;
+- exact object: 9,282 bytes, SHA-256
+  `5a41a09d42c993d732f265fc0a115ff912e289810ded67084129da8711625f1f`;
+- terminal publication: 9 received, 9 accepted, zero quarantined.
+
+An independent MinIO stream reproduced the exact byte count and SHA. The
+protected replay run `01a020bb-051a-70fa-9171-92b2dd600639` and job
+`01a020bb-051a-73a3-a72f-fe722a338668` completed on attempt one from that same
+object with a null external collection ID, 9/9/0, and no Bright call. Repeating
+both idempotency keys returned the original run IDs.
+
+The replay left 205 visible occurrences, 209 versions, zero changes, zero
+quarantined records, and zero open incidents. BIEC retained exactly its nine
+reviewed occurrences and nine versions. The seven source rows were restored
+byte-for-byte; their pre/post fingerprint was
+`1189429bb9a2e5e0195b9906a55ec967`. Public API and Vercel checks exposed all
+four cities, all nine BIEC titles, a valid BIEC detail and ICS response, and 78
+chronological Bengaluru plans from four official sources with no browser-console
+error.
+
 ## Immutable production batch — 20 August 2026
 
 The same reviewed one-stage Code template was promoted to Production before the

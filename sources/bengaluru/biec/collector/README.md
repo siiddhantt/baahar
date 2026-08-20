@@ -40,8 +40,9 @@ the independent application activation published 9/9 with zero quarantine,
 then replayed the same immutable object without another Bright call or any
 occurrence, version, change, or raw-object duplication.
 
-The controlled repair ledger in `../evidence/README.md` records one rejected
-same-ID proposal and a healthy post-rejection Development verification. Never
-approve a repair merely because it reaches the approval gate: require the exact
-tracked selector, complete output, schema, semantic, request-budget, and
-Production gates first.
+The controlled repair ledger in `../evidence/README.md` records both a rejected
+broader proposal and the completed same-ID Version 4 repair, protected 9/9/0
+application run, and immutable no-Bright replay. Never approve a repair merely
+because it reaches the approval gate: require the exact tracked selector,
+complete output, schema, semantic, request-budget, Production, application, and
+replay gates first.
