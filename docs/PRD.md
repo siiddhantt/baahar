@@ -2,7 +2,7 @@
 
 Status: build-ready for the first public release
 Working title: Baahar  
-Initial cities: Bengaluru and Varanasi  
+Production cities: Bengaluru, Delhi, Mumbai, and Varanasi
 Target release: 23 August 2026
 
 ## 1. Product statement
@@ -84,7 +84,7 @@ The operator experience is protected and never appears in the public navigation.
 
 ### P0: must ship end to end
 
-- Bengaluru and Varanasi city selection.
+- Bengaluru, Delhi, Mumbai, and Varanasi city selection.
 - A current feed that defaults to Upcoming, with Today, Tomorrow, and This
   weekend shortcuts.
 - Category filters: Arts, Talks, Workshops, Theatre, Music, Books, Community, and Other.
@@ -96,8 +96,9 @@ The operator experience is protected and never appears in the public navigation.
 - Download a standards-compliant `.ics` calendar entry.
 - Visible New, Updated, Cancelled, Postponed, Sold out, and Registration closed
   states when supported by source evidence.
-- Four production collectors for Bengaluru and four for Varanasi, with a hard
-  launch floor of three healthy collectors per city.
+- Seven production collectors across four cities. The UI discloses the live
+  source count per city; only Bengaluru currently meets the broader three-source
+  coverage floor, so no city claims exhaustive inventory.
 - Immutable raw collection snapshots, schema validation, normalization,
   deterministic identity, versioning, and diff generation.
 - Collection health checks and a protected operator view.
@@ -133,7 +134,7 @@ The operator experience is protected and never appears in the public navigation.
 ## 6. First-run experience
 
 1. The homepage reads the saved city, if one exists, otherwise asks the visitor
-   to choose Bengaluru or Varanasi.
+   to choose one of the four supported cities.
 2. The hero immediately shows a compact live preview: three real event cards and
    the number of sources checked. It never displays made-up sample events.
 3. The primary action is `See what is on`; the secondary action is a city switch.
@@ -155,8 +156,8 @@ the visitor deliberately opens a contextual `About this source` disclosure.
 ### FR-1 City and time window
 
 - A user can select one supported city and switch it at any time.
-- Time windows are calculated in the city's IANA timezone; both launch cities
-  use `Asia/Kolkata`.
+- Time windows are calculated in the city's IANA timezone; all four production
+  cities use `Asia/Kolkata`.
 - `Upcoming` begins at the first page's request-time anchor and ends at local
   midnight 90 calendar days later.
 - `Today` includes occurrences that overlap the current local day.

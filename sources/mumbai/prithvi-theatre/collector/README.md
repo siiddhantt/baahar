@@ -23,9 +23,9 @@ in 63,009 bytes (SHA-256
 `aeb3fb59126eb1d68d55738fbe2c7db482dfc10264d42428a363496354020d42`).
 
 Do not create a duplicate or add stages, parser code, pagination, fan-out,
-retries, inferred fields, or alternate inputs. Mumbai is still disabled: the
-next separate gate is backend migration, immutable store/replay, API, and
-frontend acceptance.
+retries, inferred fields, or alternate inputs. The guarded backend activation,
+immutable replay, Mumbai API, and frontend acceptance are recorded in
+`../evidence/README.md`.
 
 Local proof:
 

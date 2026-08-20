@@ -92,5 +92,30 @@ only `input` passes the authoritative Go schema and the field-for-field native-I
 comparison. Bright's dataset transport order is not treated as identity or
 chronology.
 
-No backend source, immutable Baahar replay, public Delhi city, frontend route,
-or browser acceptance is claimed. Those remain separate activation gates.
+## Baahar production activation
+
+The reviewed source was activated on the Raspberry Pi production stack on 21
+August 2026 under a seven-source scheduler fence. The five existing source rows
+were snapshotted and restored byte-for-byte, every source was frozen while the
+single worker ran, and no unrelated source job was created.
+
+- application run: `01a02078-94d8-74dd-bdb0-391558de175c`;
+- Bright collection: `j_mt1va5rv10256c1ol`;
+- result: `64 received / 64 accepted / 0 quarantined`, attempt 1;
+- immutable object: `79,320` bytes, SHA-256
+  `ff75d19892bb5587125930dd3dd1fde016afa9d53aa024bb39648aca7804b63d`;
+- independent object-store rehash: exact byte and SHA match;
+- stored inventory: 64 visible, unique native identities and 64 exact 27-field
+  canonical records;
+- stored categories: music 48, other 13, arts 2, theatre 1.
+
+Replay run `01a0207d-6e81-7a88-bc86-9a17d9791819` republished the same object as
+`64/64/0` with `external_collection_id = null`. It created no new event version,
+proving that the immutable replay is idempotent and did not call Bright Data.
+
+The public API exposes Delhi as fresh with 64 results from one official source,
+a stable `60 + 4` cursor traversal, detail and `text/calendar` ICS responses.
+The deployed Vercel UI exposes the Delhi artwork and route, traverses the
+complete `24 -> 48 -> 64` card sequence without duplicates, and preserves the
+official booking URL, price, venue, source attribution, and Back route on the
+representative detail journey.

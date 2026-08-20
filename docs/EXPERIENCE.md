@@ -92,6 +92,8 @@ Base tokens start here and must be contrast-tested in their actual pairings:
 City accents:
 
 - Bengaluru: rain green, jacaranda violet, a small signal-yellow highlight;
+- Delhi: sandstone red, monument blue, and a restrained ochre signal;
+- Mumbai: coastal teal, theatre rose, and a warm amber signal;
 - Varanasi: marigold, river indigo, and restrained vermilion.
 
 The city palette changes accents and placeholder art, not component meaning.

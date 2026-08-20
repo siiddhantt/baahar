@@ -66,21 +66,19 @@ footer is a BookMyShow-hosted `Workshops@Prithvi T&Cs` PDF and does not govern
 the ordinary theatre schedule. Missing general terms are not permission. This
 implementation is therefore limited to low-cadence factual metadata, one
 request, source attribution, and direct official/registration links. Recheck
-robots and site terms before activation.
+robots and site terms during every production review.
 
-## Known launch gates
+## Launch proof
 
-The source is `verified` in Bright Data but remains unpublished:
+The source is verified in Bright Data and published by Baahar:
 
 1. The same collector has the exact one-stage tracked worker and shared schema,
    and both development and Production-save previews returned 49 rows from one
    request with no errors.
 2. One Production API batch delivered 49 schema-valid rows and is preserved as
    immutable private evidence.
-3. Mumbai is accepted by the staging collector contract but is not yet
-   provisioned in the backend city registry/database.
-4. No backend migration, immutable MinIO capture/replay, public API acceptance,
-   city enablement, or frontend publication exists yet.
-
-The remaining gates must be completed in order; Production collector proof is
-not the same as published Baahar coverage.
+3. The production backend stores 49 unique native sessions with zero quarantine
+   and exposes the enabled Mumbai city through the public API.
+4. An immutable replay made no Bright call or duplicate version, and the live
+   Vercel card, detail, source, price/free, calendar, and pagination journeys
+   pass. Exact run and object evidence is in `evidence/README.md`.

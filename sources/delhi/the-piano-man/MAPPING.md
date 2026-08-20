@@ -20,7 +20,7 @@ POST, detail fan-out, page cursor, retry, healing, or generic crawler.
 | `source_event_id`      | number-word suffix in detail slug          | Longest canonical English-number suffix                    |
 | `source_url`           | card action                                | Exact first-party `/event/detail/<venue_id>/<slug>` URL    |
 | `source_host`          | reviewed host                              | `www.thepianoman.in`                                       |
-| `city_slug`            | official IDs 1 and 2 + New Delhi addresses | `delhi`; preview only                                      |
+| `city_slug`            | official IDs 1 and 2 + New Delhi addresses | `delhi`                                                    |
 | `title`                | direct card `h3`                           | Decode entities and collapse whitespace                    |
 | `category`             | exact source genre                         | Deterministic table below; never inspect title/description |
 | `start_date`           | exact `DD.MM.YY` card date                 | Strict local ISO date                                      |

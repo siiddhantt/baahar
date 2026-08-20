@@ -2,8 +2,8 @@
 
 This is the reviewed source-scoped Code worker for the official rolling Delhi
 event board. Collector `c_mt1rkddl1dmh5iiok6` now runs this exact one-stage
-worker and shared schema in Production. It has no backend resource, and Delhi
-remains disabled.
+worker and shared schema in Production. Its backend source is active and Delhi
+is exposed by Baahar's production API and city selector.
 
 ## Independent gate
 
@@ -20,9 +20,9 @@ remains disabled.
    start/end time.
 7. Fail atomically on source, shape, identity, venue, category, price, URL,
    image, horizon, request, duplicate, or schema drift.
-8. Keep the verified Studio revision byte-equal to `worker.js`. Backend
-   registration, immutable Baahar replay, Delhi enablement, and browser
-   acceptance remain separate gates.
+8. Keep the verified Studio revision byte-equal to `worker.js`. The guarded
+   production activation, immutable replay, Delhi API, and browser acceptance
+   are recorded in `../evidence/README.md`.
 
 Run from `baahar/`:
 

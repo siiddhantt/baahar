@@ -91,6 +91,15 @@ application publication/replay, public API acceptance, and browser journey.
 Bengaluru now has four healthy official sources; the next implementation slice
 returns to Varanasi's release-floor gap.
 
+Progress note, activation 21 August: The Piano Man Delhi and Prithvi Theatre
+Mumbai completed the same reviewed source-to-product path. Their guarded Pi
+activations published 64/64/0 and 49/49/0, independently rehashed the immutable
+MinIO objects, replayed both without a Bright call or duplicate version,
+restored the five existing source rows byte-for-byte, and enabled Delhi and
+Mumbai. The deployed four-city UI passes city artwork, cursor, card, detail,
+official action, and ICS journeys. Production now holds 205 visible
+occurrences across seven active sources.
+
 ## 4. Checkpoint plan
 
 ### Checkpoint 0 — product and source lock (18 August)

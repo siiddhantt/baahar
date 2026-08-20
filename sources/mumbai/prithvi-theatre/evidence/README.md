@@ -145,7 +145,35 @@ Exactly one Production API trigger was then issued for the canonical input:
   `4 / 45`, and zero field mismatches against a fresh tracked-worker execution
 - Production `observed_at`: `2026-08-20T17:26:23.967Z`
 
-There was no retry, duplicate create, heal, second Production trigger, backend
-registration, Mumbai enablement, API exposure, or frontend publication. Private
-create, preview, trigger, poll, and dataset bytes remain ignored under
+There was no retry, duplicate create, heal, or second Production trigger.
+Private create, preview, trigger, poll, and dataset bytes remain ignored under
 `../private/`.
+
+## Baahar production activation
+
+The reviewed source was activated on the Raspberry Pi production stack on 21
+August 2026 under the same seven-source scheduler fence used for Delhi. The five
+existing source rows were restored byte-for-byte and no unrelated source job
+was created.
+
+- application run: `01a02078-94fc-7449-bde0-77a78b1197cf`;
+- Bright collection: `j_mt1vb1v525vzpoan0e`;
+- result: `49 received / 49 accepted / 0 quarantined`, attempt 1;
+- immutable object: `63,009` bytes, SHA-256
+  `71a40db9d1cb42c315148b53fcdb8cb72cf242249cce57645c6c8834a78b24ec`;
+- independent object-store rehash: exact byte and SHA match;
+- stored inventory: 49 visible, unique native identities and 49 exact 27-field
+  canonical records;
+- stored categories: theatre 44, music 2, arts 2, talks 1;
+- stored price/action facts: 4 free, 45 priced, and 49 official registration
+  URLs.
+
+Replay run `01a0207d-6ea3-7ae0-95c2-5f0edbd22b88` republished the same object as
+`49/49/0` with `external_collection_id = null`. It created no new event version
+and made no Bright call.
+
+The public API exposes Mumbai as fresh with 49 results from one official source,
+detail and `text/calendar` ICS responses. The deployed Vercel UI exposes the
+Mumbai artwork and route, paginates the feed, preserves exact timed
+performances, distinguishes free and priced rows, and renders official Prithvi
+attribution and booking actions.

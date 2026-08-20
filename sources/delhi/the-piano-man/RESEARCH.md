@@ -8,8 +8,8 @@ The official The Piano Man event board is the strongest currently implementable
 second Delhi source. It is a private venue/operator, sells public tickets on its
 own first-party detail pages, and exposes its rolling inventory through a
 bounded weekly JSON endpoint. Its same-ID Bright collector is verified through
-Development and Production; no backend source or Delhi city is created or
-enabled.
+Development and Production, and its guarded Baahar activation now publishes
+the verified source through the Delhi API and city route.
 
 India International Centre has broader cultural coverage and only two list
 requests, but it is not safe to implement without permission. Its Terms PDF

@@ -46,6 +46,8 @@ AllEvents, BookMyShow, Reddit, search results, and local news may enter only at
 `discovered`. A row reaches Baahar only through a dedicated official-source
 collector and the normal immutable publication pipeline.
 
-The dated, research-only Delhi and Mumbai qualification matrices and their
-request/access boundaries live in [`docs/SOURCES.md`](../docs/SOURCES.md#11-delhi-and-mumbai-qualification-snapshot).
-They do not register a source or enable a city.
+The dated Delhi and Mumbai qualification matrices and their request/access
+boundaries live in
+[`docs/SOURCES.md`](../docs/SOURCES.md#11-delhi-and-mumbai-qualification-snapshot).
+The Piano Man and Prithvi Theatre have reached `backend_published`; every other
+row remains a discovery or qualification record and cannot publish events.

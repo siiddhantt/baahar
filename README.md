@@ -8,12 +8,13 @@ Baahar is a source-first city discovery feed for public events that are easy to
 miss because they live on venue calendars, cultural-institution websites, and
 other long-tail pages rather than on the major ticketing platforms.
 
-The launch cities are Bengaluru and Varanasi. The current verified release path
-publishes BIC, Jagriti Theatre, Atta Galatta, and BIEC for Bengaluru, plus BHU
-Academic Events for Varanasi. Every active source passes through the same
-immutable raw artifact, validation, normalization, publication, API, and browser
-gates. The current bounded checkpoint is closing Varanasi's two-source coverage
-gap one complete official-source vertical slice at a time.
+The production cities are Bengaluru, Delhi, Mumbai, and Varanasi. The verified
+release path publishes BIC, Jagriti Theatre, Atta Galatta, and BIEC for
+Bengaluru; The Piano Man for Delhi; Prithvi Theatre for Mumbai; and BHU Academic
+Events for Varanasi. Every active source passes through the same immutable raw
+artifact, validation, normalization, publication, API, and browser gates. The
+current bounded checkpoint is widening the one-source cities one complete
+official-source vertical slice at a time.
 
 There are no product-runtime LLM calls. Scraper Studio owns collection and
 reviewable connector repair; Baahar never auto-approves a generated repair or
@@ -26,19 +27,19 @@ Official page -> Scraper Studio -> immutable raw bytes -> validation
 
 ## What the first release does
 
-- collects a bounded upcoming horizon from the five currently verified official
+- collects a bounded upcoming horizon from the seven currently verified official
   sources through reviewed Scraper Studio Code workers;
 - preserves every returned batch byte in private S3-compatible storage before
   validation;
 - rejects structurally invalid, suspiciously small, duplicated, stale, or
   out-of-order runs instead of replacing verified events;
-- publishes a responsive Bengaluru feed with date/category/free filters, event
+- publishes responsive four-city feeds with date/category/free filters, event
   details, source links, change history, device-local saves, and calendar files.
 
-Varanasi is enabled from BHU's verified official event surface. Other attempted
-Varanasi sources that hit Bright Data's account-level proxy/allowlist boundary
-remain quarantined and unpublished; an empty preview or failed crawl is never
-used to pad city coverage.
+Delhi, Mumbai, and Varanasi currently expose honest one-source sample coverage;
+their source counts remain visible rather than implying completeness. Other
+attempted sources that hit policy, access, or precision gates remain quarantined
+and unpublished; an empty preview or failed crawl is never used to pad coverage.
 
 ## Repository map
 

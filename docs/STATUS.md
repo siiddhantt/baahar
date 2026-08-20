@@ -1,6 +1,6 @@
 # Baahar checkpoint status
 
-Last updated: 20 August 2026
+Last updated: 21 August 2026
 
 ## Completed baseline
 
@@ -30,14 +30,18 @@ feed/detail/ICS/source-summary checks pass. Its public browser acceptance is the
 last completed gate: image cards, detail, save, Back, and responsive journeys
 all pass. BIEC's one-stage collector, immutable application publication/replay,
 public API, and browser gates now pass with 9/9 accepted and zero quarantine.
-Bengaluru has four healthy official sources and the active P0 gap is Varanasi
-coverage, not another Bengaluru collector.
+Bengaluru has four healthy official sources. Delhi and Mumbai now complete the
+same end-to-end path: The Piano Man published 64/64/0 and Prithvi Theatre
+published 49/49/0, both immutable objects were independently rehashed and
+replayed without a Bright call, and the public API plus deployed four-city UI
+pass. Production now exposes 205 visible occurrences across seven active
+official sources and four cities. The active P0 product gap is source breadth
+in Varanasi, Delhi, and Mumbai, not city plumbing.
 
-India Habitat Centre is the reviewed first Delhi candidate. Its exact
-current-month, one-request Code-worker contract passes locally with 20 unique
-official rows, but Delhi remains disabled and research-only: no source row,
-migration, city flag, public API record, or frontend route is enabled by that
-qualification.
+India Habitat Centre remains a reviewed Delhi candidate only. Its local
+one-request contract passes with 20 unique rows, but its generated Studio
+collector still contains an unreviewed second stage and is not a production or
+backend source.
 
 ## Release sequence and scope guard
 
@@ -59,8 +63,11 @@ or features discovered.
 - [x] Re-run the production browser journeys for native share/clipboard fallback,
       real ICS download, device-local saves, detail/Back/filter state, loading,
       empty and error states, keyboard, reduced motion, and target viewports.
-- [ ] Pass deployment, migration/rollback, security, performance, and release
-      evidence gates before feature freeze.
+- [x] Deploy the Vercel frontend and reboot-safe Raspberry Pi API, worker,
+      PostgreSQL, MinIO, and Tailscale Funnel; apply guarded migrations and
+      verify immutable activation/replay on the production stack.
+- [ ] Finish the release evidence, security, performance, and demo gates before
+      feature freeze.
 
 ### P1 — only after the P0 gates
 
@@ -72,18 +79,18 @@ or features discovered.
 
 ### P2 — not first-release work
 
-- Delhi or Mumbai city enablement, cross-device saves/accounts, Clerk or another
-  identity provider, maps/geocoding/distance ordering, precise location, Redis,
-  search infrastructure, or a generic crawler platform.
+- Cross-device saves/accounts, Clerk or another identity provider,
+  maps/geocoding/distance ordering, precise location, Redis, search
+  infrastructure, or a generic crawler platform.
 
 ### Supported-city release floor
 
-| City      | Healthy official sources | Release floor | Current decision                                  |
-| --------- | -----------------------: | ------------: | ------------------------------------------------- |
-| Bengaluru |                        4 |             3 | Floor met with BIEC as the active fourth source.  |
-| Varanasi  |                        1 |             3 | Public data works, but coverage floor is not met. |
-| Delhi     |                        0 |             3 | Research only; city remains disabled.             |
-| Mumbai    |                        0 |             3 | Research only; city remains disabled.             |
+| City      | Healthy official sources | Release floor | Current decision                                       |
+| --------- | -----------------------: | ------------: | ------------------------------------------------------ |
+| Bengaluru |                        4 |             3 | Floor met with BIEC as the active fourth source.       |
+| Varanasi  |                        1 |             3 | Enabled; broader coverage floor is not met.            |
+| Delhi     |                        1 |             3 | Enabled with verified Piano Man sample coverage.       |
+| Mumbai    |                        1 |             3 | Enabled with verified Prithvi Theatre sample coverage. |
 
 Search, forums, AllEvents, BookMyShow, and social pages may produce leads. They
 do not replace first-party authority or the full source-onboarding gate. A
@@ -150,9 +157,10 @@ announced to every consumer before implementation continues.
 ## Frozen decisions
 
 - Working brand: Baahar.
-- P0 cities: Bengaluru and Varanasi.
-- Active sources: BIC, Jagriti Theatre, Atta Galatta, and BIEC in Bengaluru, and
-  BHU Academic Events in Varanasi.
+- Production cities: Bengaluru, Delhi, Mumbai, and Varanasi.
+- Active sources: BIC, Jagriti Theatre, Atta Galatta, and BIEC in Bengaluru;
+  The Piano Man in Delhi; Prithvi Theatre in Mumbai; and BHU Academic Events in
+  Varanasi.
 - Consumer categories: Arts, Talks, Workshops, Theatre, Music, Books,
   Community, and Other. Source-specific mappings require explicit source facts.
   Migration 7 and the current API accept the Workshops filter. Two incomplete
@@ -235,8 +243,10 @@ announced to every consumer before implementation continues.
 - [x] Cursor v2 binds normalized filters, effective-start/occurrence boundary,
       and `as_of`; real PostgreSQL and API tests prove stable equal-start ties and
       gapless pages without duplicate IDs.
-- [x] The live Bengaluru API returned 27 chronological upcoming occurrences;
-      the second page preserved `as_of` and shared no ID with the first.
+- [x] The post-expansion production API returned 78 Bengaluru, 64 Delhi, 49
+      Mumbai, and 10 Varanasi upcoming occurrences. Delhi's `60 + 4` cursor and
+      the frontend's `24 -> 48 -> 64` traversal preserved one `as_of` and no
+      duplicate IDs.
 - [x] City selection and feed routing are API-driven; valid unlaunched city slugs
       fail safely without a Bengaluru/Varanasi branch in the public read path.
 
@@ -275,15 +285,13 @@ second viable coverage source once Bright account access is cleared. AllEvents
 and ticketing sites remain discovery-only. Preview data is never used as a
 public fallback.
 
-Delhi and Mumbai remain disabled future expansions. Their reviewed matrix is
-recorded in `docs/SOURCES.md`; no runtime source row, migration, or enabled city
-flag exists for either. India Habitat Centre is Delhi's reviewed first
-candidate, while JNU and other government sites are product-later while account
-access and source policy remain unresolved. The Piano Man is Delhi's first
-Production-verified collector: its same-ID one-stage worker, exact schema,
-previews, Development run, and one 64-row late-day Production run pass, but it
-is not Baahar-published. Prithvi Theatre has the equivalent Mumbai proof with 49
-rows. The one-source expansion lock still applies. Research or Studio proof
-does not enable a city. NCPA requires written permission. Every future source
-must pass immutable backend publication, API, and browser acceptance before its
-city is enabled.
+Delhi and Mumbai are enabled with one verified private first-party source each.
+The Piano Man's same-ID one-stage collector publishes 64 current Delhi rows;
+Prithvi Theatre publishes 49 timed Mumbai performances. Both passed exact
+schema/semantic gates, guarded production collection, immutable MinIO rehash,
+no-Bright replay, public API, ICS, cursor, artwork, and browser journeys. India
+Habitat Centre remains a Delhi candidate rather than a second source, while JNU
+and other government sites are product-later. NCPA still requires written
+permission. Research or Studio proof alone never enables another source: every
+future source must pass immutable backend publication, API, and browser
+acceptance first.
