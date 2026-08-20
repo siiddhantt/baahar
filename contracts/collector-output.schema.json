@@ -43,7 +43,7 @@
     },
     "source_url": { "type": "string", "format": "uri", "maxLength": 2048 },
     "source_host": { "type": "string", "format": "hostname", "maxLength": 253 },
-    "city_slug": { "enum": ["bengaluru", "delhi", "varanasi"] },
+    "city_slug": { "enum": ["bengaluru", "delhi", "mumbai", "varanasi"] },
     "title": { "type": "string", "minLength": 1, "maxLength": 300 },
     "category": { "$ref": "#/$defs/category" },
     "start_date": { "type": "string", "format": "date" },

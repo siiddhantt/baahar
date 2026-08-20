@@ -1,0 +1,58 @@
+schema_version: source-manifest/v1
+source: prithvi-theatre
+source_id: 7bb2b2bf-66bb-5cfe-8269-ea811552d9c7
+display_name: Prithvi Theatre
+city: mumbai
+city_id: 7eb386b1-1bf5-5cd4-828f-a288683eef55
+canonical_hosts:
+  - prithvitheatre.org
+registration_hosts:
+  - in.bookmyshow.com
+image_hosts:
+  - in.bmscdn.com
+official_url: https://prithvitheatre.org/booktickets
+collector_id: null
+output_schema: event-occurrence/v1
+publication_state: preview
+collection_state: local_verified
+worker_type: code
+schedule: "17 */6 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://prithvitheatre.org/api/getPrithviData?cmd=DEGETTHEATERS&cc=PTHV
+limits:
+  pages_per_run: 1
+  records_per_run: 100
+  window_days: 90
+  maximum_physical_requests_in_live_preflight: 1
+health:
+  minimum_records: 3
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.5
+  high_count_ratio_after_baseline: 2.0
+identity:
+  source_event_id: SessionId
+  source_event_id_pattern: ^[1-9][0-9]*$
+  fallback_fields:
+    - normalized_title
+    - canonical_source_url
+    - local_occurrence_date_time
+    - normalized_venue_key
+  array_position_allowed: false
+  exact_duplicates_allowed: false
+  multi_performance_requirement: Preserve every native SessionId; EventCode is a production ID and must never collapse sibling performances.
+image_preference:
+  - event.ImageCode
+category_map:
+  Drama,Theatre: theatre
+  Drama,Storytelling: theatre
+  Music Shows: music
+  Performances: arts
+  Screening: arts
+  Talks: talks
+access:
+  robots_status: allow_public_page
+  pages_per_run: 1
+  facts_only: true

@@ -665,6 +665,7 @@ test("IHC uses the authoritative 27-field staging schema", async () => {
   assert.deepEqual(contract.properties.city_slug.enum, [
     "bengaluru",
     "delhi",
+    "mumbai",
     "varanasi",
   ]);
   assert.deepEqual(Object.keys(outputSchema.fields).sort(), expectedKeys);
