@@ -13,9 +13,34 @@ Tailscale Funnel TLS endpoint.
    existing installation.
 4. Run migrations and the API: `docker compose --env-file .env up -d migrate api`.
 5. Verify `curl -fsS http://127.0.0.1:8081/v1/cities`.
-6. Point Tailscale Funnel at the loopback API only.
+6. Give the node its stable service name and point Funnel at the loopback API
+   only: `sudo tailscale set --hostname=baahar-pi`, then
+   `sudo tailscale funnel --bg 8081`.
 7. Start one scheduler/worker after verifying source due times:
    `docker compose --env-file .env --profile worker up -d worker`.
 
 Do not publish ports for PostgreSQL or MinIO. Scraper Studio schedules remain
 disabled; the Baahar worker is the sole production scheduler.
+
+## Reboot recovery
+
+Enable both host services once with `sudo systemctl enable --now docker
+tailscaled`. PostgreSQL, MinIO, the API, and worker use Compose
+`restart: unless-stopped`; migrations and bucket creation remain one-shot
+services. Tailscale persists the `baahar-pi` machine name and background Funnel
+configuration across a normal reboot.
+
+After a reboot, allow the database health check and worker restart policy to
+settle, then verify:
+
+```sh
+systemctl is-active docker tailscaled
+docker compose --env-file .env --profile worker ps
+curl -fsS http://127.0.0.1:8081/v1/cities
+tailscale funnel status
+```
+
+The API may be briefly unavailable while PostgreSQL becomes healthy. Docker
+restarts the worker if its first connection attempt occurs during that window;
+the public web client keeps the last rendered state and exposes its normal retry
+action.
