@@ -11,7 +11,7 @@ registration_hosts:
 image_hosts:
   - in.bmscdn.com
 official_url: https://prithvitheatre.org/booktickets
-collector_id: null
+collector_id: c_mt1qtstu9kmw95k4q
 output_schema: event-occurrence/v1
 publication_state: preview
 collection_state: local_verified

@@ -79,3 +79,30 @@ The test suite also proves that missing joins, duplicate native identity,
 region drift, unknown genre, off-host registration, impossible time, incomplete
 coverage, malformed response, input drift, and invalid clocks all fail before
 any record is collected.
+
+## Development-create result
+
+On 20 August 2026, exactly one authenticated development collector create used
+official `@brightdata/cli` 0.3.5 with `--no-retry`, the exact manifest input,
+and the tracked `../collector/create-prompt.txt`. The existing token was mapped
+to that process only. The same process reached terminal status `done` after 695
+poll attempts and returned:
+
+- collector ID: `c_mt1qtstu9kmw95k4q`
+- name: `baahar-prithvi-theatre`
+- created at: `2026-08-20T16:37:04.434Z`
+- completed steps: 9
+- error field: absent
+- private envelope: 387 bytes
+- envelope SHA-256:
+  `00ff29becc74af0f2fa467c4db4ec2c8d17e5aa4c13f5f8327346850d4071f84`
+
+The collector ID is now frozen. This create does not prove or approve its
+generated template; the tracked worker remains the sole reviewed implementation
+candidate for a later, separately authorized install-and-preview gate.
+
+No duplicate create, retry, heal, generated-template inspection, explicit
+preview, save, run, production promotion, backend registration, Mumbai city
+enablement, API exposure, or frontend publication is authorized in this gate.
+Private create transport must remain ignored under
+`../private/create-envelope.json`.
