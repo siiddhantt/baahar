@@ -1,0 +1,113 @@
+name: baahar-pi
+
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: baahar
+      POSTGRES_USER: baahar
+      POSTGRES_PASSWORD: ${BAAHAR_POSTGRES_PASSWORD:?required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baahar -d baahar"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${BAAHAR_OBJECT_ACCESS_KEY:?required}
+      MINIO_ROOT_PASSWORD: ${BAAHAR_OBJECT_SECRET_KEY:?required}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  create-bucket:
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      BAAHAR_OBJECT_ACCESS_KEY: ${BAAHAR_OBJECT_ACCESS_KEY:?required}
+      BAAHAR_OBJECT_SECRET_KEY: ${BAAHAR_OBJECT_SECRET_KEY:?required}
+      BAAHAR_OBJECT_BUCKET: ${BAAHAR_OBJECT_BUCKET:-baahar-artifacts}
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        mc alias set local http://minio:9000 "$${BAAHAR_OBJECT_ACCESS_KEY}" "$${BAAHAR_OBJECT_SECRET_KEY}"
+        mc mb --ignore-existing "local/$${BAAHAR_OBJECT_BUCKET}"
+        mc anonymous set none "local/$${BAAHAR_OBJECT_BUCKET}"
+
+  migrate:
+    build:
+      context: ../..
+      target: migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      BAAHAR_DATABASE_URL: postgres://baahar:${BAAHAR_POSTGRES_PASSWORD:?required}@postgres:5432/baahar?sslmode=disable&search_path=baahar_app
+
+  api:
+    build:
+      context: ../..
+      target: api
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      BAAHAR_DATABASE_URL: postgres://baahar:${BAAHAR_POSTGRES_PASSWORD:?required}@postgres:5432/baahar?sslmode=disable&search_path=baahar_app
+      BAAHAR_WEB_ORIGIN: https://baahar.vercel.app
+      BAAHAR_OPERATOR_TOKEN: ${BAAHAR_OPERATOR_TOKEN:?required}
+      BAAHAR_CURSOR_SECRET: ${BAAHAR_CURSOR_SECRET:?required}
+      BAAHAR_HTTP_ADDR: :8080
+    ports:
+      - 127.0.0.1:8081:8080
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/v1/cities"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  worker:
+    profiles: [worker]
+    build:
+      context: ../..
+      target: worker
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_healthy
+      create-bucket:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      BAAHAR_DATABASE_URL: postgres://baahar:${BAAHAR_POSTGRES_PASSWORD:?required}@postgres:5432/baahar?sslmode=disable&search_path=baahar_app
+      BAAHAR_OBJECT_ENDPOINT: http://minio:9000
+      BAAHAR_OBJECT_ACCESS_KEY: ${BAAHAR_OBJECT_ACCESS_KEY:?required}
+      BAAHAR_OBJECT_SECRET_KEY: ${BAAHAR_OBJECT_SECRET_KEY:?required}
+      BAAHAR_OBJECT_BUCKET: ${BAAHAR_OBJECT_BUCKET:-baahar-artifacts}
+      BAAHAR_OBJECT_REGION: ${BAAHAR_OBJECT_REGION:-us-east-1}
+      BAAHAR_OBJECT_PATH_STYLE: "true"
+      BRIGHT_DATA_API_TOKEN: ${BRIGHT_DATA_API_TOKEN:?required}
+
+volumes:
+  postgres-data:
+  minio-data:
