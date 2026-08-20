@@ -200,3 +200,63 @@ func TestIHCManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 		t.Fatal("preview/local-verified IHC manifest unexpectedly has a runtime projection")
 	}
 }
+
+func TestPianoManManifestKeepsTheReviewedLocalOnlyBoundary(t *testing.T) {
+	manifest, err := LoadManifest(filepath.Join("..", "..", "sources", "delhi", "the-piano-man", "source.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if manifest.SourceID != "7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3" ||
+		manifest.CityID != "19f16354-f054-53e8-bfb6-2b1e1acdcd00" ||
+		manifest.CollectorID != "" || manifest.WorkerType != "code" ||
+		manifest.PublicationState != "preview" || manifest.CollectionState != "local_verified" ||
+		len(manifest.CanonicalHosts) != 1 || manifest.CanonicalHosts[0] != "www.thepianoman.in" ||
+		len(manifest.RegistrationHosts) != 1 || manifest.RegistrationHosts[0] != "www.thepianoman.in" ||
+		len(manifest.ImageHosts) != 1 || manifest.ImageHosts[0] != "www.thepianoman.in" ||
+		manifest.Limits.PagesPerRun != 13 || manifest.Limits.RecordsPerRun != 150 ||
+		manifest.Limits.BrowserNavigationsPerRun != 0 || manifest.Limits.BrowserActionsPerRun != 0 ||
+		manifest.Limits.BrowserFanoutPerRun != 0 ||
+		manifest.Limits.MaximumPhysicalRequestsInLivePreflight != 13 || manifest.Access == nil ||
+		manifest.Access.PagesPerRun != 13 || manifest.CollectionInput == nil ||
+		manifest.CollectionInput.URL != "https://www.thepianoman.in/event/list" {
+		t.Fatalf("Piano Man reviewed local/request boundary = %+v", manifest)
+	}
+	if got := uuid.NewSHA1(uuid.NameSpaceURL, []byte(manifest.CollectionInput.URL)).String(); got != manifest.SourceID {
+		t.Fatalf("Piano Man source_id = %s, want URL UUIDv5 %s", manifest.SourceID, got)
+	}
+	if got := uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://baahar.app/cities/delhi")).String(); got != manifest.CityID {
+		t.Fatalf("Piano Man reserved city_id = %s, want URL UUIDv5 %s", manifest.CityID, got)
+	}
+	if _, err := manifest.Projection(); err == nil {
+		t.Fatal("preview/local-verified Piano Man manifest unexpectedly has a runtime projection")
+	}
+}
+
+func TestPrithviManifestKeepsTheReviewedMumbaiPreviewBoundary(t *testing.T) {
+	manifest, err := LoadManifest(filepath.Join("..", "..", "sources", "mumbai", "prithvi-theatre", "source.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if manifest.SourceID != "7bb2b2bf-66bb-5cfe-8269-ea811552d9c7" ||
+		manifest.CityID != "7eb386b1-1bf5-5cd4-828f-a288683eef55" ||
+		manifest.CollectorID != "" || manifest.WorkerType != "code" ||
+		manifest.PublicationState != "preview" || manifest.CollectionState != "local_verified" ||
+		len(manifest.CanonicalHosts) != 1 || manifest.CanonicalHosts[0] != "prithvitheatre.org" ||
+		len(manifest.RegistrationHosts) != 1 || manifest.RegistrationHosts[0] != "in.bookmyshow.com" ||
+		len(manifest.ImageHosts) != 1 || manifest.ImageHosts[0] != "in.bmscdn.com" ||
+		manifest.Limits.PagesPerRun != 1 || manifest.Limits.RecordsPerRun != 100 ||
+		manifest.Limits.MaximumPhysicalRequestsInLivePreflight != 1 || manifest.Access == nil ||
+		manifest.Access.PagesPerRun != 1 || manifest.CollectionInput == nil ||
+		manifest.CollectionInput.URL != "https://prithvitheatre.org/api/getPrithviData?cmd=DEGETTHEATERS&cc=PTHV" {
+		t.Fatalf("Prithvi reviewed Mumbai preview boundary = %+v", manifest)
+	}
+	if got := uuid.NewSHA1(uuid.NameSpaceURL, []byte(manifest.CollectionInput.URL)).String(); got != manifest.SourceID {
+		t.Fatalf("Prithvi source_id = %s, want URL UUIDv5 %s", manifest.SourceID, got)
+	}
+	if got := uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://baahar.app/cities/mumbai")).String(); got != manifest.CityID {
+		t.Fatalf("Prithvi reserved city_id = %s, want URL UUIDv5 %s", manifest.CityID, got)
+	}
+	if _, err := manifest.Projection(); err == nil {
+		t.Fatal("preview/local-verified Prithvi manifest unexpectedly has a runtime projection")
+	}
+}

@@ -1,0 +1,80 @@
+schema_version: source-manifest/v1
+source: the-piano-man
+source_id: 7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3
+display_name: The Piano Man
+city: delhi
+city_id: 19f16354-f054-53e8-bfb6-2b1e1acdcd00
+canonical_hosts:
+  - www.thepianoman.in
+registration_hosts:
+  - www.thepianoman.in
+image_hosts:
+  - www.thepianoman.in
+official_url: https://www.thepianoman.in/event/list
+collector_id: null
+output_schema: event-occurrence/v1
+publication_state: preview
+collection_state: local_verified
+worker_type: code
+schedule: "41 */6 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://www.thepianoman.in/event/list
+limits:
+  pages_per_run: 13
+  records_per_run: 150
+  window_days: 90
+  browser_navigations_per_run: 0
+  browser_actions_per_run: 0
+  browser_fanout_per_run: 0
+  maximum_physical_requests_in_live_preflight: 13
+health:
+  minimum_records: 1
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.4
+  high_count_ratio_after_baseline: 2.5
+identity:
+  source_event_id: numeric_id_encoded_in_detail_slug
+  source_event_id_pattern: "^[0-9]+$"
+  stable_when_time_changes: true
+  array_position_allowed: false
+  exact_duplicates_allowed: false
+  multi_performance_requirement: distinct_encoded_numeric_id_per_listed_occurrence
+image_preference:
+  - card-img-top.img
+category_map:
+  Alternative Rock: music
+  Blues: music
+  Bollywood: music
+  Classic Rock: music
+  Contemporary: other
+  Ethno Jazz: music
+  Film Screening: arts
+  Folk: music
+  Ghazal: music
+  Indian Classical: music
+  Indian Fusion: music
+  Instrumental: music
+  Jazz: music
+  Jazz Fusion: music
+  Lunch Sessions: other
+  Modern jazz: music
+  Pop: music
+  Pop Rock: music
+  Psychedelic Rock: music
+  Qawwali: music
+  Recital: other
+  Retro: music
+  Retro pop: music
+  Rock: music
+  Singer - Songwriter: music
+  Soft Rock: music
+  Sufi: music
+  Theatre: theatre
+  World Music: music
+access:
+  robots_status: allow
+  pages_per_run: 13
+  facts_only: true
