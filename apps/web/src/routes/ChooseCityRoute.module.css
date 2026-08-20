@@ -72,9 +72,14 @@
   .number {
     position: relative;
     z-index: 1;
+    width: fit-content;
+    padding: 0.28rem 0.45rem;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
     font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 0.14em;
+    backdrop-filter: blur(8px);
   }
 
   .remembered {
@@ -102,6 +107,7 @@
     font-weight: 730;
     letter-spacing: -0.05em;
     line-height: 0.9;
+    text-shadow: 0 1px 1px color-mix(in srgb, var(--surface) 55%, transparent);
   }
 
   .cityAction {
@@ -111,39 +117,6 @@
     color: var(--muted);
     font-size: 0.84rem;
     font-weight: 700;
-  }
-
-  .cityArt {
-    position: absolute;
-    width: 65%;
-    aspect-ratio: 1;
-    top: 7%;
-    right: -8%;
-    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--accent-soft) 80%, transparent);
-    transform: rotate(-12deg);
-    transition: transform var(--duration-spatial) var(--ease-enter);
-  }
-
-  .city:hover .cityArt {
-    transform: rotate(-6deg) scale(1.025);
-  }
-
-  .cityArt i {
-    position: absolute;
-    border: 1px solid color-mix(in srgb, var(--accent-secondary) 50%, transparent);
-    border-radius: 50%;
-    inset: 11%;
-  }
-
-  .cityArt i:nth-child(2) {
-    inset: 25%;
-  }
-
-  .cityArt i:nth-child(3) {
-    inset: 39%;
-    background: var(--signal);
   }
 
   .proof {

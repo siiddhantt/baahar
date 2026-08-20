@@ -22,4 +22,10 @@ describe('feed URL filters', () => {
 
     expect(params.toString()).toBe('window=weekend&category=arts%2Cbooks&free=true');
   });
+
+  it('keeps workshops as a first-class category', () => {
+    expect(readFilters(new URLSearchParams('category=workshops')).categories).toEqual([
+      'workshops',
+    ]);
+  });
 });

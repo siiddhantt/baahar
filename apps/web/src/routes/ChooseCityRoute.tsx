@@ -4,6 +4,7 @@ import type { CitySlug } from '../api/client';
 import { useCities, useCityPreview } from '../api/queries';
 import { updatePreferences, usePreferences } from '../app/preferences';
 import { DataError } from '../components/DataError';
+import { CityArtwork } from '../components/CityArtwork';
 import { EventQuilt } from '../components/EventQuilt';
 import { EventQuiltSkeleton } from '../components/EventCardSkeleton';
 import { RouteFallback } from '../components/RouteFallback';
@@ -60,11 +61,7 @@ export default function ChooseCityRoute() {
             {city.slug === preferredCity?.slug ? (
               <span className={styles.remembered}>Last opened</span>
             ) : null}
-            <span className={styles.cityArt} aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
+            <CityArtwork citySlug={city.slug} />
             <span className={styles.cityName}>{city.name}</span>
             <span className={styles.cityAction}>See upcoming plans →</span>
           </button>

@@ -24,4 +24,17 @@ describe('shareLink', () => {
     );
     expect(writeText).toHaveBeenCalledWith('https://baahar.test/event');
   });
+
+  it('copies when native sharing fails for a non-cancellation reason', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const navigatorApi = {
+      share: vi.fn().mockRejectedValue(new DOMException('not allowed', 'NotAllowedError')),
+      clipboard: { writeText },
+    } as unknown as Pick<Navigator, 'share' | 'clipboard'>;
+
+    await expect(shareLink('Plan', 'https://baahar.test/event', navigatorApi)).resolves.toBe(
+      'copied',
+    );
+    expect(writeText).toHaveBeenCalledWith('https://baahar.test/event');
+  });
 });

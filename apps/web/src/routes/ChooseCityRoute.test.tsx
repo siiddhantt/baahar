@@ -85,4 +85,13 @@ describe('ChooseCityRoute', () => {
     expect(updatePreferences).toHaveBeenCalledWith({ city: 'bengaluru' });
     expect(screen.getByText('Opened /bengaluru?window=upcoming')).toBeInTheDocument();
   });
+
+  it('does not turn registry-only artwork into an available city', () => {
+    vi.mocked(usePreferences).mockReturnValue({ city: null, theme: 'system' });
+
+    renderRoute();
+
+    expect(screen.queryByRole('button', { name: /delhi/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /mumbai/i })).not.toBeInTheDocument();
+  });
 });

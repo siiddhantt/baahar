@@ -16,7 +16,7 @@ export async function shareLink(
       await navigatorApi.share({ title, url });
       return 'shared';
     } catch (error) {
-      return isCancellation(error) ? 'cancelled' : 'failed';
+      if (isCancellation(error)) return 'cancelled';
     }
   }
 

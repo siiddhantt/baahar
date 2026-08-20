@@ -54,7 +54,8 @@
   }
 
   .generated[data-category='books'],
-  .generated[data-category='talks'] {
+  .generated[data-category='talks'],
+  .generated[data-category='workshops'] {
     background: linear-gradient(145deg, #a35130, var(--accent));
   }
 

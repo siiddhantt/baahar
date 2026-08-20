@@ -20,7 +20,7 @@ export function EmptyState({ filtered, onReset }: Props) {
           : 'Try another day — the next plan may already be waiting.'}
       </p>
       <ActionButton tone="quiet" onClick={onReset}>
-        {filtered ? 'Clear filters' : 'See this weekend'}
+        {filtered ? 'Clear filters' : 'See upcoming plans'}
       </ActionButton>
     </section>
   );

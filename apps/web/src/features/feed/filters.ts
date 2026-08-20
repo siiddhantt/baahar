@@ -9,6 +9,7 @@ export const timeWindows = [
 export const eventCategories = [
   'arts',
   'talks',
+  'workshops',
   'theatre',
   'music',
   'books',
@@ -26,6 +27,7 @@ export const timeWindowLabels: Record<TimeWindow, string> = {
 export const categoryLabels: Record<EventCategory, string> = {
   arts: 'Arts',
   talks: 'Talks',
+  workshops: 'Workshops',
   theatre: 'Theatre',
   music: 'Music',
   books: 'Books',

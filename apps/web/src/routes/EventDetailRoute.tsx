@@ -23,10 +23,12 @@ import styles from './EventDetailRoute.module.css';
 
 type LocationState = { from?: unknown };
 
-function safeReturnPath(state: unknown) {
-  if (!state || typeof state !== 'object') return '/';
+function safeReturnPath(state: unknown, fallback: string) {
+  if (!state || typeof state !== 'object') return fallback;
   const from = (state as LocationState).from;
-  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/';
+  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//')
+    ? from
+    : fallback;
 }
 
 export default function EventDetailRoute() {
@@ -67,7 +69,7 @@ export default function EventDetailRoute() {
   const price = priceLabel(event);
   const registration = registrationLabel(event);
   const primaryAction = primaryEventAction(event);
-  const returnPath = safeReturnPath(location.state);
+  const returnPath = safeReturnPath(location.state, `/${event.city.slug}?window=upcoming`);
 
   async function shareEvent() {
     const result = await shareLink(event.title, window.location.href);

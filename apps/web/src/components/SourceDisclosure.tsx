@@ -1,5 +1,4 @@
 import type { EventSummary } from '../api/client';
-import { freshnessLabel } from '../lib/eventFormat';
 import { ExternalIcon } from './icons';
 import styles from './SourceDisclosure.module.css';
 
@@ -10,10 +9,7 @@ type Props = {
 export function SourceDisclosure({ event }: Props) {
   return (
     <details className={styles.disclosure}>
-      <summary>
-        Official details from {event.source.name}
-        <span> · checked {freshnessLabel(event.last_checked_at)}</span>
-      </summary>
+      <summary>Official details from {event.source.name}</summary>
       <div className={styles.content}>
         <p>
           We keep this plan current from the organiser’s own page, so you can check the original

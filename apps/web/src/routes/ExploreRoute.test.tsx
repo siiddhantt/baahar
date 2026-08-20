@@ -159,4 +159,21 @@ describe('ExploreRoute', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Show more plans' }));
     expect(fetchNextPage).toHaveBeenCalledOnce();
   });
+
+  it('offers a retry when the feed request fails before data arrives', () => {
+    const refetch = vi.fn();
+    vi.mocked(useEvents).mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isError: true,
+      isSuccess: false,
+      refetch,
+    } as unknown as ReturnType<typeof useEvents>);
+
+    renderRoute('bengaluru');
+
+    expect(screen.getByRole('alert')).toHaveTextContent('The city feed did not arrive');
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(refetch).toHaveBeenCalledOnce();
+  });
 });

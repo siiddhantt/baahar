@@ -1,0 +1,74 @@
+@layer components {
+  .art {
+    position: absolute;
+    overflow: hidden;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 76% 22%, var(--signal) 0 5%, transparent 5.4%),
+      linear-gradient(138deg, var(--accent-soft), var(--surface));
+    pointer-events: none;
+    inset: 0;
+  }
+
+  .art::after {
+    position: absolute;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 18%, transparent) 0%,
+      color-mix(in srgb, var(--surface) 8%, transparent) 34%,
+      color-mix(in srgb, var(--surface) 93%, transparent) 82%,
+      var(--surface) 100%
+    );
+    content: '';
+    inset: 0;
+  }
+
+  .photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--city-art-position, 50% 50%);
+    filter: saturate(0.88) contrast(0.96);
+    transform: scale(1.005);
+    transition:
+      filter var(--duration-spatial) var(--ease-standard),
+      transform var(--duration-spatial) var(--ease-enter);
+  }
+
+  .orbit {
+    position: absolute;
+    width: 65%;
+    aspect-ratio: 1;
+    top: 7%;
+    right: -8%;
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    border-radius: 50%;
+    transform: rotate(-12deg);
+    transition: transform var(--duration-spatial) var(--ease-enter);
+  }
+
+  .orbit:nth-of-type(2) {
+    inset: 18% -1% auto auto;
+    width: 45%;
+  }
+
+  .orbit:nth-of-type(3) {
+    inset: 29% 9% auto auto;
+    width: 24%;
+    background: color-mix(in srgb, var(--signal) 80%, transparent);
+  }
+
+  .art[data-image='ready'] .orbit {
+    opacity: 0;
+  }
+
+  :global(:root[data-theme='dark']) .photo {
+    filter: brightness(0.74) saturate(0.76) contrast(1.04);
+  }
+
+  @media (max-width: 43rem) {
+    .photo {
+      object-position: var(--city-art-mobile-position, var(--city-art-position, 50% 50%));
+    }
+  }
+}
