@@ -46,6 +46,8 @@ describe('SiteHeader city navigation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Choose city' }));
     const cityLink = screen.getByRole('link', { name: /mysuru.*upcoming plans/i });
     expect(cityLink).toHaveAttribute('href', '/mysuru?window=upcoming');
+    expect(screen.queryByRole('link', { name: /delhi/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /mumbai/i })).not.toBeInTheDocument();
 
     fireEvent.click(cityLink);
     expect(updatePreferences).toHaveBeenCalledWith({ city: 'mysuru' });

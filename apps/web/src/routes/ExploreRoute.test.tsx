@@ -22,6 +22,20 @@ const bengaluru = {
   accent: 'rain',
 } as const;
 
+const delhi = {
+  slug: 'delhi',
+  name: 'Delhi',
+  timezone: 'Asia/Kolkata',
+  accent: 'monument',
+} as const;
+
+const mumbai = {
+  slug: 'mumbai',
+  name: 'Mumbai',
+  timezone: 'Asia/Kolkata',
+  accent: 'coast',
+} as const;
+
 function renderRoute(city: string) {
   render(
     <MemoryRouter initialEntries={[`/${city}?window=upcoming`]}>
@@ -92,6 +106,51 @@ describe('ExploreRoute', () => {
 
     await waitFor(() => expect(updatePreferences).toHaveBeenCalledWith({ city: 'bengaluru' }));
   });
+
+  it.each([delhi, mumbai])(
+    'opens the $name deep link after the enabled-cities API advertises it',
+    async (city) => {
+      vi.mocked(useCities).mockReturnValue({
+        data: { items: [bengaluru, city] },
+        isPending: false,
+        isError: false,
+        isSuccess: true,
+      } as ReturnType<typeof useCities>);
+      vi.mocked(useEvents).mockReturnValue({
+        data: {
+          pages: [
+            {
+              items: [],
+              next_cursor: null,
+              meta: {
+                city,
+                window: 'upcoming',
+                result_count: 0,
+                source_count: 1,
+                last_checked_at: '2026-08-20T12:00:00Z',
+                page_size: 0,
+                has_more: false,
+                as_of: '2026-08-20T12:00:00Z',
+              },
+            },
+          ],
+        },
+        isPending: false,
+        isError: false,
+        isSuccess: true,
+        hasNextPage: false,
+      } as unknown as ReturnType<typeof useEvents>);
+
+      renderRoute(city.slug);
+
+      expect(screen.getByRole('heading', { name: `What’s on in ${city.name}?` })).toBeVisible();
+      expect(useEvents).toHaveBeenCalledWith(
+        { city: city.slug, window: 'upcoming', categories: [], explicitlyFree: false },
+        true,
+      );
+      await waitFor(() => expect(updatePreferences).toHaveBeenCalledWith({ city: city.slug }));
+    },
+  );
 
   it('does not claim freshness from zero source pages', () => {
     vi.mocked(useEvents).mockReturnValue({

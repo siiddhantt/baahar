@@ -22,6 +22,27 @@ const bengaluru = {
   accent: 'rain',
 } as const;
 
+const varanasi = {
+  slug: 'varanasi',
+  name: 'Varanasi',
+  timezone: 'Asia/Kolkata',
+  accent: 'river',
+} as const;
+
+const delhi = {
+  slug: 'delhi',
+  name: 'Delhi',
+  timezone: 'Asia/Kolkata',
+  accent: 'monument',
+} as const;
+
+const mumbai = {
+  slug: 'mumbai',
+  name: 'Mumbai',
+  timezone: 'Asia/Kolkata',
+  accent: 'coast',
+} as const;
+
 function renderRoute() {
   render(
     <MemoryRouter initialEntries={['/']}>
@@ -86,6 +107,24 @@ describe('ChooseCityRoute', () => {
     expect(screen.getByText('Opened /bengaluru?window=upcoming')).toBeInTheDocument();
   });
 
+  it.each([varanasi, delhi, mumbai])(
+    'renders and opens $name only after the enabled-cities API returns it',
+    (city) => {
+      vi.mocked(useCities).mockReturnValue({
+        data: { items: [bengaluru, city] },
+        isPending: false,
+        isError: false,
+      } as ReturnType<typeof useCities>);
+      vi.mocked(usePreferences).mockReturnValue({ city: null, theme: 'system' });
+
+      renderRoute();
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(city.name, 'i') }));
+
+      expect(updatePreferences).toHaveBeenCalledWith({ city: city.slug });
+      expect(screen.getByText(`Opened /${city.slug}?window=upcoming`)).toBeInTheDocument();
+    },
+  );
+
   it('does not turn registry-only artwork into an available city', () => {
     vi.mocked(usePreferences).mockReturnValue({ city: null, theme: 'system' });
 
@@ -93,5 +132,18 @@ describe('ChooseCityRoute', () => {
 
     expect(screen.queryByRole('button', { name: /delhi/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /mumbai/i })).not.toBeInTheDocument();
+  });
+
+  it('renders exactly the cities returned by the API when all four are enabled', () => {
+    vi.mocked(useCities).mockReturnValue({
+      data: { items: [bengaluru, varanasi, delhi, mumbai] },
+      isPending: false,
+      isError: false,
+    } as ReturnType<typeof useCities>);
+    vi.mocked(usePreferences).mockReturnValue({ city: null, theme: 'system' });
+
+    renderRoute();
+
+    expect(screen.getAllByRole('button', { name: /upcoming plans/i })).toHaveLength(4);
   });
 });
