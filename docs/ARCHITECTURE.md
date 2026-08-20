@@ -281,6 +281,11 @@ but treats it only as a wake-up signal. It downloads the result with its own
 Bright Data credentials and verifies the expected collection/source association.
 This avoids trusting an unsigned arbitrary payload.
 
+The Baahar worker is the sole production scheduler and collection-trigger owner.
+Scraper Studio's per-collector schedules stay disabled; enabling both would
+create duplicate, unassociated runs and spend. Manual previews and explicitly
+reviewed proof batches remain operator actions.
+
 ### Idempotency
 
 - Schedule uniqueness: `(source_id, scheduled_window)`.

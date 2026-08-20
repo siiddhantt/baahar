@@ -69,6 +69,29 @@ account allowlist restriction requiring registered-business Full Access KYC.
 The empty artifact was quarantined; no source migration, preview import,
 personal KYC or Varanasi enablement occurred.
 
+Progress note, later 19 August: UPISACON was evaluated and closed as optional
+single-event evidence rather than a Varanasi coverage pillar. BHU Academic
+Events is the sole resumed source slice. Its official public endpoint needs one
+Code-worker POST, not a Browser worker or generic crawler; the local reviewed
+contract currently yields ten public Varanasi records inside the 90-day horizon.
+No database registration, city enablement or public row occurs before one exact
+Bright production artifact passes the normal gates.
+
+Progress note, activation 19 August: BHU passed the exact production artifact,
+backend publication, and public API gates. One activation published 10/10 rows
+with zero quarantine and enabled Varanasi. The two-city browser, route,
+pagination, responsive, keyboard and reduced-motion acceptance then passed.
+
+Progress note, expansion 19 August: the Dhamma Cakka contract passed its local
+one-page Code-worker gates, but its schema-aligned Studio request was stopped at
+the account-level proxy/allowlist boundary before page load. It remains preview
+only and unpublished. Atta Galatta subsequently passed its 42-row production,
+backend, immutable replay, API, and browser gates. BIEC then passed independent
+source review, its one-stage Studio and Production gates, a 9/9 immutable
+application publication/replay, public API acceptance, and browser journey.
+Bengaluru now has four healthy official sources; the next implementation slice
+returns to Varanasi's release-floor gap.
+
 ## 4. Checkpoint plan
 
 ### Checkpoint 0 — product and source lock (18 August)
@@ -142,7 +165,7 @@ Tasks:
 2. Add local Save and changed-status handling.
 3. Add correct UTC/all-day ICS generation and tests.
 4. Add event/source disclosure and official-link safety.
-5. Implement Jagriti and Atta Galatta; then Goethe RSS if all gates remain green.
+5. Implement Jagriti and Atta Galatta; then BIEC if all gates remain green.
 6. Verify multiple theatre performances do not collapse or duplicate.
 
 Exit gate:
@@ -161,14 +184,20 @@ Attempted tasks, in order:
 2. EMINDIA one-page Code worker: exact 13-row preview passed; the sole production
    crawl failed before page load with `proxy_config`/tunnel 403, returned exact
    `[]`, and was quarantined.
-3. Stop the source lane and record the explicit one-city release downgrade. Do
-   not import preview data, hardcode rows, retry batches or begin another source
-   without a new go/no-go decision.
+3. Close UPISACON as optional evidence; do not use a one-conference source as a
+   city coverage pillar.
+4. BHU Academic Events passed one official public JSON request, native-ID,
+   strict public/Varanasi/90-day, immutable artifact, publication, API, and
+   browser gates with no detail fan-out.
+5. Qualify only one next source at a time. Dhamma Cakka is account-blocked;
+   Atta Galatta and BIEC are fully accepted. Kashi Sansad Events is the next
+   Varanasi qualification target, subject to origin, robots, and hub/detail
+   consistency gates.
 
 Exit gate:
 
-- three healthy Varanasi sources are live or an explicit release downgrade is
-  recorded — the downgrade is recorded for this release;
+- BHU passes its complete vertical slice or the one-city downgrade remains in
+  force; three healthy Varanasi sources are still the public-release floor;
 - a recurring ritual is not presented as a newly announced one-off;
 - an ambiguous missing-year or retrospective article is quarantined;
 - no Varanasi data is hardcoded into the web app.

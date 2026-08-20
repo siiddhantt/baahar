@@ -87,7 +87,7 @@ The operator experience is protected and never appears in the public navigation.
 - Bengaluru and Varanasi city selection.
 - A current feed that defaults to Upcoming, with Today, Tomorrow, and This
   weekend shortcuts.
-- Category filters: Arts, Talks, Theatre, Music, Books, Community, and Other.
+- Category filters: Arts, Talks, Workshops, Theatre, Music, Books, Community, and Other.
 - An `Explicitly free` filter. Unknown price remains visible when the filter is
   off and is never relabelled.
 - Event cards and detail views with title, time, venue, city, source, price or
@@ -197,7 +197,8 @@ the visitor deliberately opens a contextual `About this source` disclosure.
   diacritics. Do not machine-translate at runtime.
 - Where a source supplies accessibility, age, language, or registration facts,
   render them as optional labelled fields.
-- `Last checked` refers to a successful source observation, not page-render time.
+- Collection age stays on the operator surface. Public details identify the official
+  source and only show a freshness warning when the source is stale.
 - External links open with safe `noopener` behaviour and a visible source host.
 
 ### FR-5 Saved events and calendar export

@@ -2,11 +2,11 @@
 
 Baahar ships as three deployable processes from one repository:
 
-| Process | Build/run command | Scaling rule |
-| --- | --- | --- |
-| Web | `npm ci && npm run build` in `apps/web`; serve `dist/` | CDN/static replicas |
-| API | `go build -o bin/api ./cmd/api` | Stateless horizontal replicas |
-| Worker | `go build -o bin/worker ./cmd/worker` | One replica initially; durable leases allow more later |
+| Process | Build/run command                                      | Scaling rule                                           |
+| ------- | ------------------------------------------------------ | ------------------------------------------------------ |
+| Web     | `npm ci && npm run build` in `apps/web`; serve `dist/` | CDN/static replicas                                    |
+| API     | `go build -o bin/api ./cmd/api`                        | Stateless horizontal replicas                          |
+| Worker  | `go build -o bin/worker ./cmd/worker`                  | One replica initially; durable leases allow more later |
 
 PostgreSQL is the system of record. A private S3-compatible bucket stores exact
 collector responses. Neither API nor worker relies on local disk or in-memory
@@ -42,8 +42,9 @@ platform's secret store. Never bake them into an image or frontend bundle.
 2. Deploy the API and verify `GET /v1/cities` returns `200` through the public
    route. This query also proves database readiness.
 3. Deploy the web build and exercise chooser, feed, detail, source, save, and ICS.
-4. Deploy one worker replica. Confirm one scheduled run reaches a terminal state,
-   the artifact hash matches object storage, and public freshness advances.
+4. Confirm every Scraper Studio collector schedule is disabled, then deploy one
+   worker replica. Confirm one Baahar-scheduled run reaches a terminal state, the
+   artifact hash matches object storage, and public freshness advances.
 5. Keep the previous API and worker image available until the first healthy run.
 
 The worker is intentionally not part of the request path. If Bright Data or a
@@ -54,6 +55,8 @@ verified events and marks the source stale instead of publishing a broken run.
 
 - API: status/error rate, latency, PostgreSQL pool saturation, and `GET /v1/cities`.
 - Worker: due/leased/retried/dead jobs and terminal collection-run counts.
+- Bright Data: no active per-collector schedule; every production collection is
+  associated with a Baahar run.
 - Source: last healthy time, consecutive failures, record-count deviation, and
   publication freeze state.
 - Object storage: immutable key, byte count, and SHA-256 recorded on every run.

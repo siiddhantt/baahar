@@ -124,7 +124,7 @@ release it may be an action inside Explore rather than an empty top-level route.
 
 The source explanation is contextual on an event detail:
 
-> Official details from Bangalore International Centre · checked 2 hours ago
+> Official details from Bangalore International Centre
 
 It can expand to the source URL and last change. There is no `How we verify`,
 `Behind Baahar`, `Collectors`, or architecture tab in public navigation. The
@@ -193,7 +193,7 @@ The page contains:
 - title, date/time, venue, status and explicit price/registration state;
 - a short structured details block, not copied source prose;
 - `Official page`, `Save`, `Add to calendar`, and native share;
-- the source/freshness disclosure;
+- the official-source disclosure and a stale warning only when action may be needed;
 - a material change note when relevant;
 - a small `More on this day` group after the primary action.
 
