@@ -25,22 +25,22 @@ the initial review. That count is an observation, not a permanent threshold.
 
 ## Collector output to canonical occurrence
 
-| Collector field | BIC field | Canonical handling |
-| --- | --- | --- |
-| `source_event_id` | `id` | Decimal string; required |
-| `source_url` | `url` | HTTPS URL on the canonical host; required |
-| `title` | `title` | Decode HTML entities, preserve Unicode, trim |
-| `start_date` | date part of `start_date` | Local ISO date; required |
-| `starts_at` | `utc_start_date` | Parse as UTC and serialize as RFC 3339 |
-| `end_date` | date part of `end_date` | Local ISO date |
-| `ends_at` | `utc_end_date` | Parse as UTC and serialize as RFC 3339 |
-| `time_precision` | `all_day` and timestamps | `date` when all-day; otherwise `timed` |
-| `timezone` | `timezone` | Must equal `Asia/Kolkata` |
-| `venue_name` | `venue.venue` | Preserve official spelling |
-| `venue_address` | venue address parts | Join only non-empty source values |
-| `image_url` | `image.sizes["8-col-4-3-hard"].url` | Prefer the official 800x600 card rendition; fall back to `image.sizes.large.url`, then `image.url`, then null |
-| `status` | `status` | WordPress `publish` means `scheduled`, not proof against a detail-page cancellation |
-| `observed_at` | collection job time | RFC 3339 timestamp supplied at collection time |
+| Collector field   | BIC field                           | Canonical handling                                                                                            |
+| ----------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `source_event_id` | `id`                                | Decimal string; required                                                                                      |
+| `source_url`      | `url`                               | HTTPS URL on the canonical host; required                                                                     |
+| `title`           | `title`                             | Decode HTML entities, preserve Unicode, trim                                                                  |
+| `start_date`      | date part of `start_date`           | Local ISO date; required                                                                                      |
+| `starts_at`       | `utc_start_date`                    | Parse as UTC and serialize as RFC 3339                                                                        |
+| `end_date`        | date part of `end_date`             | Local ISO date                                                                                                |
+| `ends_at`         | `utc_end_date`                      | Parse as UTC and serialize as RFC 3339                                                                        |
+| `time_precision`  | `all_day` and timestamps            | `date` when all-day; otherwise `timed`                                                                        |
+| `timezone`        | `timezone`                          | Must equal `Asia/Kolkata`                                                                                     |
+| `venue_name`      | `venue.venue`                       | Preserve official spelling                                                                                    |
+| `venue_address`   | venue address parts                 | Join only non-empty source values                                                                             |
+| `image_url`       | `image.sizes["8-col-4-3-hard"].url` | Prefer the official 800x600 card rendition; fall back to `image.sizes.large.url`, then `image.url`, then null |
+| `status`          | `status`                            | WordPress `publish` means `scheduled`, not proof against a detail-page cancellation                           |
+| `observed_at`     | collection job time                 | RFC 3339 timestamp supplied at collection time                                                                |
 
 The source's `cost` and `website` fields were empty for all 17 initial records.
 Therefore `is_free`, price fields, `registration_url`, and
@@ -53,9 +53,9 @@ in this order:
 
 1. `Books`, `Literature`, `Biography`, or `Language` -> `books`.
 2. `Music` -> `music`.
-3. `Performing Arts` -> `theatre`.
+3. `Workshops` -> `workshops`.
 4. `Visual Arts`, `Architecture`, `Design`, `Dance`, `Film`, or `Experience` -> `arts`.
-5. `Workshops` -> `community`.
+5. `Performing Arts` -> `theatre`.
 6. `Business`, `Cities`, `Climate Change`, `Defence & security`, `Development`,
    `Environment`, `Governance`, `History`, `Politics`, `Science`, `Society`, or
    `Sustainability` -> `talks`.

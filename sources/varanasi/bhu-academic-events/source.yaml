@@ -1,0 +1,41 @@
+schema_version: source-manifest/v1
+source: bhu-academic-events
+source_id: bd2e0a8f-78fd-5412-b188-d8d8f31b1dbd
+display_name: BHU Academic Events
+city: varanasi
+city_id: 019c5d13-c392-79d2-9012-3ed4242f771e
+canonical_hosts:
+  - www.bhu.ac.in
+registration_hosts:
+  - forms.gle
+official_url: https://www.bhu.ac.in/Site/EventsList/1_2_16_Main?Upcoming
+collector_id: c_mszvpbm220j1pld0pe
+output_schema: event-occurrence/v1
+publication_state: active
+collection_state: verified
+worker_type: code
+schedule: "13 */6 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://www.bhu.ac.in/Site/EventsList/1_2_16_Main?Upcoming
+limits:
+  pages_per_run: 1
+  records_per_run: 20
+  window_days: 90
+  maximum_physical_requests_in_live_preflight: 1
+health:
+  minimum_records: 3
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.5
+  high_count_ratio_after_baseline: 2.0
+identity:
+  source_event_id: AcademicEventsId
+  source_event_id_pattern: "^[1-9][0-9]*$"
+  stable_when_time_changes: true
+  array_position_allowed: false
+access:
+  robots_status: missing_404
+  pages_per_run: 1
+  facts_only: true

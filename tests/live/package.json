@@ -5,6 +5,11 @@
   "type": "module",
   "scripts": {
     "install:browser": "playwright install chromium",
+    "test:atta-galatta": "node --test atta-galatta-worker.test.mjs",
+    "test:biec": "node --test biec-worker.test.mjs",
+    "test:bhu-academic-events": "node --test bhu-academic-events-worker.test.mjs",
+    "test:dhamma-cakka": "node --test dhamma-cakka-worker.test.mjs",
+    "test:india-habitat-centre": "node --test india-habitat-centre-worker.test.mjs",
     "test:upisacon": "node --test upisacon-worker.test.mjs"
   },
   "devDependencies": {

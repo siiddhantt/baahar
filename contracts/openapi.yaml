@@ -396,7 +396,7 @@ components:
     TimeWindow:
       enum: [upcoming, today, tomorrow, weekend]
     Category:
-      enum: [arts, talks, theatre, music, books, community, other]
+      enum: [arts, talks, workshops, theatre, music, books, community, other]
     EventStatus:
       enum: [scheduled, cancelled, postponed]
     RegistrationState:
@@ -664,7 +664,17 @@ components:
         meta:
           type: object
           additionalProperties: false
-          required: [city, window, result_count, source_count, last_checked_at, page_size, has_more, as_of]
+          required:
+            [
+              city,
+              window,
+              result_count,
+              source_count,
+              last_checked_at,
+              page_size,
+              has_more,
+              as_of,
+            ]
           properties:
             city:
               $ref: "#/components/schemas/City"
@@ -813,7 +823,16 @@ components:
         external_collection_id:
           type: [string, "null"]
         status:
-          enum: [queued, triggering, collecting, validating, published, rejected, failed]
+          enum:
+            [
+              queued,
+              triggering,
+              collecting,
+              validating,
+              published,
+              rejected,
+              failed,
+            ]
         triggered_at:
           type: string
           format: date-time
@@ -832,7 +851,8 @@ components:
     Incident:
       type: object
       additionalProperties: false
-      required: [id, source_id, run_id, code, state, created_at, acknowledged_at]
+      required:
+        [id, source_id, run_id, code, state, created_at, acknowledged_at]
       properties:
         id:
           type: string
@@ -872,7 +892,15 @@ components:
     SourceAlias:
       type: object
       additionalProperties: false
-      required: [source_id, incoming_identity, occurrence_id, merged_occurrence_id, reason, created_at]
+      required:
+        [
+          source_id,
+          incoming_identity,
+          occurrence_id,
+          merged_occurrence_id,
+          reason,
+          created_at,
+        ]
       properties:
         source_id:
           type: string

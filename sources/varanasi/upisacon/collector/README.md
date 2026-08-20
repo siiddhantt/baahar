@@ -1,12 +1,14 @@
 # UPISACON Browser-worker operator checklist
 
-No Bright Data collector has been created for this source. The reviewed local
-slice is intentionally limited to one Browser-worker stage:
+Bright Data collector `c_mszryghfxuyinkfe6` exists, but its generated two-stage
+template was rejected and remains unapproved. The reviewed local slice is
+intentionally limited to one Browser-worker stage:
 
 - `worker.js`: interaction, source boundary, mapping, horizon, schema, and
   atomic collection gates;
 - `parser.js`: rendered-DOM extraction for Scraper Studio's parser editor;
-- `output-schema.json`: the 27-field Scraper Studio presentation schema;
+- `../../../../contracts/scraper-studio-output-schema.json`: the shared
+  27-field Scraper Studio presentation schema;
 - authoritative validation: `../../../../contracts/collector-output.schema.json`.
 
 ## Exact project contract
@@ -27,7 +29,8 @@ Worker settings:
 - exactly one `navigate()` using `networkidle0` and a 30-second timeout;
 - no `request()`, explicit wait, click, scroll, load-more, traffic capture,
   retry, heal, rerun, or fan-out;
-- exact 27-field output schema from `output-schema.json`.
+- exact 27-field output schema from
+  `../../../../contracts/scraper-studio-output-schema.json`.
 
 The undefined URL compatibility path exists only for Scraper Studio's save
 probe and resolves to the compiled canonical URL. Every explicit production
@@ -58,10 +61,10 @@ structural, semantic, input, identity, and horizon mutations.
 
 1. Independently review the manifest, mapping, interaction code, parser code,
    schema, and live-test output.
-2. Create exactly one custom Browser-worker collector with generation retries
-   disabled. Do not create a duplicate or invoke self-healing.
-3. Replace generated code and schema with the reviewed artifacts. Keep one
-   stage and one canonical input.
+2. Open the existing collector `c_mszryghfxuyinkfe6`. Do not create a duplicate
+   or invoke self-healing.
+3. Replace the rejected generated code and schema with the reviewed artifacts.
+   Keep one stage and one canonical input.
 4. Run one explicit preview. Require one page load, seven collect calls, seven
    exact 27-field rows, no error, and no interaction or fan-out.
 5. Stop without saving on any input, URL, DOM, count, null, schema, request, or

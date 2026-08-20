@@ -1,0 +1,45 @@
+schema_version: source-manifest/v1
+source: atta-galatta
+source_id: 854afb9d-c219-5f8f-b8a5-f0b8b24ae799
+display_name: Atta Galatta
+city: bengaluru
+city_id: 019c5d13-c392-79d2-9012-3ed4242f771d
+canonical_hosts:
+  - attagalatta.com
+image_hosts:
+  - attagalatta.com
+official_url: https://attagalatta.com/calendarpage.php
+collector_id: c_mt006uf51wdkssg1lh
+output_schema: event-occurrence/v1
+publication_state: active
+collection_state: verified
+worker_type: code
+schedule: "23 */4 * * *"
+freshness_ttl: 12h
+collection_input:
+  url: https://attagalatta.com/events.php
+limits:
+  pages_per_run: 1
+  records_per_run: 100
+  window_days: 90
+  maximum_physical_requests_in_live_preflight: 1
+health:
+  minimum_records: 3
+  maximum_parse_error_ratio: 0
+  maximum_duplicate_ratio: 0
+  missing_observations_before_removal: 2
+  low_count_ratio_after_baseline: 0.5
+  high_count_ratio_after_baseline: 2.0
+identity:
+  source_event_id: eventid
+  source_event_id_pattern: ^EVT[0-9]+$
+  stable_when_time_changes: true
+  array_position_allowed: false
+  exact_duplicates_allowed: false
+  multi_performance_requirement: eligible_eventid_must_be_unique_or_fail
+image_preference:
+  - json.image
+access:
+  robots_status: missing_404
+  pages_per_run: 1
+  facts_only: true

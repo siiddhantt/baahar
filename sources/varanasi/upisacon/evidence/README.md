@@ -1,8 +1,12 @@
 # UPISACON live evidence
 
 Reviewed locally on 19 August 2026. One Bright Data collector exists, but its
-generated template was rejected and remains unapproved. No reviewed preview,
-save, approval, production run, or batch exists for this source.
+generated template was rejected and remains unapproved. Two reviewed
+development attempts failed closed before collection. No production save,
+approval, production run, or batch exists for this source.
+
+This slice is now closed as optional evidence. It will not be previewed or run
+again for the current milestone; broader official BHU coverage supersedes it.
 
 ## Raw HTTP proof
 
@@ -29,7 +33,7 @@ save, approval, production run, or batch exists for this source.
 - Parsed semantic-view SHA-256:
   `84d5a2e4439b2ab601b8969cd3840dd0a10236b389b7a774af50da16dd5d52dd`
 - Canonical seven-row SHA-256:
-  `496f2977d25d53a5e0df861a2259c10a3a610f8ddf8774dc0a2b9607d0a3bc4d`
+  `11dee1fcb5929f5f0f4731300082370e0d4eeca3c4f2af7b950902ed93d23ae5`
 
 The tracked evidence is a fact ledger, not a substituted dataset. Raw HTTP and
 rendered HTML are fetched live by the focused harness and are not committed.
@@ -61,8 +65,26 @@ violate the one-navigation, zero-explicit-wait, stable-source-boundary design.
 Generated code and schema were not accepted or substituted for the tracked
 artifacts.
 
-No reviewed preview ID, collection ID, raw transport bytes, transport hash, or
-production validation exists. Nothing was saved, approved, or run. The source
-keeps `publication_state: preview` and `collection_state: local_verified`; it is
-not active until a separately authorized reviewed preview, immutable live batch
-proof, and backend publication all pass.
+## Reviewed development-preview failures
+
+Root installed the reviewed one-stage Browser worker and issued one explicit
+development preview:
+
+- Preview ID: `preview_mszuhlok2afpflntl2`
+- Navigation: one call to the exact canonical workshop URL
+- Observed network requests: 13
+- Collection calls: 0
+- Terminal error: `UPISACON workshop order or title drifted`
+
+The validation failed atomically after parsing and before the first `collect()`.
+A subsequent save probe, `preview_mszun8sgytxezvbz4`, failed at the same
+order/title gate. It did not save or promote the template. No production batch
+was triggered. The focused local harness remained green at 6 of 6 tests against
+the live rendered page.
+
+The failed preview IDs are diagnostic evidence, not source approval. No
+collection ID, raw transport bytes, transport hash, or production validation
+exists. The source keeps `publication_state: preview` and
+`collection_state: local_verified`; it is not active until a separately
+authorized reviewed preview, immutable live batch proof, and backend
+publication all pass.

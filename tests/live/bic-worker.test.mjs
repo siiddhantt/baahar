@@ -1,58 +1,60 @@
-import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import test from 'node:test';
-import vm from 'node:vm';
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+import vm from "node:vm";
 
-const SOURCE_HOST = 'bangaloreinternationalcentre.org';
-const endpoint =
-  `https://${SOURCE_HOST}/wp-json/tribe/events/v1/events`;
-const observedAt = '2026-08-18T15:00:00.000Z';
-const workerUrl = new URL('../../sources/bengaluru/bic/collector/worker.js', import.meta.url);
+const SOURCE_HOST = "bangaloreinternationalcentre.org";
+const endpoint = `https://${SOURCE_HOST}/wp-json/tribe/events/v1/events`;
+const observedAt = "2026-08-18T15:00:00.000Z";
+const workerUrl = new URL(
+  "../../sources/bengaluru/bic/collector/worker.js",
+  import.meta.url,
+);
 const expectedKeys = [
-  'accessibility_note',
-  'age_note',
-  'category',
-  'city_slug',
-  'currency',
-  'end_date',
-  'ends_at',
-  'image_url',
-  'is_free',
-  'language',
-  'observed_at',
-  'price_max_minor',
-  'price_min_minor',
-  'registration_state',
-  'registration_url',
-  'schema_version',
-  'source_event_id',
-  'source_host',
-  'source_url',
-  'start_date',
-  'starts_at',
-  'status',
-  'time_precision',
-  'timezone',
-  'title',
-  'venue_address',
-  'venue_name',
+  "accessibility_note",
+  "age_note",
+  "category",
+  "city_slug",
+  "currency",
+  "end_date",
+  "ends_at",
+  "image_url",
+  "is_free",
+  "language",
+  "observed_at",
+  "price_max_minor",
+  "price_min_minor",
+  "registration_state",
+  "registration_url",
+  "schema_version",
+  "source_event_id",
+  "source_host",
+  "source_url",
+  "start_date",
+  "starts_at",
+  "status",
+  "time_precision",
+  "timezone",
+  "title",
+  "venue_address",
+  "venue_name",
 ].sort();
 
 function expectedPageUrl(page) {
   const url = new URL(endpoint);
-  url.searchParams.set('start_date', '2026-08-18 00:00:00');
-  url.searchParams.set('end_date', '2026-09-18 23:59:59');
-  url.searchParams.set('per_page', '50');
-  url.searchParams.set('page', String(page));
+  url.searchParams.set("start_date", "2026-08-18 00:00:00");
+  url.searchParams.set("end_date", "2026-09-18 23:59:59");
+  url.searchParams.set("per_page", "50");
+  url.searchParams.set("page", String(page));
   return url.toString();
 }
 
 async function runWorker(payloads) {
-  const code = await readFile(workerUrl, 'utf8');
+  const code = await readFile(workerUrl, "utf8");
   const records = [];
   const requests = [];
   class SandboxDate extends Date {}
-  Object.defineProperty(SandboxDate, 'parse', { value: undefined });
+  Object.defineProperty(SandboxDate, "parse", { value: undefined });
   const context = {
     input: { url: endpoint },
     job: { created: observedAt },
@@ -77,15 +79,15 @@ async function runWorker(payloads) {
 }
 
 function moveOneMinute(value) {
-  const date = new Date(`${value.replace(' ', 'T')}Z`);
+  const date = new Date(`${value.replace(" ", "T")}Z`);
   date.setUTCMinutes(date.getUTCMinutes() + 1);
-  return date.toISOString().slice(0, 19).replace('T', ' ');
+  return date.toISOString().slice(0, 19).replace("T", " ");
 }
 
-test('BIC Code worker canonicalizes the complete live event array', async () => {
+test("BIC Code worker canonicalizes the complete live event array", async () => {
   const firstUrl = expectedPageUrl(1);
   const response = await fetch(firstUrl, {
-    headers: { accept: 'application/json' },
+    headers: { accept: "application/json" },
     signal: AbortSignal.timeout(15_000),
   });
   assert.equal(response.status, 200);
@@ -98,13 +100,15 @@ test('BIC Code worker canonicalizes the complete live event array', async () => 
   for (let page = 2; page <= firstPayload.total_pages; page += 1) {
     const url = expectedPageUrl(page);
     const pageResponse = await fetch(url, {
-      headers: { accept: 'application/json' },
+      headers: { accept: "application/json" },
       signal: AbortSignal.timeout(15_000),
     });
     assert.equal(pageResponse.status, 200);
     payloads.set(url, await pageResponse.json());
   }
-  const sourceEvents = [...payloads.values()].flatMap((payload) => payload.events);
+  const sourceEvents = [...payloads.values()].flatMap(
+    (payload) => payload.events,
+  );
   assert.ok(sourceEvents.length >= 1 && sourceEvents.length <= 100);
   assert.equal(Number(firstPayload.total), sourceEvents.length);
 
@@ -116,17 +120,20 @@ test('BIC Code worker canonicalizes the complete live event array', async () => 
     ),
   );
   assert.equal(records.length, sourceEvents.length);
-  assert.equal(new Set(records.map((record) => record.source_event_id)).size, records.length);
+  assert.equal(
+    new Set(records.map((record) => record.source_event_id)).size,
+    records.length,
+  );
 
   for (const record of records) {
     assert.deepEqual(Object.keys(record).sort(), expectedKeys);
-    assert.equal(record.schema_version, 'event-occurrence/v1');
-    assert.equal(record.source_host, 'bangaloreinternationalcentre.org');
+    assert.equal(record.schema_version, "event-occurrence/v1");
+    assert.equal(record.source_host, "bangaloreinternationalcentre.org");
     assert.equal(new URL(record.source_url).hostname, record.source_host);
-    assert.equal(record.city_slug, 'bengaluru');
-    assert.equal(record.timezone, 'Asia/Kolkata');
-    assert.equal(record.time_precision, 'timed');
-    assert.equal(record.status, 'scheduled');
+    assert.equal(record.city_slug, "bengaluru");
+    assert.equal(record.timezone, "Asia/Kolkata");
+    assert.equal(record.time_precision, "timed");
+    assert.equal(record.status, "scheduled");
     assert.equal(record.is_free, null);
     assert.equal(record.price_min_minor, null);
     assert.equal(record.price_max_minor, null);
@@ -140,21 +147,40 @@ test('BIC Code worker canonicalizes the complete live event array', async () => 
   }
 
   const businessEvent = sourceEvents.find((event) =>
-    event.categories?.some((category) => category.name === 'Business'),
+    event.categories?.some((category) => category.name === "Business"),
   );
   assert.ok(businessEvent);
   assert.equal(
-    records.find((record) => record.source_event_id === String(businessEvent.id)).category,
-    'talks',
+    records.find(
+      (record) => record.source_event_id === String(businessEvent.id),
+    ).category,
+    "talks",
   );
 
+  const workshopEvent = structuredClone(sourceEvents[0]);
+  workshopEvent.categories = [{ name: "Workshops" }, { name: "Science" }];
+  const { records: workshopRecords } = await runWorker(
+    new Map([
+      [firstUrl, { events: [workshopEvent], total: 1, total_pages: 1 }],
+    ]),
+  );
+  assert.equal(workshopRecords[0].category, "workshops");
+
+  const danceEvent = structuredClone(sourceEvents[0]);
+  danceEvent.categories = [{ name: "Performing Arts" }, { name: "Dance" }];
+  const { records: danceRecords } = await runWorker(
+    new Map([[firstUrl, { events: [danceEvent], total: 1, total_pages: 1 }]]),
+  );
+  assert.equal(danceRecords[0].category, "arts");
+
   const imageEvent = sourceEvents.find(
-    (event) => event.image?.sizes?.['8-col-4-3-hard']?.url,
+    (event) => event.image?.sizes?.["8-col-4-3-hard"]?.url,
   );
   assert.ok(imageEvent);
   assert.equal(
-    records.find((record) => record.source_event_id === String(imageEvent.id)).image_url,
-    imageEvent.image.sizes['8-col-4-3-hard'].url,
+    records.find((record) => record.source_event_id === String(imageEvent.id))
+      .image_url,
+    imageEvent.image.sizes["8-col-4-3-hard"].url,
   );
 
   const movedEvent = structuredClone(sourceEvents[0]);
@@ -178,11 +204,9 @@ test('BIC Code worker canonicalizes the complete live event array', async () => 
   );
 
   const portImageEvent = structuredClone(imageEvent);
-  portImageEvent.image.sizes['8-col-4-3-hard'].url =
-    portImageEvent.image.sizes['8-col-4-3-hard'].url.replace(
-      SOURCE_HOST,
-      `${SOURCE_HOST}:443`,
-    );
+  portImageEvent.image.sizes["8-col-4-3-hard"].url = portImageEvent.image.sizes[
+    "8-col-4-3-hard"
+  ].url.replace(SOURCE_HOST, `${SOURCE_HOST}:443`);
   await assert.rejects(
     runWorker(
       new Map([
@@ -204,10 +228,7 @@ test('BIC Code worker canonicalizes the complete live event array', async () => 
   await assert.rejects(
     runWorker(
       new Map([
-        [
-          firstUrl,
-          { events: [sourceEvents[0]], total: 2, total_pages: 2 },
-        ],
+        [firstUrl, { events: [sourceEvents[0]], total: 2, total_pages: 2 }],
         [
           expectedPageUrl(2),
           { events: [sourceEvents[1]], total: 3, total_pages: 2 },

@@ -219,7 +219,8 @@ export interface components {
     /** @enum {unknown} */
     TimeWindow: 'upcoming' | 'today' | 'tomorrow' | 'weekend';
     /** @enum {unknown} */
-    Category: 'arts' | 'talks' | 'theatre' | 'music' | 'books' | 'community' | 'other';
+    Category:
+      'arts' | 'talks' | 'workshops' | 'theatre' | 'music' | 'books' | 'community' | 'other';
     /** @enum {unknown} */
     EventStatus: 'scheduled' | 'cancelled' | 'postponed';
     /** @enum {string|null} */

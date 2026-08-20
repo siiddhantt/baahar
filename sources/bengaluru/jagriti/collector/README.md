@@ -22,10 +22,11 @@ collecting the exact 27-field `event-occurrence/v1` records. It has no browser
 interaction, alternate route, arbitrary crawl, fallback source, or request
 retry.
 
-`example-output.json` is a reviewed real 27-field row. `output-schema.json`
-records the manually reviewed vendor presentation schema, including explicit
-nullable defaults that Scraper Studio cannot infer from null examples. The
-authoritative validation contract remains `contracts/collector-output.schema.json`.
+`example-output.json` is a reviewed real 27-field row. The shared
+`contracts/scraper-studio-output-schema.json` records the manually reviewed
+vendor presentation schema, including explicit nullable defaults that Scraper
+Studio cannot infer from null examples. The authoritative validation contract
+remains `contracts/collector-output.schema.json`.
 
 Local review gates from `baahar/`:
 

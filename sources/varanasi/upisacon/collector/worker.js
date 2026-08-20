@@ -163,15 +163,19 @@ function upisaconValidatePage(value) {
   }
   for (let index = 0; index < value.cards.length; index += 1) {
     const card = value.cards[index];
+    const expectedLabel = `WORKSHOP ${String.fromCharCode(65 + index)}`;
+    const expectedTitle = UPISACON_EXPECTED_TITLES[index];
     if (
       card === null ||
       typeof card !== "object" ||
       Array.isArray(card) ||
       Object.keys(card).length !== 2 ||
-      card.label !== `WORKSHOP ${String.fromCharCode(65 + index)}` ||
-      card.title !== UPISACON_EXPECTED_TITLES[index]
+      card.label !== expectedLabel ||
+      card.title !== expectedTitle
     ) {
-      throw new Error("UPISACON workshop order or title drifted");
+      throw new Error(
+        `UPISACON workshop ${index + 1} drifted: expected ${JSON.stringify({ label: expectedLabel, title: expectedTitle })}, received ${JSON.stringify(card)}`,
+      );
     }
   }
   if (
@@ -203,7 +207,7 @@ function upisaconCanonicalRecord(title, observedAt) {
     source_host: UPISACON_SOURCE_HOST,
     city_slug: "varanasi",
     title,
-    category: "other",
+    category: "workshops",
     start_date: UPISACON_EVENT_DATE,
     starts_at: null,
     end_date: UPISACON_EVENT_DATE,
@@ -260,7 +264,7 @@ function upisaconValidateRecord(record) {
     record.source_url !== UPISACON_SOURCE_URL ||
     record.source_host !== UPISACON_SOURCE_HOST ||
     record.city_slug !== "varanasi" ||
-    record.category !== "other" ||
+    record.category !== "workshops" ||
     record.start_date !== UPISACON_EVENT_DATE ||
     record.starts_at !== null ||
     record.end_date !== UPISACON_EVENT_DATE ||

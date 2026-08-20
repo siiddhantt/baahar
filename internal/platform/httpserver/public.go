@@ -230,15 +230,15 @@ func parseCategories(raw string) ([]events.Category, error) {
 		return nil, nil
 	}
 	parts := strings.Split(raw, ",")
-	if len(parts) > 7 {
-		return nil, errors.New("at most seven categories are allowed")
+	if len(parts) > 8 {
+		return nil, errors.New("at most eight categories are allowed")
 	}
 	seen := make(map[events.Category]bool, len(parts))
 	result := make([]events.Category, 0, len(parts))
 	for _, part := range parts {
 		category := events.Category(part)
 		switch category {
-		case events.CategoryArts, events.CategoryTalks, events.CategoryTheatre, events.CategoryMusic, events.CategoryBooks, events.CategoryCommunity, events.CategoryOther:
+		case events.CategoryArts, events.CategoryTalks, events.CategoryWorkshops, events.CategoryTheatre, events.CategoryMusic, events.CategoryBooks, events.CategoryCommunity, events.CategoryOther:
 		default:
 			return nil, errors.New("category contains an unsupported value")
 		}

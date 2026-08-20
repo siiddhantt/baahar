@@ -15,6 +15,7 @@ type Category string
 const (
 	CategoryArts      Category = "arts"
 	CategoryTalks     Category = "talks"
+	CategoryWorkshops Category = "workshops"
 	CategoryTheatre   Category = "theatre"
 	CategoryMusic     Category = "music"
 	CategoryBooks     Category = "books"
@@ -202,7 +203,7 @@ func validatePrice(v Version) error {
 
 func validCategory(category Category) bool {
 	switch category {
-	case CategoryArts, CategoryTalks, CategoryTheatre, CategoryMusic, CategoryBooks, CategoryCommunity, CategoryOther:
+	case CategoryArts, CategoryTalks, CategoryWorkshops, CategoryTheatre, CategoryMusic, CategoryBooks, CategoryCommunity, CategoryOther:
 		return true
 	default:
 		return false

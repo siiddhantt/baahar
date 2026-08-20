@@ -65,7 +65,7 @@ const schemaURL = new URL(
   import.meta.url,
 );
 const outputSchemaURL = new URL(
-  "../../sources/varanasi/upisacon/collector/output-schema.json",
+  "../../contracts/scraper-studio-output-schema.json",
   import.meta.url,
 );
 const moduleRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -365,7 +365,7 @@ test("UPISACON Browser worker emits seven exact canonical rows", async (t) => {
     assert.equal(record.source_url, sourceURL);
     assert.equal(record.source_host, "upisaconvaranasi2026.com");
     assert.equal(record.city_slug, "varanasi");
-    assert.equal(record.category, "other");
+    assert.equal(record.category, "workshops");
     assert.equal(record.start_date, "2026-10-02");
     assert.equal(record.starts_at, null);
     assert.equal(record.end_date, "2026-10-02");
@@ -433,8 +433,8 @@ test("UPISACON interaction code has one navigation and no alternate path", async
 test("UPISACON DOM and semantic drift fail before collection", async () => {
   const live = await liveSource();
   const mutations = [
-    ["WORKSHOP A", "WORKSHOP Z", /workshop order or title/],
-    [">Regional Anesthesia<", ">POCUS<", /workshop order or title/],
+    ["WORKSHOP A", "WORKSHOP Z", /workshop 1 drifted/],
+    [">Regional Anesthesia<", ">POCUS<", /workshop 2 drifted/],
     ["2nd October, 2026", "3rd October, 2026", /date, or venue/],
     ["IMS BHU, Varanasi", "IMS BHU, Delhi", /date, or venue/],
     [
@@ -474,7 +474,7 @@ test("UPISACON DOM and semantic drift fail before collection", async () => {
   const wrongOrder = await executeWorker(live.renderedMarkup, {
     parsedOverride: reordered,
   });
-  assert.match(String(wrongOrder.error), /workshop order or title/);
+  assert.match(String(wrongOrder.error), /workshop 1 drifted/);
   assert.deepEqual(wrongOrder.records, []);
 });
 

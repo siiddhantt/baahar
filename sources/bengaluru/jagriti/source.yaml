@@ -15,6 +15,7 @@ collector_id: c_msywx7up19xi1xi8v
 output_schema: event-occurrence/v1
 publication_state: active
 collection_state: verified
+worker_type: code
 schedule: "29 */6 * * *"
 freshness_ttl: 12h
 collection_input:

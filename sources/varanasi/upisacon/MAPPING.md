@@ -39,28 +39,28 @@ publish current availability per workshop on this page.
 
 ## Canonical occurrence
 
-| Canonical field          | Source mapping                                           |
-| ------------------------ | -------------------------------------------------------- |
-| `schema_version`         | Constant `event-occurrence/v1`                           |
-| `source_event_id`        | Null; the page supplies no stable per-workshop ID        |
-| `source_url`             | Exact canonical workshop page                            |
-| `source_host`            | `upisaconvaranasi2026.com`                               |
-| `city_slug`              | `varanasi`                                               |
-| `title`                  | Exact rendered workshop `h4`, whitespace-normalized      |
-| `category`               | `other`; the page publishes no Baahar taxonomy value     |
-| `start_date`, `end_date` | Exact visible single date, `2026-10-02`                  |
-| `starts_at`, `ends_at`   | Null; the page publishes no workshop times               |
-| `time_precision`         | `date`                                                   |
-| `timezone`               | Reviewed city configuration `Asia/Kolkata`               |
-| `venue_name`             | Exact rendered venue text                                |
-| `venue_address`          | Null; the page publishes no more specific address        |
-| free and price fields    | Null; the one-page runtime does not scrape the fee table |
-| `registration_url`       | Exact source-provided delegate-login URL                 |
-| `registration_state`     | Null; a link and seat limit do not prove availability    |
-| `status`                 | `scheduled` for a current rendered workshop              |
-| `language`               | Empty array                                              |
-| age/accessibility/image  | Null; unsupported or deliberately not republished        |
-| `observed_at`            | Normalized Scraper Studio job creation time              |
+| Canonical field          | Source mapping                                                |
+| ------------------------ | ------------------------------------------------------------- |
+| `schema_version`         | Constant `event-occurrence/v1`                                |
+| `source_event_id`        | Null; the page supplies no stable per-workshop ID             |
+| `source_url`             | Exact canonical workshop page                                 |
+| `source_host`            | `upisaconvaranasi2026.com`                                    |
+| `city_slug`              | `varanasi`                                                    |
+| `title`                  | Exact rendered workshop `h4`, whitespace-normalized           |
+| `category`               | `workshops`; the page explicitly labels every card a workshop |
+| `start_date`, `end_date` | Exact visible single date, `2026-10-02`                       |
+| `starts_at`, `ends_at`   | Null; the page publishes no workshop times                    |
+| `time_precision`         | `date`                                                        |
+| `timezone`               | Reviewed city configuration `Asia/Kolkata`                    |
+| `venue_name`             | Exact rendered venue text                                     |
+| `venue_address`          | Null; the page publishes no more specific address             |
+| free and price fields    | Null; the one-page runtime does not scrape the fee table      |
+| `registration_url`       | Exact source-provided delegate-login URL                      |
+| `registration_state`     | Null; a link and seat limit do not prove availability         |
+| `status`                 | `scheduled` for a current rendered workshop                   |
+| `language`               | Empty array                                                   |
+| age/accessibility/image  | Null; unsupported or deliberately not republished             |
+| `observed_at`            | Normalized Scraper Studio job creation time                   |
 
 The separate official registration route currently shows paid, role-dependent
 fees. The bounded collector does not navigate there, so it deliberately keeps

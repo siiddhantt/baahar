@@ -18,6 +18,14 @@ The live test must report the same number of canonical records as source events
 and verify every outbound page URL. A direct-source pass does not replace the
 Scraper Studio proof below.
 
+Use `contracts/scraper-studio-output-schema.json` for the shared 27-field Studio
+presentation schema. `contracts/collector-output.schema.json` remains the
+authoritative validation contract.
+
+The current tracked worker adds the shared Workshops taxonomy and makes
+source-explicit Dance outrank generic Performing Arts. This revision must pass
+the procedure below before it is considered deployed.
+
 ## Reviewed dashboard procedure
 
 1. Open `https://brightdata.com/cp/scrapers/c_msyr5ts21rq3nfjxrz` and choose

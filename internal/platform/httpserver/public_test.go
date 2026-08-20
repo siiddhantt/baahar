@@ -70,6 +70,16 @@ func TestEventFeedDefaultsToUpcomingAndReusesCursorAnchor(t *testing.T) {
 	}
 }
 
+func TestParseCategoriesAcceptsCompleteConsumerTaxonomy(t *testing.T) {
+	categories, err := parseCategories("arts,talks,workshops,theatre,music,books,community,other")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(categories) != 8 || categories[2] != events.CategoryWorkshops {
+		t.Fatalf("categories = %v", categories)
+	}
+}
+
 type feedHTTPReader struct {
 	queries []events.FeedQuery
 }

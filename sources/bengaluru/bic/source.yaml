@@ -15,6 +15,7 @@ collector_id: c_msyr5ts21rq3nfjxrz
 output_schema: event-occurrence/v1
 publication_state: active
 collection_state: verified
+worker_type: code
 schedule: "0 */4 * * *"
 freshness_ttl: 12h
 collection_input:
@@ -53,7 +54,7 @@ category_map:
   Dance: arts
   Film: arts
   Experience: arts
-  Workshops: community
+  Workshops: workshops
   Business: talks
   Cities: talks
   Climate Change: talks
