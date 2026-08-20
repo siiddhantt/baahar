@@ -279,10 +279,11 @@ Delhi and Mumbai remain disabled future expansions. Their reviewed matrix is
 recorded in `docs/SOURCES.md`; no runtime source row, migration, or enabled city
 flag exists for either. India Habitat Centre is Delhi's reviewed first
 candidate, while JNU and other government sites are product-later while account
-access and source policy remain unresolved. Prithvi Theatre is now Mumbai's
-first Production-verified collector: its same-ID one-stage worker, schema,
-previews, and one 49-row Production batch pass, but it is not Baahar-published.
-The one-source expansion lock still applies. Research or Studio proof does not
-enable a city. NCPA requires written permission. Every future source must pass
-immutable backend publication, API, and browser acceptance before its city is
-enabled.
+access and source policy remain unresolved. The Piano Man is Delhi's first
+Production-verified collector: its same-ID one-stage worker, exact schema,
+previews, Development run, and one 64-row late-day Production run pass, but it
+is not Baahar-published. Prithvi Theatre has the equivalent Mumbai proof with 49
+rows. The one-source expansion lock still applies. Research or Studio proof
+does not enable a city. NCPA requires written permission. Every future source
+must pass immutable backend publication, API, and browser acceptance before its
+city is enabled.

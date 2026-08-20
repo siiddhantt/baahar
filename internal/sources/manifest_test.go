@@ -201,7 +201,7 @@ func TestIHCManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 	}
 }
 
-func TestPianoManManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
+func TestPianoManManifestKeepsTheReviewedVerifiedPreviewBoundary(t *testing.T) {
 	manifest, err := LoadManifest(filepath.Join("..", "..", "sources", "delhi", "the-piano-man", "source.yaml"))
 	if err != nil {
 		t.Fatal(err)
@@ -209,7 +209,7 @@ func TestPianoManManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 	if manifest.SourceID != "7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3" ||
 		manifest.CityID != "19f16354-f054-53e8-bfb6-2b1e1acdcd00" ||
 		manifest.CollectorID != "c_mt1rkddl1dmh5iiok6" || manifest.WorkerType != "code" ||
-		manifest.PublicationState != "preview" || manifest.CollectionState != "local_verified" ||
+		manifest.PublicationState != "preview" || manifest.CollectionState != "verified" ||
 		len(manifest.CanonicalHosts) != 1 || manifest.CanonicalHosts[0] != "www.thepianoman.in" ||
 		len(manifest.RegistrationHosts) != 1 || manifest.RegistrationHosts[0] != "www.thepianoman.in" ||
 		len(manifest.ImageHosts) != 1 || manifest.ImageHosts[0] != "www.thepianoman.in" ||
@@ -219,7 +219,7 @@ func TestPianoManManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 		manifest.Limits.MaximumPhysicalRequestsInLivePreflight != 13 || manifest.Access == nil ||
 		manifest.Access.PagesPerRun != 13 || manifest.CollectionInput == nil ||
 		manifest.CollectionInput.URL != "https://www.thepianoman.in/event/list" {
-		t.Fatalf("Piano Man reviewed local/request boundary = %+v", manifest)
+		t.Fatalf("Piano Man reviewed verified/request boundary = %+v", manifest)
 	}
 	if got := uuid.NewSHA1(uuid.NameSpaceURL, []byte(manifest.CollectionInput.URL)).String(); got != manifest.SourceID {
 		t.Fatalf("Piano Man source_id = %s, want URL UUIDv5 %s", manifest.SourceID, got)
@@ -228,7 +228,7 @@ func TestPianoManManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 		t.Fatalf("Piano Man reserved city_id = %s, want URL UUIDv5 %s", manifest.CityID, got)
 	}
 	if _, err := manifest.Projection(); err == nil {
-		t.Fatal("preview/local-verified Piano Man manifest unexpectedly has a runtime projection")
+		t.Fatal("preview/verified Piano Man manifest unexpectedly has a runtime projection")
 	}
 }
 

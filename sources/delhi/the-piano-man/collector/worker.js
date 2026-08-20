@@ -773,14 +773,17 @@ for (let index = 0; index < PIANO_WEEKLY_REQUESTS; index += 1) {
     request(pianoWindowUrl(pianoBoundary)),
     pianoExpectedNext,
   );
-  const $ = load_html(pianoPayloadValue.html);
   const pianoCards = [];
-  $("a").each((_, node) => {
-    const tokens = pianoClassTokens($, node);
-    if (tokens.has("card") && tokens.has("img-content-card")) {
-      pianoCards.push(node);
-    }
-  });
+  let $ = null;
+  if (pianoPayloadValue.html !== "") {
+    $ = load_html(pianoPayloadValue.html);
+    $("a").each((_, node) => {
+      const tokens = pianoClassTokens($, node);
+      if (tokens.has("card") && tokens.has("img-content-card")) {
+        pianoCards.push(node);
+      }
+    });
+  }
   if (pianoCards.length > PIANO_MAX_CARDS_PER_WINDOW) {
     throw new Error("Piano Man weekly card count left the reviewed boundary");
   }

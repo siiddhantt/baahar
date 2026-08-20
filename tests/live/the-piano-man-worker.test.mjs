@@ -574,7 +574,12 @@ test("Piano Man Code worker emits the exact 67-row Delhi preview", async (t) => 
   const result = await executeWorker(live.payloadTexts);
   assert.ifError(result.error);
   assert.deepEqual(result.requests, windowURLs);
-  assert.equal(result.parses.length, 13);
+  assert.equal(
+    result.parses.length,
+    live.payloadTexts.filter((payload) => JSON.parse(payload).html !== "")
+      .length,
+  );
+  assert.equal(result.parses.includes(""), false);
   assert.equal(result.records.length, 67);
   await validateAuthoritativeSchema(result.records);
 
@@ -700,7 +705,7 @@ test("Piano Man cursor, mapping, action, venue, and URL drift fail atomically", 
   }
 });
 
-test("Piano Man input, response, and seating-time gates are exact", async () => {
+test("Piano Man input, response, and seating-time gates are exact", async (t) => {
   const live = await liveSource();
   const saveProbe = await executeWorker(live.payloadTexts, {
     inputURL: undefined,
@@ -753,6 +758,53 @@ test("Piano Man input, response, and seating-time gates are exact", async () => 
     ),
     true,
   );
+  const afterEveningHash = createHash("sha256")
+    .update(JSON.stringify(afterEveningSeating.records))
+    .digest("hex");
+  assert.equal(
+    afterEveningHash,
+    "11549d234c0486aec8c92ee921cf500c9a54547fff98860e2bc4a24a4572b04d",
+  );
+  const afterEveningStableHash = createHash("sha256")
+    .update(
+      JSON.stringify(
+        afterEveningSeating.records.map((record) =>
+          Object.fromEntries(Object.entries(record).sort()),
+        ),
+      ),
+    )
+    .digest("hex");
+  assert.equal(
+    afterEveningStableHash,
+    "dd1245a3966dd6a110b207865650b7f202630a59a3e4e91b3c75f50a0cc5027d",
+  );
+  t.diagnostic(`post-evening canonical SHA-256: ${afterEveningHash}`);
+  t.diagnostic(`post-evening stable SHA-256: ${afterEveningStableHash}`);
+
+  if (process.env.PIANO_STUDIO_DATASET) {
+    const studioRows = JSON.parse(
+      await readFile(
+        resolve(moduleRoot, process.env.PIANO_STUDIO_DATASET),
+        "utf8",
+      ),
+    );
+    assert.deepEqual(
+      studioRows.map((row) => row.input),
+      Array.from({ length: studioRows.length }, () => ({ url: sourceURL })),
+    );
+    const normalizedStudioRows = studioRows.map(
+      ({ input: _input, ...row }) => ({
+        ...row,
+        observed_at: "2026-08-20T15:01:00.000Z",
+      }),
+    );
+    const byNativeID = (left, right) =>
+      Number(left.source_event_id) - Number(right.source_event_id);
+    assert.deepEqual(
+      normalizedStudioRows.sort(byNativeID),
+      [...afterEveningSeating.records].sort(byNativeID),
+    );
+  }
 
   for (const creationTime of ["invalid", 42, {}]) {
     const result = await executeWorker(live.payloadTexts, { creationTime });

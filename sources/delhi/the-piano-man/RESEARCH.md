@@ -7,8 +7,9 @@ Observed on 20 August 2026 in `Asia/Kolkata`.
 The official The Piano Man event board is the strongest currently implementable
 second Delhi source. It is a private venue/operator, sells public tickets on its
 own first-party detail pages, and exposes its rolling inventory through a
-bounded weekly JSON endpoint. This slice is local-only: no Bright resource,
-backend source, or Delhi city is created or enabled.
+bounded weekly JSON endpoint. Its same-ID Bright collector is verified through
+Development and Production; no backend source or Delhi city is created or
+enabled.
 
 India International Centre has broader cultural coverage and only two list
 requests, but it is not safe to implement without permission. Its Terms PDF
@@ -104,4 +105,5 @@ Fail atomically on input, JSON keys, response size, seven-day cursor, card
 shape, date/weekday/seating time, detail identity, venue ID/name, genre mapping,
 price/actionability, image path, duplicate identity, request count, horizon, or
 record-count drift. Empty future segments are valid. A local pass is neither a
-Bright preview nor publication approval.
+Bright preview nor publication approval; the separate Studio proof below that
+gate is recorded in `evidence/README.md`.
