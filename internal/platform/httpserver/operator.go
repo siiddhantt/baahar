@@ -10,7 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/siddhantk232/baahar/internal/sources"
+	"github.com/siiddhantt/baahar/internal/sources"
 )
 
 const operatorActor = "operator-token"

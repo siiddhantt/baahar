@@ -1,4 +1,4 @@
-module github.com/siddhantk232/baahar
+module github.com/siiddhantt/baahar
 
 go 1.26.0
 

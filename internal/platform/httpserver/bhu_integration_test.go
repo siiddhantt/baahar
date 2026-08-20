@@ -15,10 +15,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/siddhantk232/baahar/internal/collections"
-	"github.com/siddhantk232/baahar/internal/events"
-	"github.com/siddhantk232/baahar/internal/platform/postgres"
-	"github.com/siddhantk232/baahar/internal/sources"
+	"github.com/siiddhantt/baahar/internal/collections"
+	"github.com/siiddhantt/baahar/internal/events"
+	"github.com/siiddhantt/baahar/internal/platform/postgres"
+	"github.com/siiddhantt/baahar/internal/sources"
 )
 
 var bhuReviewedIDs = []string{"6386", "6383", "6382", "6389", "6385", "6381", "6397", "6396", "6376", "6387"}

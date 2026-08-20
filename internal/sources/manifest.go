@@ -18,7 +18,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/santhosh-tekuri/jsonschema/v6"
-	"github.com/siddhantk232/baahar/contracts"
+	"github.com/siiddhantt/baahar/contracts"
 	"go.yaml.in/yaml/v3"
 )
 

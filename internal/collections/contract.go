@@ -8,7 +8,7 @@ import (
 	"io"
 
 	"github.com/santhosh-tekuri/jsonschema/v6"
-	"github.com/siddhantk232/baahar/contracts"
+	"github.com/siiddhantt/baahar/contracts"
 )
 
 const collectorSchemaID = "https://baahar.app/contracts/collector-output.schema.json"

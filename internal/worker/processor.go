@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/siddhantk232/baahar/internal/collections"
-	"github.com/siddhantk232/baahar/internal/platform/brightdata"
-	objectstore "github.com/siddhantk232/baahar/internal/platform/s3"
-	"github.com/siddhantk232/baahar/internal/sources"
+	"github.com/siiddhantt/baahar/internal/collections"
+	"github.com/siiddhantt/baahar/internal/platform/brightdata"
+	objectstore "github.com/siiddhantt/baahar/internal/platform/s3"
+	"github.com/siiddhantt/baahar/internal/sources"
 )
 
 const collectionPollInterval = 5 * time.Second

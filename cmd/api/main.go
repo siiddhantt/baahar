@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/siddhantk232/baahar/internal/platform/httpserver"
-	"github.com/siddhantk232/baahar/internal/platform/postgres"
+	"github.com/siiddhantt/baahar/internal/platform/httpserver"
+	"github.com/siiddhantt/baahar/internal/platform/postgres"
 )
 
 func main() {

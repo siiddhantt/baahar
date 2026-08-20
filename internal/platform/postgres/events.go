@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/siddhantk232/baahar/internal/events"
+	"github.com/siiddhantt/baahar/internal/events"
 )
 
 type Events struct {

@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/siddhantk232/baahar/internal/collections"
-	objectstore "github.com/siddhantk232/baahar/internal/platform/s3"
-	"github.com/siddhantk232/baahar/internal/sources"
+	"github.com/siiddhantt/baahar/internal/collections"
+	objectstore "github.com/siiddhantt/baahar/internal/platform/s3"
+	"github.com/siiddhantt/baahar/internal/sources"
 )
 
 var (

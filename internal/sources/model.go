@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/siddhantk232/baahar/internal/collections"
-	"github.com/siddhantk232/baahar/internal/events"
+	"github.com/siiddhantt/baahar/internal/collections"
+	"github.com/siiddhantt/baahar/internal/events"
 )
 
 var (

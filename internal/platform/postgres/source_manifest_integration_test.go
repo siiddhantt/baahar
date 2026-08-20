@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/siddhantk232/baahar/internal/sources"
+	"github.com/siiddhantt/baahar/internal/sources"
 )
 
 func TestFreshMigrationMatchesEveryActiveSourceManifest(t *testing.T) {

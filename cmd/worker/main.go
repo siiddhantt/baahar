@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/siddhantk232/baahar/internal/collections"
-	"github.com/siddhantk232/baahar/internal/platform/brightdata"
-	"github.com/siddhantk232/baahar/internal/platform/postgres"
-	objectstore "github.com/siddhantk232/baahar/internal/platform/s3"
-	"github.com/siddhantk232/baahar/internal/worker"
+	"github.com/siiddhantt/baahar/internal/collections"
+	"github.com/siiddhantt/baahar/internal/platform/brightdata"
+	"github.com/siiddhantt/baahar/internal/platform/postgres"
+	objectstore "github.com/siiddhantt/baahar/internal/platform/s3"
+	"github.com/siiddhantt/baahar/internal/worker"
 )
 
 const jobLease = 15 * time.Minute

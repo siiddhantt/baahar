@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/siddhantk232/baahar/internal/collections"
+	"github.com/siiddhantt/baahar/internal/collections"
 )
 
 func main() {

@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/siddhantk232/baahar/internal/platform/postgres"
+	"github.com/siiddhantt/baahar/internal/platform/postgres"
 )
 
 func main() {
