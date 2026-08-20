@@ -216,10 +216,10 @@
       "additionalProperties": false,
       "required": ["slug", "name", "timezone", "accent"],
       "properties": {
-        "slug": { "enum": ["bengaluru", "varanasi"] },
+        "slug": { "enum": ["bengaluru", "delhi", "mumbai", "varanasi"] },
         "name": { "type": "string" },
         "timezone": { "const": "Asia/Kolkata" },
-        "accent": { "enum": ["rain", "river"] }
+        "accent": { "enum": ["coast", "monument", "rain", "river"] }
       }
     },
     "timing": {

@@ -13,7 +13,7 @@ image_hosts:
 official_url: https://prithvitheatre.org/booktickets
 collector_id: c_mt1qtstu9kmw95k4q
 output_schema: event-occurrence/v1
-publication_state: preview
+publication_state: active
 collection_state: verified
 worker_type: code
 schedule: "17 */6 * * *"

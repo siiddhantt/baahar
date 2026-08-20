@@ -67,10 +67,6 @@ func TestMigrationUpDownUpOnPostgres(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertVersion(t, ctx, pool, int64(len(migrations)))
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BIEC before health-policy guard: %v", err)
-	}
-
 	jagritiID := uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f")
 	_, err = pool.Exec(ctx, `
 		INSERT INTO collection_runs (id, source_id, trace_id, status, triggered_at)
@@ -82,15 +78,7 @@ func TestMigrationUpDownUpOnPostgres(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE sources SET maximum_duplicate_ratio_bps = 101 WHERE id = $1`, bicID); err != nil {
 		t.Fatal(err)
 	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove Atta Galatta before health-policy guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove workshops category before health-policy guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BHU activation before health-policy guard: %v", err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 5)
 	assertVersion(t, ctx, pool, 5)
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
 		t.Fatal("health policy migration discarded a non-recoverable reviewed ratio")
@@ -134,21 +122,7 @@ func TestMigrationUpDownUpOnPostgres(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE collection_runs SET status = 'triggering' WHERE source_id = $1`, jagritiID); err != nil {
 		t.Fatal(err)
 	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BIEC before triggering-state guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove Atta Galatta before triggering-state guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove workshops category before triggering-state guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BHU activation before triggering-state guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove merge migration before triggering-state guard: %v", err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 4)
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
 		t.Fatal("source hardening migration removed an unreconciled triggering state")
 	}
@@ -176,18 +150,7 @@ func TestBHUActivationMigrationRoundTripPreservesExistingSchedules(t *testing.T)
 	}
 	assertBHUActivated(t, ctx, pool)
 
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 5)
 	assertVersion(t, ctx, pool, 5)
 	var remaining int
 	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM sources WHERE id = 'bd2e0a8f-78fd-5412-b188-d8d8f31b1dbd'`).Scan(&remaining); err != nil {
@@ -215,19 +178,11 @@ func TestBHUActivationMigrationRoundTripPreservesExistingSchedules(t *testing.T)
 		VALUES ($1, $2, $3, 'queued', now())`, uuid.Must(uuid.NewV7()), bhuID, uuid.NewString()); err != nil {
 		t.Fatal(err)
 	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BIEC before BHU history guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove Atta Galatta before BHU history guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove workshops category before BHU history guard: %v", err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 6)
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
 		t.Fatal("BHU activation migration removed a source with collection history")
 	}
-	assertVersion(t, ctx, pool, int64(len(migrations)-3))
+	assertVersion(t, ctx, pool, 6)
 }
 
 func TestAttaGalattaMigrationRoundTripPreservesExistingSources(t *testing.T) {
@@ -244,13 +199,7 @@ func TestAttaGalattaMigrationRoundTripPreservesExistingSources(t *testing.T) {
 	before := sourceRows(t, ctx, pool, existing)
 	assertAttaGalattaMigration(t, ctx, pool)
 
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	assertVersion(t, ctx, pool, int64(len(migrations)-2))
+	migrateDownToVersion(t, ctx, pool, migrations, 7)
 	var remaining int
 	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM sources WHERE id = '854afb9d-c219-5f8f-b8a5-f0b8b24ae799'`).Scan(&remaining); err != nil {
 		t.Fatal(err)
@@ -273,13 +222,11 @@ func TestAttaGalattaMigrationRoundTripPreservesExistingSources(t *testing.T) {
 		VALUES ($1, $2, $3, 'queued', now())`, uuid.Must(uuid.NewV7()), attaID, uuid.NewString()); err != nil {
 		t.Fatal(err)
 	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BIEC before Atta Galatta history guard: %v", err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 8)
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
 		t.Fatal("Atta Galatta migration removed a source with collection history")
 	}
-	assertVersion(t, ctx, pool, int64(len(migrations)-1))
+	assertVersion(t, ctx, pool, 8)
 }
 
 func TestBIECMigrationRoundTripPreservesExistingSources(t *testing.T) {
@@ -297,10 +244,7 @@ func TestBIECMigrationRoundTripPreservesExistingSources(t *testing.T) {
 	before := sourceRows(t, ctx, pool, existing)
 	assertBIECMigration(t, ctx, pool)
 
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	assertVersion(t, ctx, pool, int64(len(migrations)-1))
+	migrateDownToVersion(t, ctx, pool, migrations, 8)
 	var remaining int
 	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM sources WHERE id = '520e6232-ab55-5c71-8918-bb68a659ae61'`).Scan(&remaining); err != nil {
 		t.Fatal(err)
@@ -323,10 +267,87 @@ func TestBIECMigrationRoundTripPreservesExistingSources(t *testing.T) {
 		VALUES ($1, $2, $3, 'queued', now())`, uuid.Must(uuid.NewV7()), biecID, uuid.NewString()); err != nil {
 		t.Fatal(err)
 	}
+	migrateDownToVersion(t, ctx, pool, migrations, 9)
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
 		t.Fatal("BIEC migration removed a source with collection history")
 	}
-	assertVersion(t, ctx, pool, int64(len(migrations)))
+	assertVersion(t, ctx, pool, 9)
+}
+
+func TestDelhiMumbaiSourceMigrationsRoundTripAndGuardHistory(t *testing.T) {
+	ctx, pool := migratedIntegrationPool(t)
+	migrations, err := ReadMigrations(os.DirFS("../../../migrations"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	existing := []uuid.UUID{
+		uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f771f"),
+		uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f"),
+		uuid.MustParse("bd2e0a8f-78fd-5412-b188-d8d8f31b1dbd"),
+		uuid.MustParse("854afb9d-c219-5f8f-b8a5-f0b8b24ae799"),
+		uuid.MustParse("520e6232-ab55-5c71-8918-bb68a659ae61"),
+	}
+	before := sourceRows(t, ctx, pool, existing)
+	assertPianoManMigration(t, ctx, pool)
+	assertPrithviMigration(t, ctx, pool)
+
+	migrateDownToVersion(t, ctx, pool, migrations, 9)
+	for _, id := range []string{
+		"7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3",
+		"7bb2b2bf-66bb-5cfe-8269-ea811552d9c7",
+		"19f16354-f054-53e8-bfb6-2b1e1acdcd00",
+		"7eb386b1-1bf5-5cd4-828f-a288683eef55",
+	} {
+		var remaining int
+		table := "sources"
+		if id == "19f16354-f054-53e8-bfb6-2b1e1acdcd00" || id == "7eb386b1-1bf5-5cd4-828f-a288683eef55" {
+			table = "cities"
+		}
+		if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM `+table+` WHERE id = $1`, id).Scan(&remaining); err != nil {
+			t.Fatal(err)
+		}
+		if remaining != 0 {
+			t.Fatalf("%s %s survived full Delhi/Mumbai rollback", table, id)
+		}
+	}
+	assertSourceRows(t, ctx, pool, before)
+
+	if err := MigrateUp(ctx, pool, migrations); err != nil {
+		t.Fatal(err)
+	}
+	assertPianoManMigration(t, ctx, pool)
+	assertPrithviMigration(t, ctx, pool)
+	assertSourceRows(t, ctx, pool, before)
+
+	prithviID := uuid.MustParse("7bb2b2bf-66bb-5cfe-8269-ea811552d9c7")
+	prithviRun := uuid.Must(uuid.NewV7())
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO collection_runs (id, source_id, trace_id, status, triggered_at)
+		VALUES ($1, $2, $3, 'queued', now())`, prithviRun, prithviID, uuid.NewString()); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err == nil {
+		t.Fatal("Prithvi migration removed a source with collection history")
+	}
+	assertVersion(t, ctx, pool, 12)
+	if _, err := pool.Exec(ctx, `DELETE FROM collection_runs WHERE id = $1`, prithviRun); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err != nil {
+		t.Fatal(err)
+	}
+
+	pianoID := uuid.MustParse("7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3")
+	pianoRun := uuid.Must(uuid.NewV7())
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO collection_runs (id, source_id, trace_id, status, triggered_at)
+		VALUES ($1, $2, $3, 'queued', now())`, pianoRun, pianoID, uuid.NewString()); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateDown(ctx, pool, migrations); err == nil {
+		t.Fatal("Piano Man migration removed a source with collection history")
+	}
+	assertVersion(t, ctx, pool, 11)
 }
 
 func TestWorkshopsCategoryMigrationPreservesInUseVersions(t *testing.T) {
@@ -335,12 +356,7 @@ func TestWorkshopsCategoryMigrationPreservesInUseVersions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BIEC before workshops rollback test: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove Atta Galatta before workshops rollback test: %v", err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 7)
 	sourceID := uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f771f")
 	cityID := uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f771d")
 	runID := uuid.Must(uuid.NewV7())
@@ -379,7 +395,7 @@ func TestWorkshopsCategoryMigrationPreservesInUseVersions(t *testing.T) {
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
 		t.Fatal("workshops migration discarded an in-use event version")
 	}
-	assertVersion(t, ctx, pool, int64(len(migrations)-2))
+	assertVersion(t, ctx, pool, 7)
 	var category string
 	if err := pool.QueryRow(ctx, `SELECT category FROM event_versions WHERE id = $1`, versionID).Scan(&category); err != nil {
 		t.Fatal(err)
@@ -404,7 +420,7 @@ func TestWorkshopsCategoryMigrationPreservesInUseVersions(t *testing.T) {
 	if err := MigrateDown(ctx, pool, migrations); err != nil {
 		t.Fatal(err)
 	}
-	assertVersion(t, ctx, pool, int64(len(migrations)-3))
+	assertVersion(t, ctx, pool, 6)
 	if err := MigrateUp(ctx, pool, migrations); err != nil {
 		t.Fatal(err)
 	}
@@ -417,24 +433,7 @@ func TestAliasIdempotencyProvenanceSurvivesAllowedMigrationRoundTrip(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatal(err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 3)
 	assertVersion(t, ctx, pool, 3)
 	sourceID := uuid.MustParse("de7c8acb-0185-5994-b1b4-290029c3ed5f")
 	cityID := uuid.MustParse("019c5d13-c392-79d2-9012-3ed4242f771d")
@@ -464,24 +463,7 @@ func TestAliasIdempotencyProvenanceSurvivesAllowedMigrationRoundTrip(t *testing.
 	}
 	legacyKey := "legacy-alias-" + legacyIdentity
 	assertAliasIdempotencyProvenance(t, ctx, pool, sourceID, legacyIdentity, legacyKey, true)
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BIEC over legacy alias: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove Atta Galatta over legacy alias: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove workshops category over legacy alias: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BHU activation over legacy alias: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove merge migration over legacy alias: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove hardening migration over legacy-only aliases: %v", err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 3)
 	assertVersion(t, ctx, pool, 3)
 	var legacyRows int
 	if err := pool.QueryRow(ctx, `
@@ -506,21 +488,7 @@ func TestAliasIdempotencyProvenanceSurvivesAllowedMigrationRoundTrip(t *testing.
 		t.Fatal(err)
 	}
 	assertAliasIdempotencyProvenance(t, ctx, pool, sourceID, customIdentity, customKey, false)
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BIEC before custom-key guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove Atta Galatta before custom-key guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove workshops category before custom-key guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove BHU activation before custom-key guard: %v", err)
-	}
-	if err := MigrateDown(ctx, pool, migrations); err != nil {
-		t.Fatalf("remove merge migration before custom-key guard: %v", err)
-	}
+	migrateDownToVersion(t, ctx, pool, migrations, 4)
 	if err := MigrateDown(ctx, pool, migrations); err == nil {
 		t.Fatal("hardening migration discarded an operator-owned idempotency key")
 	}
@@ -561,6 +529,31 @@ func assertAliasIdempotencyProvenance(
 	}
 	if key != wantKey || legacy != wantLegacy {
 		t.Fatalf("alias idempotency provenance = %q/%v, want %q/%v", key, legacy, wantKey, wantLegacy)
+	}
+}
+
+func migrateDownToVersion(
+	t *testing.T,
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	migrations []Migration,
+	target int64,
+) {
+	t.Helper()
+	for {
+		current, err := MigrationVersion(ctx, pool)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if current == target {
+			return
+		}
+		if current < target {
+			t.Fatalf("migration version = %d, stepped below target %d", current, target)
+		}
+		if err := MigrateDown(ctx, pool, migrations); err != nil {
+			t.Fatalf("migrate down from version %d to %d: %v", current, target, err)
+		}
 	}
 }
 
@@ -615,6 +608,8 @@ func assertMigrationInvariants(t *testing.T, ctx context.Context, pool *pgxpool.
 	assertBHUActivated(t, ctx, pool)
 	assertAttaGalattaMigration(t, ctx, pool)
 	assertBIECMigration(t, ctx, pool)
+	assertPianoManMigration(t, ctx, pool)
+	assertPrithviMigration(t, ctx, pool)
 	for index := range 2 {
 		if _, err := pool.Exec(ctx, `INSERT INTO venues (id, city_id, name) VALUES ($1, $2, $3)`, uuid.Must(uuid.NewV7()), cityID, fmt.Sprintf("Unreviewed venue %d", index)); err != nil {
 			t.Fatalf("multiple venues without reviewed keys should be allowed: %v", err)
@@ -826,6 +821,91 @@ func assertBIECMigration(t *testing.T, ctx context.Context, pool *pgxpool.Pool) 
 			input, sourceEventIDPattern, enabled, freshnessTTL, cadence, pageLimit, recordLimit, dailyRunLimit,
 			absenceThreshold, publicationState, nextDueAt, lastHealthyAt, minimumRecords, quarantineBPS,
 			duplicateBPS, lowCountBPS, highCountBPS, registrationHosts, imageHosts)
+	}
+}
+
+type expandedSourceMigration struct {
+	cityID, citySlug, cityName, cityAccent string
+	sourceID, sourceSlug, displayName      string
+	host, officialURL, collectorID, input  string
+	pattern                                string
+	pageLimit, recordLimit, minimumRecords int
+	lowCountBPS, highCountBPS              int
+	registrationHost, imageHost            string
+}
+
+func assertPianoManMigration(t *testing.T, ctx context.Context, pool *pgxpool.Pool) {
+	t.Helper()
+	assertExpandedSourceMigration(t, ctx, pool, expandedSourceMigration{
+		cityID: "19f16354-f054-53e8-bfb6-2b1e1acdcd00", citySlug: "delhi", cityName: "Delhi", cityAccent: "monument",
+		sourceID: "7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3", sourceSlug: "the-piano-man", displayName: "The Piano Man",
+		host: "www.thepianoman.in", officialURL: "https://www.thepianoman.in/event/list", collectorID: "c_mt1rkddl1dmh5iiok6",
+		input: "https://www.thepianoman.in/event/list", pattern: `^[0-9]+$`, pageLimit: 13, recordLimit: 150,
+		minimumRecords: 1, lowCountBPS: 4000, highCountBPS: 25000,
+		registrationHost: "www.thepianoman.in", imageHost: "www.thepianoman.in",
+	})
+}
+
+func assertPrithviMigration(t *testing.T, ctx context.Context, pool *pgxpool.Pool) {
+	t.Helper()
+	assertExpandedSourceMigration(t, ctx, pool, expandedSourceMigration{
+		cityID: "7eb386b1-1bf5-5cd4-828f-a288683eef55", citySlug: "mumbai", cityName: "Mumbai", cityAccent: "coast",
+		sourceID: "7bb2b2bf-66bb-5cfe-8269-ea811552d9c7", sourceSlug: "prithvi-theatre", displayName: "Prithvi Theatre",
+		host: "prithvitheatre.org", officialURL: "https://prithvitheatre.org/booktickets", collectorID: "c_mt1qtstu9kmw95k4q",
+		input: "https://prithvitheatre.org/api/getPrithviData?cmd=DEGETTHEATERS&cc=PTHV", pattern: `^[1-9][0-9]*$`,
+		pageLimit: 1, recordLimit: 100, minimumRecords: 3, lowCountBPS: 5000, highCountBPS: 20000,
+		registrationHost: "in.bookmyshow.com", imageHost: "in.bmscdn.com",
+	})
+}
+
+func assertExpandedSourceMigration(t *testing.T, ctx context.Context, pool *pgxpool.Pool, want expandedSourceMigration) {
+	t.Helper()
+	var citySlug, cityName, cityTimezone, cityAccent string
+	var cityEnabled bool
+	if err := pool.QueryRow(ctx, `
+		SELECT slug, display_name, timezone, accent, enabled
+		FROM cities WHERE id = $1`, want.cityID).Scan(&citySlug, &cityName, &cityTimezone, &cityAccent, &cityEnabled); err != nil {
+		t.Fatal(err)
+	}
+	if citySlug != want.citySlug || cityName != want.cityName || cityTimezone != "Asia/Kolkata" || cityAccent != want.cityAccent || !cityEnabled {
+		t.Fatalf("city %s migration = %q/%q/%q/%q/%v", want.cityID, citySlug, cityName, cityTimezone, cityAccent, cityEnabled)
+	}
+
+	var sourceSlug, displayName, host, officialURL, manifestVersion, collectorID, schemaVersion, pattern, state string
+	var input []byte
+	var enabled bool
+	var ttl, cadence, pageLimit, recordLimit, daily, absence, minimum, parseBPS, duplicateBPS, lowBPS, highBPS int
+	var registrationHosts, imageHosts []string
+	err := pool.QueryRow(ctx, `
+		SELECT slug, display_name, canonical_host, official_url, manifest_version, collector_id,
+			schema_version, collection_input, source_event_id_pattern, enabled,
+			freshness_ttl_seconds, cadence_seconds, page_limit, record_limit, daily_run_limit,
+			absence_threshold, publication_state, minimum_records, maximum_quarantine_ratio_bps,
+			maximum_duplicate_ratio_bps, low_count_ratio_bps, high_count_ratio_bps,
+			registration_hosts, image_hosts
+		FROM sources WHERE id = $1 AND city_id = $2`, want.sourceID, want.cityID).Scan(
+		&sourceSlug, &displayName, &host, &officialURL, &manifestVersion, &collectorID,
+		&schemaVersion, &input, &pattern, &enabled, &ttl, &cadence, &pageLimit, &recordLimit,
+		&daily, &absence, &state, &minimum, &parseBPS, &duplicateBPS, &lowBPS, &highBPS,
+		&registrationHosts, &imageHosts,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var collectionInput map[string]string
+	if err := json.Unmarshal(input, &collectionInput); err != nil {
+		t.Fatal(err)
+	}
+	if sourceSlug != want.sourceSlug || displayName != want.displayName || host != want.host || officialURL != want.officialURL ||
+		manifestVersion != "source-manifest/v1" || collectorID != want.collectorID || schemaVersion != "event-occurrence/v1" ||
+		collectionInput["url"] != want.input || pattern != want.pattern || !enabled || ttl != 43200 || cadence != 21600 ||
+		pageLimit != want.pageLimit || recordLimit != want.recordLimit || daily != 4 || absence != 2 || state != "active" ||
+		minimum != want.minimumRecords || parseBPS != 0 || duplicateBPS != 0 || lowBPS != want.lowCountBPS || highBPS != want.highCountBPS ||
+		len(registrationHosts) != 1 || registrationHosts[0] != want.registrationHost || len(imageHosts) != 1 || imageHosts[0] != want.imageHost {
+		t.Fatalf("source %s migration mismatch: slug=%q name=%q host=%q official=%q manifest=%q collector=%q schema=%q input=%v pattern=%q enabled=%v ttl/cadence/pages/records/daily/absence=%d/%d/%d/%d/%d/%d state=%q health=%d/%d/%d/%d/%d registration=%v images=%v",
+			want.sourceID, sourceSlug, displayName, host, officialURL, manifestVersion, collectorID, schemaVersion,
+			collectionInput, pattern, enabled, ttl, cadence, pageLimit, recordLimit, daily, absence, state,
+			minimum, parseBPS, duplicateBPS, lowBPS, highBPS, registrationHosts, imageHosts)
 	}
 }
 

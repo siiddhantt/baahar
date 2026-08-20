@@ -13,7 +13,7 @@ image_hosts:
 official_url: https://www.thepianoman.in/event/list
 collector_id: c_mt1rkddl1dmh5iiok6
 output_schema: event-occurrence/v1
-publication_state: preview
+publication_state: active
 collection_state: verified
 worker_type: code
 schedule: "41 */6 * * *"

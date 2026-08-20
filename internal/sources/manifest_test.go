@@ -27,8 +27,8 @@ func TestTrackedSourceManifestsSatisfyStrictV1Contract(t *testing.T) {
 			t.Fatalf("active manifest %s has no deterministic projection: %v", manifest.Path, err)
 		}
 	}
-	if active != 5 {
-		t.Fatalf("active manifests = %d, want 5", active)
+	if active != 7 {
+		t.Fatalf("active manifests = %d, want 7", active)
 	}
 }
 
@@ -66,6 +66,8 @@ func TestActiveManifestHealthRatiosProjectExactlyToBasisPoints(t *testing.T) {
 		"atta-galatta":        {city: "bengaluru", duplicate: 0, low: 5000, high: 20000},
 		"biec":                {city: "bengaluru", duplicate: 0, low: 5000, high: 20000},
 		"bhu-academic-events": {city: "varanasi", duplicate: 0, low: 5000, high: 20000},
+		"the-piano-man":       {city: "delhi", duplicate: 0, low: 4000, high: 25000},
+		"prithvi-theatre":     {city: "mumbai", duplicate: 0, low: 5000, high: 20000},
 	}
 	for source, want := range tests {
 		t.Run(source, func(t *testing.T) {
@@ -201,7 +203,7 @@ func TestIHCManifestKeepsTheReviewedDevelopmentOnlyBoundary(t *testing.T) {
 	}
 }
 
-func TestPianoManManifestKeepsTheReviewedVerifiedPreviewBoundary(t *testing.T) {
+func TestPianoManManifestKeepsTheReviewedActiveBoundary(t *testing.T) {
 	manifest, err := LoadManifest(filepath.Join("..", "..", "sources", "delhi", "the-piano-man", "source.yaml"))
 	if err != nil {
 		t.Fatal(err)
@@ -209,7 +211,7 @@ func TestPianoManManifestKeepsTheReviewedVerifiedPreviewBoundary(t *testing.T) {
 	if manifest.SourceID != "7129ebd4-8cc9-524f-85bd-f9cde8b6d7b3" ||
 		manifest.CityID != "19f16354-f054-53e8-bfb6-2b1e1acdcd00" ||
 		manifest.CollectorID != "c_mt1rkddl1dmh5iiok6" || manifest.WorkerType != "code" ||
-		manifest.PublicationState != "preview" || manifest.CollectionState != "verified" ||
+		manifest.PublicationState != "active" || manifest.CollectionState != "verified" ||
 		len(manifest.CanonicalHosts) != 1 || manifest.CanonicalHosts[0] != "www.thepianoman.in" ||
 		len(manifest.RegistrationHosts) != 1 || manifest.RegistrationHosts[0] != "www.thepianoman.in" ||
 		len(manifest.ImageHosts) != 1 || manifest.ImageHosts[0] != "www.thepianoman.in" ||
@@ -227,12 +229,19 @@ func TestPianoManManifestKeepsTheReviewedVerifiedPreviewBoundary(t *testing.T) {
 	if got := uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://baahar.app/cities/delhi")).String(); got != manifest.CityID {
 		t.Fatalf("Piano Man reserved city_id = %s, want URL UUIDv5 %s", manifest.CityID, got)
 	}
-	if _, err := manifest.Projection(); err == nil {
-		t.Fatal("preview/verified Piano Man manifest unexpectedly has a runtime projection")
+	projection, err := manifest.Projection()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if projection.PageLimit != 13 || projection.RecordLimit != 150 || projection.DailyRunLimit != 4 ||
+		projection.MinimumRecords != 1 || projection.MaximumQuarantineRatioBPS != 0 ||
+		projection.MaximumDuplicateRatioBPS != 0 || projection.SourceEventIDPattern == nil ||
+		*projection.SourceEventIDPattern != `^[0-9]+$` {
+		t.Fatalf("Piano Man runtime projection = %+v", projection)
 	}
 }
 
-func TestPrithviManifestKeepsTheReviewedMumbaiPreviewBoundary(t *testing.T) {
+func TestPrithviManifestKeepsTheReviewedMumbaiActiveBoundary(t *testing.T) {
 	manifest, err := LoadManifest(filepath.Join("..", "..", "sources", "mumbai", "prithvi-theatre", "source.yaml"))
 	if err != nil {
 		t.Fatal(err)
@@ -240,7 +249,7 @@ func TestPrithviManifestKeepsTheReviewedMumbaiPreviewBoundary(t *testing.T) {
 	if manifest.SourceID != "7bb2b2bf-66bb-5cfe-8269-ea811552d9c7" ||
 		manifest.CityID != "7eb386b1-1bf5-5cd4-828f-a288683eef55" ||
 		manifest.CollectorID != "c_mt1qtstu9kmw95k4q" || manifest.WorkerType != "code" ||
-		manifest.PublicationState != "preview" || manifest.CollectionState != "verified" ||
+		manifest.PublicationState != "active" || manifest.CollectionState != "verified" ||
 		len(manifest.CanonicalHosts) != 1 || manifest.CanonicalHosts[0] != "prithvitheatre.org" ||
 		len(manifest.RegistrationHosts) != 1 || manifest.RegistrationHosts[0] != "in.bookmyshow.com" ||
 		len(manifest.ImageHosts) != 1 || manifest.ImageHosts[0] != "in.bmscdn.com" ||
@@ -256,7 +265,14 @@ func TestPrithviManifestKeepsTheReviewedMumbaiPreviewBoundary(t *testing.T) {
 	if got := uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://baahar.app/cities/mumbai")).String(); got != manifest.CityID {
 		t.Fatalf("Prithvi reserved city_id = %s, want URL UUIDv5 %s", manifest.CityID, got)
 	}
-	if _, err := manifest.Projection(); err == nil {
-		t.Fatal("preview/verified Prithvi manifest unexpectedly has a runtime projection")
+	projection, err := manifest.Projection()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if projection.PageLimit != 1 || projection.RecordLimit != 100 || projection.DailyRunLimit != 4 ||
+		projection.MinimumRecords != 3 || projection.MaximumQuarantineRatioBPS != 0 ||
+		projection.MaximumDuplicateRatioBPS != 0 || projection.SourceEventIDPattern == nil ||
+		*projection.SourceEventIDPattern != `^[1-9][0-9]*$` {
+		t.Fatalf("Prithvi runtime projection = %+v", projection)
 	}
 }

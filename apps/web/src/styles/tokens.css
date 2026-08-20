@@ -85,4 +85,36 @@
     --accent-secondary: #9eadf5;
     --signal: #ff7b70;
   }
+
+  :root[data-city-accent='monument'] {
+    --accent: #9b4f35;
+    --accent-strong: #673321;
+    --accent-soft: #f0ddd2;
+    --accent-secondary: #345d73;
+    --signal: #d79a2b;
+  }
+
+  :root[data-city-accent='monument'][data-theme='dark'] {
+    --accent: #e79a78;
+    --accent-strong: #ffc6aa;
+    --accent-soft: #432b22;
+    --accent-secondary: #8dbdd4;
+    --signal: #f1bd58;
+  }
+
+  :root[data-city-accent='coast'] {
+    --accent: #16717a;
+    --accent-strong: #0d4d55;
+    --accent-soft: #d4e9e8;
+    --accent-secondary: #a84754;
+    --signal: #e49b2f;
+  }
+
+  :root[data-city-accent='coast'][data-theme='dark'] {
+    --accent: #73c7cb;
+    --accent-strong: #a4e5e6;
+    --accent-soft: #203b3d;
+    --accent-secondary: #ef9ba7;
+    --signal: #f3bd61;
+  }
 }
