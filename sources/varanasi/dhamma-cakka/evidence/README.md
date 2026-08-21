@@ -53,7 +53,7 @@ canonical URL input.
 
 The first explicit preview, `preview_mszz2ww52eub5hx1ly`, passed with exactly
 one request, one `load_html`, seven `collect` calls, and one total page load. Its
-export at `C:\Users\Sid\Downloads\lines (2).json` was 5,507 bytes with SHA-256
+The Studio export was 5,507 bytes with SHA-256
 `c21c302f94f45ef9c2c7d046e045d0168b21edfa197c179a98fb6ce12e4653b7`.
 All seven rows had one uniform exact 27-key shape and passed the authoritative
 Go schema. They preserved the reviewed titles, dates, and first-party Apply

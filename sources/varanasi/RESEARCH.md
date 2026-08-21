@@ -1,4 +1,4 @@
-# Varanasi source checkpoint research
+# Varanasi source research
 
 Research date: 18 August 2026 (Asia/Kolkata)
 
@@ -244,7 +244,7 @@ cheaper Code worker. Do not build a Browser DOM collector around stale cards,
 and do not publish until the portal supplies current dates and recurring-event
 semantics are explicitly modelled.
 
-## Checkpoint entry gate
+## Qualification gate
 
 Rudraksh may enter implementation only if the primary maintainer accepts these
 three constraints:
@@ -254,6 +254,6 @@ three constraints:
    acceptable;
 3. the UI/source attribution never implies public entry, price, or booking.
 
-If any constraint is rejected, do not substitute Subah or Kashi today. Keep
-Checkpoint 3 blocked until Subah returns with a future detail or a stronger
+If any constraint is rejected, do not substitute Subah or Kashi. Keep
+qualification blocked until Subah returns with a future detail or a stronger
 Varanasi source is researched.

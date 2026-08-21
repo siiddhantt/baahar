@@ -308,7 +308,7 @@ India Habitat Centre is the next reviewed candidate, but remains local-only.
 
 The smallest current private-source Delhi set is `India Habitat Centre + The
 Piano Man`; Oddbird is the third precision candidate once its large Wix raw
-state is bounded. Government sources are product-later only for this hackathon,
+state is bounded. Government sources require a separate policy review,
 and India International Centre requires written reuse clarification. Mumbai's
 clean first slice is Prithvi Theatre; NCPA still requires written permission
 and NMACC still requires query-policy clearance. These are not P0 commitments.
