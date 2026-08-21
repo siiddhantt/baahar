@@ -1,0 +1,299 @@
+@layer components {
+  .root {
+    position: relative;
+    display: grid;
+    margin-block: clamp(1.7rem, 4vw, 3.2rem) 0.5rem;
+    padding: 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(
+        circle at 8% 20%,
+        color-mix(in srgb, var(--signal) 15%, transparent),
+        transparent 28%
+      ),
+      color-mix(in srgb, var(--surface) 90%, transparent);
+    box-shadow: var(--shadow-sm);
+    grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .root[data-open='false'] {
+    width: fit-content;
+    min-width: 13rem;
+    grid-template-columns: 1fr;
+  }
+
+  .mascotButton {
+    position: relative;
+    display: grid;
+    min-height: 8.2rem;
+    padding: 0.35rem 0.55rem 0.55rem;
+    border: 0;
+    border-radius: calc(var(--radius-lg) - 0.45rem);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    cursor: pointer;
+    place-items: center;
+  }
+
+  .mascotButton:hover .cat,
+  .mascotButton:focus-visible .cat {
+    transform: translateY(-0.18rem) rotate(-1deg);
+  }
+
+  .prompt {
+    position: absolute;
+    z-index: 2;
+    top: -1.2rem;
+    right: -1rem;
+    padding: 0.38rem 0.58rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill) var(--radius-pill) var(--radius-xs) var(--radius-pill);
+    background: var(--surface-raised);
+    color: var(--ink-soft);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.64rem;
+    font-weight: 720;
+    opacity: 0;
+    transform: translateY(0.25rem);
+    transition:
+      opacity var(--duration-ui) var(--ease-standard),
+      transform var(--duration-ui) var(--ease-enter);
+    white-space: nowrap;
+  }
+
+  .mascotButton:hover .prompt,
+  .mascotButton:focus-visible .prompt,
+  .root[data-open='true'] .prompt {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .cat {
+    width: 6.2rem;
+    color: var(--accent-strong);
+    overflow: visible;
+    transition: transform var(--duration-spatial) var(--ease-enter);
+  }
+
+  .body,
+  .head {
+    fill: var(--surface);
+    stroke: currentColor;
+    stroke-linejoin: round;
+    stroke-width: 3;
+  }
+
+  .ear {
+    fill: var(--signal);
+    opacity: 0.72;
+  }
+
+  .eyes,
+  .mouth,
+  .whisker,
+  .paw,
+  .tail {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 3;
+  }
+
+  .tail {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: tail-wave 2.8s var(--ease-standard) infinite alternate;
+  }
+
+  .nose,
+  .thought {
+    fill: var(--accent-secondary);
+  }
+
+  .cat[data-thinking='true'] .thought {
+    animation: thought-pop 0.8s ease-in-out infinite alternate;
+  }
+
+  .buttonLabel {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 760;
+  }
+
+  .panel {
+    display: grid;
+    padding: clamp(0.8rem, 2.5vw, 1.5rem);
+    animation: panel-in var(--duration-spatial) var(--ease-enter) both;
+    gap: 1rem;
+  }
+
+  .eyebrow {
+    color: var(--accent-strong);
+    font-size: 0.67rem;
+    font-weight: 820;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .intro h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    font-weight: 730;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .intro > p:last-child {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .panel form label {
+    display: block;
+    margin-bottom: 0.42rem;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    font-weight: 720;
+  }
+
+  .inputRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.45rem;
+  }
+
+  .inputRow input {
+    min-width: 0;
+    min-height: 3rem;
+    padding: 0.72rem 0.9rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--surface-raised);
+    color: var(--ink);
+  }
+
+  .inputRow button {
+    min-height: 3rem;
+    padding-inline: 1rem;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--accent-strong);
+    color: var(--surface);
+    cursor: pointer;
+    font-weight: 760;
+  }
+
+  .inputRow button:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  .examples,
+  .result > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .examples button,
+  .result span {
+    min-height: 2rem;
+    padding: 0.38rem 0.58rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    font-weight: 680;
+  }
+
+  .examples button {
+    cursor: pointer;
+  }
+
+  .examples button:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+
+  .result,
+  .error {
+    padding: 0.75rem 0.85rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: 0.78rem;
+  }
+
+  .result {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .result small {
+    color: var(--muted);
+  }
+
+  .error {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  @keyframes tail-wave {
+    to {
+      transform: rotate(8deg);
+    }
+  }
+
+  @keyframes thought-pop {
+    to {
+      opacity: 0.35;
+      transform: scale(0.75);
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.3rem);
+    }
+  }
+
+  @media (max-width: 43rem) {
+    .root,
+    .root[data-open='false'] {
+      width: 100%;
+      grid-template-columns: 1fr;
+    }
+
+    .mascotButton {
+      min-height: 6.2rem;
+      grid-template-columns: auto 1fr;
+      gap: 0.7rem;
+    }
+
+    .cat {
+      width: 4.8rem;
+    }
+
+    .buttonLabel {
+      justify-self: start;
+      font-size: 1.15rem;
+    }
+
+    .inputRow {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tail,
+    .cat[data-thinking='true'] .thought,
+    .panel {
+      animation: none;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { calendarUrl, listEvents, type EventPage } from './client';
+import { askBaahar, calendarUrl, listEvents, type EventPage } from './client';
 
 describe('calendarUrl', () => {
   it('escapes the occurrence identifier', () => {
@@ -19,6 +19,7 @@ describe('listEvents', () => {
         result_count: 2,
         source_count: 1,
         last_checked_at: '2026-08-19T00:00:00+05:30',
+        venues: [],
         page_size: 0,
         has_more: false,
         as_of: '2026-08-19T00:00:00+05:30',
@@ -35,10 +36,49 @@ describe('listEvents', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    await listEvents({ city: 'mysuru', window: 'upcoming', cursor: 'signed-next', limit: 2 });
+    await listEvents({
+      city: 'mysuru',
+      window: 'upcoming',
+      venue: 'Town Hall',
+      cursor: 'signed-next',
+      limit: 2,
+    });
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
-      '/v1/events?city=mysuru&window=upcoming&cursor=signed-next&limit=2',
+      '/v1/events?city=mysuru&window=upcoming&venue=Town+Hall&cursor=signed-next&limit=2',
+    );
+  });
+
+  it('posts a bounded Ask Baahar request as JSON', async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            interpretation: {
+              window: 'upcoming',
+              categories: [],
+              explicitly_free: false,
+              venue: null,
+              assisted: false,
+            },
+            items: [],
+            result_count: 0,
+            as_of: '2026-08-21T00:00:00Z',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await askBaahar('mysuru', 'music this weekend');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/v1/ask',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ city: 'mysuru', query: 'music this weekend' }),
+      }),
     );
   });
 });

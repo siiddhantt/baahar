@@ -54,6 +54,14 @@
     text-transform: uppercase;
   }
 
+  .badges {
+    display: flex;
+    min-height: 1.65rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
   .body h2 {
     overflow-wrap: anywhere;
     font-family: var(--font-display);
@@ -75,16 +83,10 @@
     text-underline-offset: 0.12em;
   }
 
-  .venue,
-  .price {
+  .venue {
     color: var(--muted);
     font-size: 0.82rem;
     overflow-wrap: anywhere;
-  }
-
-  .price {
-    color: var(--ink-soft);
-    font-weight: 700;
   }
 
   .footer {

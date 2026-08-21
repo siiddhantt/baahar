@@ -15,6 +15,10 @@ vi.mock('../app/preferences', () => ({
   usePreferences: vi.fn(),
 }));
 
+vi.mock('../components/AskBaahar', () => ({
+  AskBaahar: () => <section aria-label="Ask Baahar" />,
+}));
+
 const bengaluru = {
   slug: 'bengaluru',
   name: 'Bengaluru',
@@ -70,7 +74,7 @@ describe('ExploreRoute', () => {
 
     expect(screen.getByRole('heading', { name: /varanasi is still being checked/i })).toBeVisible();
     expect(useEvents).toHaveBeenCalledWith(
-      { city: 'varanasi', window: 'upcoming', categories: [], explicitlyFree: false },
+      { city: 'varanasi', window: 'upcoming', categories: [], explicitlyFree: false, venue: '' },
       false,
     );
     expect(updatePreferences).not.toHaveBeenCalled();
@@ -145,7 +149,7 @@ describe('ExploreRoute', () => {
 
       expect(screen.getByRole('heading', { name: `What’s on in ${city.name}?` })).toBeVisible();
       expect(useEvents).toHaveBeenCalledWith(
-        { city: city.slug, window: 'upcoming', categories: [], explicitlyFree: false },
+        { city: city.slug, window: 'upcoming', categories: [], explicitlyFree: false, venue: '' },
         true,
       );
       await waitFor(() => expect(updatePreferences).toHaveBeenCalledWith({ city: city.slug }));

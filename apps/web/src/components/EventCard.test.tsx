@@ -47,7 +47,20 @@ describe('EventCard public facts', () => {
 
     expect(screen.getByText('City Hall')).toBeVisible();
     expect(screen.getByText('City Calendar')).toBeVisible();
+    expect(screen.getByText('Theatre')).toBeVisible();
+    expect(screen.getByText('₹500')).toBeVisible();
     expect(screen.queryByText(/ago/i)).not.toBeInTheDocument();
+  });
+
+  it('uses the category badge instead of a New discovery badge', () => {
+    render(
+      <MemoryRouter>
+        <EventCard event={{ ...event, change_kind: 'new' }} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Theatre')).toBeVisible();
+    expect(screen.queryByText('New')).not.toBeInTheDocument();
   });
 
   it('does not repeat a source name that is already the venue', () => {

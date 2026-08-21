@@ -31,23 +31,4 @@
   .skipLink:focus {
     transform: translateY(0);
   }
-
-  .footer {
-    display: flex;
-    width: min(100% - (2 * var(--page-gutter)), var(--content-max));
-    margin: clamp(4rem, 9vw, 9rem) auto 0;
-    padding-block: 1.4rem 2.2rem;
-    border-top: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 0.85rem;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  @media (max-width: 31.25rem) {
-    .footer {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-  }
 }

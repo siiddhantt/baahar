@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 
-import { ApiProblem, calendarUrl } from '../api/client';
+import { ApiProblem } from '../api/client';
 import { useEvent, useEventChanges } from '../api/queries';
 import { ActionButton } from '../components/ActionButton';
 import { ChangeNotice } from '../components/ChangeNotice';
+import { CalendarActions } from '../components/CalendarActions';
 import { DataError } from '../components/DataError';
 import { EventArtwork } from '../components/EventArtwork';
 import { EventStatus } from '../components/EventStatus';
 import { RouteFallback } from '../components/RouteFallback';
 import { SaveButton } from '../components/SaveButton';
 import { SourceDisclosure } from '../components/SourceDisclosure';
-import { ArrowLeftIcon, CalendarIcon, ExternalIcon } from '../components/icons';
+import { ArrowLeftIcon, ExternalIcon } from '../components/icons';
 import {
   eventDateTimeLabel,
   priceLabel,
@@ -165,9 +166,7 @@ export default function EventDetailRoute() {
               {primaryAction.label} <ExternalIcon />
             </a>
             <SaveButton occurrenceId={event.id} showLabel />
-            <a className={styles.secondaryAction} href={calendarUrl(event.id)} download>
-              <CalendarIcon /> Add to calendar
-            </a>
+            <CalendarActions event={event} />
             <ActionButton tone="quiet" onClick={() => void shareEvent()}>
               {shareState === 'shared'
                 ? 'Shared'

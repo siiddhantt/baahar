@@ -5,6 +5,7 @@ import type { CitySlug } from '../api/client';
 import { useCities, useEvents } from '../api/queries';
 import { updatePreferences, usePreferences } from '../app/preferences';
 import { ActionButton } from '../components/ActionButton';
+import { AskBaahar } from '../components/AskBaahar';
 import { DataError } from '../components/DataError';
 import { EmptyState } from '../components/EmptyState';
 import { EventQuilt } from '../components/EventQuilt';
@@ -57,7 +58,8 @@ export default function ExploreRoute({ city }: Props) {
   }, [filters, searchParams, setSearchParams]);
 
   const cityName = meta?.city.name ?? cityConfig?.name ?? cityNameFromSlug(city);
-  const filtered = filters.categories.length > 0 || filters.explicitlyFree;
+  const filtered =
+    filters.categories.length > 0 || filters.explicitlyFree || Boolean(filters.venue);
 
   function resetEmpty() {
     setSearchParams(
@@ -65,6 +67,7 @@ export default function ExploreRoute({ city }: Props) {
         window: filtered ? filters.window : 'upcoming',
         categories: [],
         explicitlyFree: false,
+        venue: '',
       }),
     );
   }
@@ -114,8 +117,16 @@ export default function ExploreRoute({ city }: Props) {
         </div>
       </header>
 
+      <AskBaahar
+        city={city}
+        cityName={cityName}
+        venues={meta?.venues ?? []}
+        onApply={(next) => setSearchParams(writeFilters(searchParams, next))}
+      />
+
       <FeedFilters
         filters={filters}
+        venues={meta?.venues ?? []}
         onChange={(next) => setSearchParams(writeFilters(searchParams, next))}
       />
 

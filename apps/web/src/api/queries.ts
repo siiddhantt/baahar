@@ -1,6 +1,7 @@
-import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueries, useQuery } from '@tanstack/react-query';
 
 import {
+  askBaahar,
   getEvent,
   listCities,
   listEventChanges,
@@ -15,6 +16,7 @@ export type EventFilters = {
   window: TimeWindow;
   categories: EventCategory[];
   explicitlyFree: boolean;
+  venue: string;
 };
 
 export const queryKeys = {
@@ -60,6 +62,7 @@ export function useEvents(filters: EventFilters, enabled = true) {
           limit: 24,
           ...(filters.categories.length ? { category: filters.categories } : {}),
           ...(filters.explicitlyFree ? { free: true } : {}),
+          ...(filters.venue ? { venue: filters.venue } : {}),
           ...(pageParam ? { cursor: pageParam } : {}),
         },
         signal,
@@ -67,6 +70,13 @@ export function useEvents(filters: EventFilters, enabled = true) {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => (page.meta.has_more ? (page.next_cursor ?? undefined) : undefined),
     enabled,
+  });
+}
+
+export function useAskBaahar(city: CitySlug) {
+  return useMutation({
+    mutationFn: ({ query, signal }: { query: string; signal?: AbortSignal }) =>
+      askBaahar(city, query, signal),
   });
 }
 

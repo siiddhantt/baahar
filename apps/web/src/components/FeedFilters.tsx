@@ -11,14 +11,16 @@ type Filters = {
   window: TimeWindow;
   categories: EventCategory[];
   explicitlyFree: boolean;
+  venue: string;
 };
 
 type Props = {
   filters: Filters;
   onChange: (next: Filters) => void;
+  venues: string[];
 };
 
-export function FeedFilters({ filters, onChange }: Props) {
+export function FeedFilters({ filters, onChange, venues }: Props) {
   function toggleCategory(category: EventCategory) {
     const categories = filters.categories.includes(category)
       ? filters.categories.filter((value) => value !== category)
@@ -71,6 +73,23 @@ export function FeedFilters({ filters, onChange }: Props) {
           </button>
         ))}
       </div>
+
+      {venues.length ? (
+        <label className={styles.venueFilter}>
+          <span>Venue</span>
+          <select
+            value={filters.venue}
+            onChange={(event) => onChange({ ...filters, venue: event.target.value })}
+          >
+            <option value="">Anywhere in the city</option>
+            {venues.map((venue) => (
+              <option key={venue} value={venue}>
+                {venue}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
     </section>
   );
 }

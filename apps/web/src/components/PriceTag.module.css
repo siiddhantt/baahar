@@ -1,0 +1,40 @@
+@layer components {
+  .price {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 1.9rem;
+    padding: 0.22rem 0.62rem 0.22rem 0.28rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--canvas-deep) 58%, var(--surface));
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    font-weight: 760;
+    align-items: center;
+    gap: 0.42rem;
+  }
+
+  .mark {
+    display: inline-grid;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding-inline: 0.25rem;
+    border-radius: var(--radius-pill);
+    background: var(--ink);
+    color: var(--canvas);
+    font-size: 0.6rem;
+    font-weight: 850;
+    place-items: center;
+  }
+
+  .price[data-free='true'] {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .price[data-free='true'] .mark {
+    background: var(--accent-strong);
+    color: var(--surface);
+  }
+}

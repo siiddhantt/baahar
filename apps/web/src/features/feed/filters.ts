@@ -54,10 +54,12 @@ export function readFilters(params: URLSearchParams) {
     window: isWindow(requestedWindow) ? requestedWindow : 'upcoming',
     categories,
     explicitlyFree: params.get('free') === 'true',
+    venue: params.get('venue')?.slice(0, 300) ?? '',
   } satisfies {
     window: TimeWindow;
     categories: EventCategory[];
     explicitlyFree: boolean;
+    venue: string;
   };
 }
 
@@ -67,6 +69,7 @@ export function writeFilters(
     window: TimeWindow;
     categories: EventCategory[];
     explicitlyFree: boolean;
+    venue: string;
   },
 ) {
   const params = new URLSearchParams(current);
@@ -77,6 +80,9 @@ export function writeFilters(
 
   if (next.explicitlyFree) params.set('free', 'true');
   else params.delete('free');
+
+  if (next.venue) params.set('venue', next.venue);
+  else params.delete('venue');
 
   params.delete('cursor');
   return params;

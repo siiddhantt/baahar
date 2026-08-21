@@ -7,6 +7,7 @@ export type EventChange = components['schemas']['EventChange'];
 export type EventDetail = components['schemas']['EventDetail'];
 export type EventPage = components['schemas']['EventPage'];
 export type EventSummary = components['schemas']['EventSummary'];
+export type AskResult = components['schemas']['AskResult'];
 export type TimeWindow = components['schemas']['TimeWindow'];
 export type ListEventsQuery = operations['listEvents']['parameters']['query'];
 
@@ -76,6 +77,35 @@ async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   return payload as T;
 }
 
+async function postJson<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(apiPath(path), {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify(body),
+    ...(signal ? { signal } : {}),
+  });
+  const payload: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    if (isProblem(payload)) throw new ApiProblem(payload);
+    throw new ApiProblem({
+      type: 'about:blank',
+      title: 'Could not complete that request',
+      status: response.status,
+      code: 'unexpected_response',
+    });
+  }
+  if (payload === null) {
+    throw new ApiProblem({
+      type: 'about:blank',
+      title: 'The server returned an empty response',
+      status: 502,
+      code: 'empty_response',
+    });
+  }
+  return payload as T;
+}
+
 export function listCities(signal?: AbortSignal) {
   return requestJson<CityList>('/v1/cities', signal);
 }
@@ -86,10 +116,15 @@ export function listEvents(query: ListEventsQuery, signal?: AbortSignal) {
   if (query.window) params.set('window', query.window);
   if (query.category?.length) params.set('category', query.category.join(','));
   if (query.free) params.set('free', 'true');
+  if (query.venue) params.set('venue', query.venue);
   if (query.cursor) params.set('cursor', query.cursor);
   if (query.limit) params.set('limit', String(query.limit));
 
   return requestJson<EventPage>(`/v1/events?${params.toString()}`, signal);
+}
+
+export function askBaahar(city: CitySlug, query: string, signal?: AbortSignal) {
+  return postJson<AskResult>('/v1/ask', { city, query }, signal);
 }
 
 export function getEvent(occurrenceId: string, signal?: AbortSignal) {

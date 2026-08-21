@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { NavigationType, Outlet, useLocation, useNavigationType } from 'react-router-dom';
 
 import { SiteHeader } from '../components/SiteHeader';
+import { SiteFooter } from '../components/SiteFooter';
 import styles from './AppShell.module.css';
 
 export function AppShell() {
@@ -29,10 +30,7 @@ export function AppShell() {
       <main ref={main} id="main-content" className={styles.main} tabIndex={-1}>
         <Outlet />
       </main>
-      <footer className={styles.footer}>
-        <p>Fresh facts, always linked to the official page.</p>
-        <p aria-hidden="true">Baahar chalo ↗</p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

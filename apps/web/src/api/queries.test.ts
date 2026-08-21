@@ -21,6 +21,7 @@ function page(window: EventPage['meta']['window'], items: EventSummary[] = []): 
       result_count: items.length,
       source_count: 1,
       last_checked_at: '2026-08-18T12:00:00Z',
+      venues: [],
       page_size: items.length,
       has_more: false,
       as_of: '2026-08-18T12:00:00Z',

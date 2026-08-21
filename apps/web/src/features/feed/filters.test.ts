@@ -10,6 +10,7 @@ describe('feed URL filters', () => {
       window: 'upcoming',
       categories: ['music'],
       explicitlyFree: false,
+      venue: '',
     });
   });
 
@@ -18,6 +19,7 @@ describe('feed URL filters', () => {
       window: 'weekend',
       categories: ['arts', 'books'],
       explicitlyFree: true,
+      venue: '',
     });
 
     expect(params.toString()).toBe('window=weekend&category=arts%2Cbooks&free=true');
@@ -27,5 +29,13 @@ describe('feed URL filters', () => {
     expect(readFilters(new URLSearchParams('category=workshops')).categories).toEqual([
       'workshops',
     ]);
+  });
+
+  it('round-trips an exact venue and clears stale pagination', () => {
+    const filters = readFilters(new URLSearchParams('venue=Town+Hall&cursor=old'));
+    expect(filters.venue).toBe('Town Hall');
+    expect(writeFilters(new URLSearchParams('cursor=old'), filters).toString()).toContain(
+      'venue=Town+Hall',
+    );
   });
 });

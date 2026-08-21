@@ -4,15 +4,18 @@ import styles from './EventStatus.module.css';
 
 type Props = {
   event: EventSummary;
+  showDiscoveryChanges?: boolean;
 };
 
-export function EventStatus({ event }: Props) {
+export function EventStatus({ event, showDiscoveryChanges = true }: Props) {
   const labels: { label: string; tone: 'danger' | 'warning' | 'accent' }[] = [];
 
   if (event.status === 'cancelled') labels.push({ label: 'Cancelled', tone: 'danger' });
   if (event.status === 'postponed') labels.push({ label: 'Postponed', tone: 'warning' });
-  if (event.change_kind === 'new') labels.push({ label: 'New', tone: 'accent' });
-  if (event.change_kind === 'updated') labels.push({ label: 'Updated', tone: 'warning' });
+  if (showDiscoveryChanges && event.change_kind === 'new')
+    labels.push({ label: 'New', tone: 'accent' });
+  if (showDiscoveryChanges && event.change_kind === 'updated')
+    labels.push({ label: 'Updated', tone: 'warning' });
 
   const registration = registrationLabel(event);
   if (registration === 'Sold out' || registration === 'Registration closed') {

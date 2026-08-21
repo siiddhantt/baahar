@@ -1,0 +1,122 @@
+@layer components {
+  .footer {
+    position: relative;
+    display: grid;
+    width: min(100% - (2 * var(--page-gutter)), var(--content-max));
+    margin: clamp(4rem, 9vw, 9rem) auto 0;
+    padding-block: 2.1rem 2.4rem;
+    border-top: 1px solid var(--line);
+    grid-template-columns: minmax(12rem, 1fr) auto;
+    gap: 1.5rem 3rem;
+  }
+
+  .route {
+    position: absolute;
+    top: -0.32rem;
+    left: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .route::before {
+    width: clamp(5rem, 14vw, 11rem);
+    height: 0.28rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    content: '';
+  }
+
+  .route span {
+    width: 0.62rem;
+    height: 0.62rem;
+    margin-left: 0.35rem;
+    border: 2px solid var(--canvas);
+    border-radius: 50%;
+    background: var(--signal);
+  }
+
+  .route span:nth-child(2) {
+    background: var(--accent-secondary);
+  }
+
+  .route span:nth-child(3) {
+    background: var(--accent);
+  }
+
+  .brand a {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    font-variation-settings: 'wdth' 110;
+    font-weight: 760;
+    letter-spacing: -0.04em;
+    text-decoration: none;
+  }
+
+  .brand p,
+  .meta {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .brand p {
+    margin-top: 0.15rem;
+  }
+
+  .footer nav {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.25rem 0.45rem;
+  }
+
+  .footer nav a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.72rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .footer nav a:hover {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .meta {
+    display: flex;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .meta p:first-child span {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background: var(--success);
+  }
+
+  @media (max-width: 43rem) {
+    .footer {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .footer nav {
+      justify-content: flex-start;
+    }
+
+    .meta {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+}
