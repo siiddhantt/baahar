@@ -3,7 +3,7 @@
     display: inline-flex;
     width: fit-content;
     min-height: 1.9rem;
-    padding: 0.22rem 0.62rem 0.22rem 0.28rem;
+    padding: 0.22rem 0.68rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-pill);
     background: color-mix(in srgb, var(--canvas-deep) 58%, var(--surface));
@@ -28,6 +28,7 @@
   }
 
   .price[data-free='true'] {
+    padding-left: 0.28rem;
     border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
     background: var(--accent-soft);
     color: var(--accent-strong);

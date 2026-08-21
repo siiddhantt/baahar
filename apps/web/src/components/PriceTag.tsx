@@ -12,9 +12,11 @@ export function PriceTag({ event }: Props) {
 
   return (
     <span className={styles.price} data-free={event.pricing.is_free === true}>
-      <span className={styles.mark} aria-hidden="true">
-        {event.pricing.is_free === true ? '₹0' : '₹'}
-      </span>
+      {event.pricing.is_free === true ? (
+        <span className={styles.mark} aria-hidden="true">
+          ₹0
+        </span>
+      ) : null}
       {label}
     </span>
   );
