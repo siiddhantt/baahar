@@ -1,90 +1,103 @@
+<div align="center">
+
 # Baahar
 
-> Find something worth stepping out for.
+**Find something worth stepping out for.**
 
-[![Quality](https://github.com/siiddhantt/baahar/actions/workflows/ci.yml/badge.svg)](https://github.com/siiddhantt/baahar/actions/workflows/ci.yml)
+Source-first event discovery for the city beyond the obvious.
 
-Baahar is a source-first city discovery feed for public events that are easy to
-miss because they live on venue calendars, cultural-institution websites, and
-other long-tail pages rather than on the major ticketing platforms.
+[**Explore Baahar ↗**](https://baahar.vercel.app) ·
+[Browse the source registry](sources/README.md) ·
+[Suggest a source](https://github.com/siiddhantt/baahar/issues/new?template=source-suggestion.yml)
 
-The production cities are Bengaluru, Delhi, Mumbai, and Varanasi. The verified
-release path publishes BIC, Jagriti Theatre, Atta Galatta, and BIEC for
-Bengaluru; The Piano Man for Delhi; Prithvi Theatre for Mumbai; and BHU Academic
-Events for Varanasi. Every active source passes through the same immutable raw
-artifact, validation, normalization, publication, API, and browser gates. The
-current bounded checkpoint is widening the one-source cities one complete
-official-source vertical slice at a time.
+[![Live](https://img.shields.io/badge/live-baahar.vercel.app-1f5a4c?style=flat-square)](https://baahar.vercel.app)
+[![Quality](https://img.shields.io/github/actions/workflow/status/siiddhantt/baahar/ci.yml?branch=main&style=flat-square&label=quality)](https://github.com/siiddhantt/baahar/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/siiddhantt/baahar?style=flat-square)](LICENSE)
 
-There are no product-runtime LLM calls. Scraper Studio owns collection and
-reviewable connector repair; Baahar never auto-approves a generated repair or
-lets a changed collector bypass its schema and health gates.
+</div>
 
-```text
-Official page -> Scraper Studio -> immutable raw bytes -> validation
-              -> normalization -> PostgreSQL -> public API -> city feed
-```
+[![Baahar city chooser](docs/assets/screenshots/baahar-home.png)](https://baahar.vercel.app)
 
-## What the first release does
+Baahar looks for public plans where large event platforms often do not: theatre
+programmes, venue calendars, bookshops, cultural institutions, universities,
+and community event boards. It turns those scattered pages into one calm,
+filterable city feed while keeping every event linked to its official source.
 
-- collects a bounded upcoming horizon from the seven currently verified official
-  sources through reviewed Scraper Studio Code workers;
-- preserves every returned batch byte in private S3-compatible storage before
-  validation;
-- rejects structurally invalid, suspiciously small, duplicated, stale, or
-  out-of-order runs instead of replacing verified events;
-- publishes responsive four-city feeds with date/category/free filters, event
-  details, source links, change history, device-local saves, and calendar files.
+## Why Baahar
 
-Delhi, Mumbai, and Varanasi currently expose honest one-source sample coverage;
-their source counts remain visible rather than implying completeness. Other
-attempted sources that hit policy, access, or precision gates remain quarantined
-and unpublished; an empty preview or failed crawl is never used to pad coverage.
+| Find the overlooked                                                              | Publish facts, not guesses                                                                            | Stay useful when pages change                                                                               |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Official long-tail sources add events that never reach the largest marketplaces. | Unknown prices, eligibility, and registration details remain unknown until the source says otherwise. | Suspicious collections freeze publication; the last verified plans remain visible during a reviewed repair. |
 
-## Repository map
+The public experience supports city, date, category, and free filters; event
+details; official links; local saves; native sharing; and calendar files. Public
+visitors never trigger a scrape.
 
-```text
-apps/web/       React/Vite public application
-cmd/            API, worker, and migration entry points
-contracts/      authoritative OpenAPI and JSON Schema contracts
-internal/       Go domain, application, and platform adapters
-migrations/     PostgreSQL schema and reviewed source configuration
-sources/        source manifests, collector code, mapping, and evidence ledger
-tests/live/     opt-in checks against official public sources
-```
+## Verified coverage
 
-## Local development
+| City          | Official sources                                                                                                                                                                          | What they add                                                                            |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Bengaluru** | [Bangalore International Centre](sources/bengaluru/bic/), [Jagriti Theatre](sources/bengaluru/jagriti/), [Atta Galatta](sources/bengaluru/atta-galatta/), [BIEC](sources/bengaluru/biec/) | Talks, theatre, books, workshops, culture, community programmes, and professional expos. |
+| **Delhi**     | [The Piano Man](sources/delhi/the-piano-man/)                                                                                                                                             | Public music sessions across the organiser's Delhi venues.                               |
+| **Mumbai**    | [Prithvi Theatre](sources/mumbai/prithvi-theatre/)                                                                                                                                        | Theatre, music, arts, and talk performances from the official booking system.            |
+| **Varanasi**  | [BHU Academic Events](sources/varanasi/bhu-academic-events/)                                                                                                                              | Public workshops, seminars, conferences, and academic programmes.                        |
 
-Requirements: Go 1.26, Node.js 24, Docker with Compose, and a Bright Data API
-token that can run the reviewed collector.
+Coverage is intentionally source-counted rather than described as complete.
+The [source registry](sources/README.md) also lists Development, research-only,
+and access-limited collectors without mixing them into the public feed.
+
+## How it works
+
+[![Baahar system architecture](docs/assets/architecture/baahar-system.png)](docs/assets/architecture/baahar-system.excalidraw)
+
+The diagram is editable in
+[Excalidraw](docs/assets/architecture/baahar-system.excalidraw). Bright Data
+Scraper Studio owns collection, versioned workers, previews, and repair.
+Baahar owns scheduling, immutable raw artifacts, the 27-field contract, health
+and quarantine, identity and history, publication, the Go API, and the web app.
+
+There are no product-runtime LLM calls and no automatic repair approvals.
+
+<details>
+<summary><strong>What the same-collector self-heal demonstration proved</strong></summary>
+
+A controlled BIEC Development selector change produced zero rows while the
+reviewed Production version and last-known-good Baahar feed stayed live. Bright
+Data proposed a repair on the same collector ID; the diff and preview were
+reviewed before approval, the exact worker was synchronized back to Git, and a
+new Production version published 9/9 valid rows. An immutable replay reproduced
+the publication without making a second collection call.
+
+[Read the evidence ledger](sources/bengaluru/biec/evidence/README.md).
+
+</details>
+
+## Why collector code lives here
+
+Scraper Studio is the deployed runtime. The `sources/` directory is the durable,
+reviewable source of truth for each collector's worker, mapping, request limits,
+identity rules, access research, and external evidence. When a page drifts or a
+repair is approved, the exact Studio revision is copied back here and its focused
+tests and evidence ledger are updated.
+
+Private raw datasets, credentials, and dashboard exports are deliberately not
+committed. The [source registry](sources/README.md) explains the directory
+contract and the [source template](sources/SOURCE_TEMPLATE.md) keeps new
+collectors consistent.
+
+## Run it locally
+
+Requirements: Go 1.26, Node.js 24, Docker with Compose, and a Bright Data token
+for collection work.
 
 ```powershell
 Copy-Item .env.example .env
-```
-
-Set the Bright Data token and unique random values for `BAAHAR_OPERATOR_TOKEN`
-and `BAAHAR_CURSOR_SECRET`. Load `.env` into the current PowerShell process
-without committing it:
-
-```powershell
-Get-Content .env |
-  Where-Object { $_ -match '^[A-Za-z_][A-Za-z0-9_]*=' } |
-  ForEach-Object {
-    $name, $value = $_ -split '=', 2
-    Set-Item -Path "Env:$name" -Value $value
-  }
-```
-
-Start the infrastructure, migrate the database, and install the web
-dependencies:
-
-```powershell
 docker compose up -d postgres minio create-bucket
 go run ./cmd/migrate up
 npm ci --prefix apps/web
 ```
 
-Then run these in separate shells that have the same environment loaded:
+Then run the API, worker, and web app in separate shells:
 
 ```powershell
 go run ./cmd/api
@@ -92,58 +105,40 @@ go run ./cmd/worker
 npm --prefix apps/web run dev
 ```
 
-The web app is served at `http://127.0.0.1:5174` and proxies `/v1` to the API at
-`http://127.0.0.1:8080`. The worker schedules shared source collections; public
-visitors never trigger a scrape.
+Environment setup, safe UI-only development, and quality commands are in the
+[local development guide](docs/DEVELOPMENT.md).
 
-## Engineering proof
+## Deploy
 
-The repository keeps claims close to executable evidence:
+Baahar has three deployable processes: a static Vite web app, a stateless Go
+API, and an independent Go scheduler/worker. Production also needs PostgreSQL
+and private S3-compatible object storage. This keeps collection work outside the
+visitor request path and lets the API continue serving verified data during a
+source outage.
 
-- every collector has a manifest, field mapping, operator notes, and an evidence
-  ledger under `sources/`;
-- live-source harnesses prove request/page budgets, atomic failure, identity,
-  schema, and representative source facts;
-- real PostgreSQL and S3-compatible integration tests cover migrations,
-  immutable artifacts, idempotent replay, normalization, and public routes;
-- the frontend is contract-generated, keyboard accessible, responsive from
-  320px to wide desktop, and verified with route, share, save, calendar, and
-  cursor tests;
-- private batch payloads and credentials are deliberately excluded from Git.
+See the [deployment contract](docs/DEPLOYMENT.md) for the smallest supported
+topology, secrets, release order, and operational checks.
 
-See [the quality evidence map](docs/QUALITY.md) for the system-level verification
-story and the boundaries of the public product.
+## Project guide
 
-## Quality gates
+- [Architecture](docs/ARCHITECTURE.md) — domain boundaries, storage, collection,
+  health, API, and failure handling.
+- [Product requirements](docs/PRD.md) — the problem, audience, release scope, and
+  product invariants.
+- [Experience](docs/EXPERIENCE.md) — interaction, accessibility, and visual
+  direction.
+- [Source catalog](docs/SOURCES.md) — qualification research and source
+  precedence.
+- [Quality evidence](docs/QUALITY.md) — executable proof across collectors,
+  PostgreSQL, object storage, API, and frontend.
 
-```powershell
-go vet ./cmd/... ./contracts ./internal/...
-go test ./cmd/... ./contracts ./internal/...
-npm --prefix apps/web run format:check
-npm --prefix apps/web run lint
-npm --prefix apps/web run typecheck
-npm --prefix apps/web run test
-npm --prefix apps/web run build
-```
+## Contributing
 
-PostgreSQL/MinIO integration tests use the `BAAHAR_TEST_*` variables documented
-in the CI workflow. Live source tests are separate and never substitute for the
-production worker path.
+Suggestions are welcome—especially official event pages Baahar should cover.
+[Suggest a source](https://github.com/siiddhantt/baahar/issues/new?template=source-suggestion.yml),
+[propose a feature](https://github.com/siiddhantt/baahar/issues/new?template=feature-request.yml),
+or read [the contribution guide](CONTRIBUTING.md) before opening a code change.
 
-## Planning documents
+## License
 
-- [Product requirements](docs/PRD.md)
-- [System architecture](docs/ARCHITECTURE.md)
-- [Experience and visual direction](docs/EXPERIENCE.md)
-- [Launch source catalog](docs/SOURCES.md)
-- [Execution and quality plan](docs/EXECUTION.md)
-- [Deployment contract](docs/DEPLOYMENT.md)
-- [Current checkpoint status](docs/STATUS.md)
-
-## Working-name note
-
-Search and registry screening on 18 August 2026 found no relevant live product
-for the exact name `Baahar`, and no registry object for `baahar.in` or
-`baahar.app`. This is preliminary discovery, not trademark clearance. Run exact
-and phonetic searches through IP India before a public brand lock because
-`Baahar`, `Bahar`, and `Bahaar` are likely to be treated as related marks.
+Baahar is available under the [MIT License](LICENSE).

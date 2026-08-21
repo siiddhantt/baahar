@@ -1,4 +1,4 @@
-# Baahar launch source catalog
+# Baahar source catalog
 
 Research date: 20 August 2026
 
@@ -18,23 +18,24 @@ This catalog is a research inventory, not permission to scrape every candidate.
 Before enabling a collector, record robots/terms review, fetch bounds, contact
 policy where appropriate, and an example output fixture.
 
-## 2. Launch recommendation
+## 2. Current production coverage
 
-Current release state: BIC, Jagriti, Atta Galatta, and BIEC are active in
-Bengaluru. BIEC's exact 9/9 zero-quarantine application publication, immutable
-replay, and public API gates pass. BHU Academic Events is active in Varanasi
-after its exact production artifact and 10/10 zero-quarantine backend
-publication passed the public API gates.
-Rudraksh has reviewed local extraction but remains disabled because its real
-Scraper Studio production request failed inside Bright Data's proxy tunnel.
-EMINDIA subsequently passed a 13-row dashboard preview, but its sole production
-crawl failed before page load with Bright Data `proxy_config`/tunnel 403 and
-returned exact `[]`. Bright Data ticket `#723252` confirmed that the target is
-not allowlisted for this account and requires registered-business Full Access
-KYC; it remains blocked and has no database source row.
-No Varanasi rows are hardcoded or published as a fallback. BHU's public browser
-journey now passes; the next source still proceeds through the same one-at-a-time
-qualification and publication gates.
+Seven collectors are active and verified end to end:
+
+- Bengaluru: Bangalore International Centre, Jagriti Theatre, Atta Galatta, and
+  Bangalore International Exhibition Centre;
+- Delhi: The Piano Man;
+- Mumbai: Prithvi Theatre;
+- Varanasi: BHU Academic Events.
+
+Each has a reviewed Studio worker, immutable production artifact, application
+publication and replay, public API proof, and browser acceptance. The UI exposes
+the live source count per city rather than implying complete coverage.
+
+India Habitat Centre and UPISACON remain Development-only. Rudraksh, EMINDIA,
+and Dhamma Chakka have preserved mappings and collectors but remain unpublished
+because Bright Data account/site access blocks their production collection.
+No blocked-source rows are hardcoded as a fallback.
 
 ### Bengaluru launch four
 
@@ -64,13 +65,14 @@ undated to publish safely, and IIT(BHU)'s visible archive is held until it again
 contains current public inventory. Recurring rituals must never be presented as
 newly announced one-off events.
 
-### Release floor
+### Coverage floor
 
-Eight is the target, not an excuse for shallow implementation. Release requires
-at least three healthy collectors in each city. The fourth collector is enabled
-only after the first three pass live schema, identity, change, and health tests.
+A city may launch with one complete, explicitly disclosed source vertical slice.
+Three independent healthy sources is the useful-coverage target. Every additional
+collector still passes the same schema, identity, change, health, immutable
+artifact, API, and browser gates before it enters the source count.
 
-## 3. Why the two cities
+## 3. Why these cities
 
 ### Bengaluru
 
@@ -96,6 +98,18 @@ and recurring programmes create a legitimate Scraper Studio and self-healing
 challenge.
 
 Coverage is curated and source-backed, never described as exhaustive.
+
+### Delhi
+
+Delhi adds independent music venues and a broad pipeline of cultural calendars.
+The Piano Man proves bounded multi-window collection and exact venue filtering;
+India Habitat Centre is the next reviewed private-source candidate.
+
+### Mumbai
+
+Mumbai adds high-frequency performing arts. Prithvi Theatre proves a native
+per-performance identity across theatre, music, arts, and talks while sources
+with conflicting robots or reuse terms remain held from publication.
 
 ## 4. Scraper Studio mapping
 

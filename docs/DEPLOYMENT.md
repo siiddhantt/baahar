@@ -21,15 +21,12 @@ job state.
 
 The local Compose file is for development and integration tests, not production.
 
-The reviewed single-host Raspberry Pi deployment lives in `deploy/pi`. It runs
-PostgreSQL, MinIO, the API, and one worker on the Pi while keeping PostgreSQL and
-MinIO private. The API binds to Pi loopback port `8081`; Tailscale Funnel is the
-only public ingress and terminates TLS before forwarding to that loopback port.
-Vercel builds the static web app with the Funnel URL as `VITE_API_ORIGIN`.
-
-The Pi worker is behind an explicit Compose profile so restoring the canonical
-database cannot accidentally schedule overdue sources. Start that profile only
-after database, artifact, API, due-time, and Scraper Studio schedule checks pass.
+The simplest production topology is a static Vercel deployment for the web app,
+one always-on container or VM for the API and worker processes, managed
+PostgreSQL, and a private S3-compatible bucket. API and worker can share a host,
+but they remain separate processes so collection work never blocks public reads.
+Only the API is public; PostgreSQL, object storage, and operator routes stay
+private.
 
 ## Secrets and configuration
 
