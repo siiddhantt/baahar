@@ -10,7 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/siiddhantt/baahar/internal/ask"
 	"github.com/siiddhantt/baahar/internal/platform/httpserver"
+	openaiapi "github.com/siiddhantt/baahar/internal/platform/openai"
 	"github.com/siiddhantt/baahar/internal/platform/postgres"
 )
 
@@ -35,6 +37,20 @@ func main() {
 	eventRepository := postgres.NewEvents(pool)
 	runRepository := postgres.NewRuns(pool)
 	operatorRepository := postgres.NewOperator(pool)
+	var askInterpreter ask.Interpreter = ask.NewDeterministic()
+	if apiKey := os.Getenv("BAAHAR_OPENAI_API_KEY"); apiKey != "" {
+		model := os.Getenv("BAAHAR_OPENAI_MODEL")
+		if model == "" {
+			model = "gpt-5.4-mini"
+		}
+		modelInterpreter, err := openaiapi.New(openaiapi.Config{APIKey: apiKey, Model: model})
+		if err != nil {
+			logger.Error("Ask Baahar configuration failed", "error", err)
+			os.Exit(1)
+		}
+		askInterpreter = ask.NewFallback(modelInterpreter, askInterpreter)
+		logger.Info("Ask Baahar language interpretation enabled", "model", model)
+	}
 	application, err := httpserver.New(httpserver.Config{
 		WebOrigin:     requiredEnvironment(logger, "BAAHAR_WEB_ORIGIN"),
 		OperatorToken: requiredEnvironment(logger, "BAAHAR_OPERATOR_TOKEN"),
@@ -42,6 +58,7 @@ func main() {
 		Events:        eventRepository,
 		Runs:          runRepository,
 		Operator:      operatorRepository,
+		Ask:           askInterpreter,
 		Logger:        logger,
 	})
 	if err != nil {

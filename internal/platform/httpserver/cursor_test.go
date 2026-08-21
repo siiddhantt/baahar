@@ -18,6 +18,7 @@ func TestCursorRoundTripPreservesAnchorAndBindsFilters(t *testing.T) {
 		Window:       events.WindowUpcoming,
 		Categories:   []events.Category{events.CategoryMusic, events.CategoryArts},
 		ExplicitFree: true,
+		Venue:        "Town Hall",
 	}
 	asOf := time.Date(2026, time.August, 19, 12, 30, 45, 123, time.FixedZone("IST", 5*60*60+30*60))
 	boundary := events.CursorBoundary{
@@ -44,5 +45,10 @@ func TestCursorRoundTripPreservesAnchorAndBindsFilters(t *testing.T) {
 	request.Window = events.WindowToday
 	if _, err := codec.Decode(encoded, request); err == nil {
 		t.Fatal("cursor was accepted with a different window")
+	}
+	request.Window = events.WindowUpcoming
+	request.Venue = "Another Hall"
+	if _, err := codec.Decode(encoded, request); err == nil {
+		t.Fatal("cursor was accepted with a different venue")
 	}
 }

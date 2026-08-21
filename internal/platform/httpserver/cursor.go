@@ -25,6 +25,7 @@ type cursorPayload struct {
 	Window       string   `json:"window"`
 	Categories   []string `json:"categories"`
 	ExplicitFree bool     `json:"free"`
+	Venue        string   `json:"venue"`
 	AsOf         string   `json:"as_of"`
 	SortAt       string   `json:"sort_at"`
 	OccurrenceID string   `json:"occurrence_id"`
@@ -47,11 +48,12 @@ func (codec cursorCodec) Encode(query feedRequest, boundary events.CursorBoundar
 		return "", errors.New("cursor as-of time is required")
 	}
 	payload := cursorPayload{
-		Version:      2,
+		Version:      3,
 		City:         query.City,
 		Window:       string(query.Window),
 		Categories:   sortedCategories(query.Categories),
 		ExplicitFree: query.ExplicitFree,
+		Venue:        query.Venue,
 		AsOf:         asOf.UTC().Format(time.RFC3339Nano),
 		SortAt:       boundary.SortAt.UTC().Format(time.RFC3339Nano),
 		OccurrenceID: boundary.OccurrenceID.String(),
@@ -83,7 +85,7 @@ func (codec cursorCodec) Decode(value string, query feedRequest) (decodedCursor,
 	if err := decoder.Decode(&payload); err != nil {
 		return decodedCursor{}, errors.New("cursor payload is invalid")
 	}
-	if payload.Version != 2 || payload.City != query.City || payload.Window != string(query.Window) || payload.ExplicitFree != query.ExplicitFree || !equalStrings(payload.Categories, sortedCategories(query.Categories)) {
+	if payload.Version != 3 || payload.City != query.City || payload.Window != string(query.Window) || payload.ExplicitFree != query.ExplicitFree || payload.Venue != query.Venue || !equalStrings(payload.Categories, sortedCategories(query.Categories)) {
 		return decodedCursor{}, errors.New("cursor does not match the current filters")
 	}
 	asOf, err := time.Parse(time.RFC3339Nano, payload.AsOf)

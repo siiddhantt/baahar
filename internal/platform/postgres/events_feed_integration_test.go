@@ -66,6 +66,18 @@ func TestEventFeedExcludesEndedPreservesOngoingAndPaginatesStableTies(t *testing
 			t.Fatalf("required current occurrence %q missing from feed: %v", required, titles)
 		}
 	}
+	if len(full.Venues) != 2 || full.Venues[0] != "Town Hall" || full.Venues[1] != "Tomorrow Hall" {
+		t.Fatalf("venue facets = %v", full.Venues)
+	}
+	venuePage, err := repository.List(ctx, events.FeedQuery{
+		CitySlug: "bengaluru", Window: events.WindowUpcoming, AsOf: asOf, Venue: "Tomorrow Hall", Limit: 60,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if venuePage.ResultCount != 1 || len(venuePage.Items) != 1 || venuePage.Items[0].Version.Title != "Tomorrow" || len(venuePage.Venues) != 2 {
+		t.Fatalf("venue-filtered page = count %d, titles %v, facets %v", venuePage.ResultCount, feedTitles(venuePage.Items), venuePage.Venues)
+	}
 
 	var tied []events.PublicOccurrence
 	for _, occurrence := range full.Items {
@@ -117,6 +129,10 @@ func feedTimedCandidate(
 	startsAt, endsAt, observedAt time.Time,
 ) collections.Candidate {
 	t.Helper()
+	venue := "Town Hall"
+	if sourceEventID == "tomorrow" {
+		venue = "Tomorrow Hall"
+	}
 	startDate := time.Date(startsAt.Year(), startsAt.Month(), startsAt.Day(), 0, 0, 0, 0, startsAt.Location())
 	endDate := time.Date(endsAt.Year(), endsAt.Month(), endsAt.Day(), 0, 0, 0, 0, endsAt.Location())
 	return feedCandidate(t, source, sourceEventID, events.Version{
@@ -124,7 +140,8 @@ func feedTimedCandidate(
 		SourceURL: "https://bangaloreinternationalcentre.org/event/" + sourceEventID,
 		StartDate: startDate, EndDate: &endDate, StartsAt: &startsAt, EndsAt: &endsAt,
 		TimePrecision: events.TimePrecisionTimed, Timezone: "Asia/Kolkata",
-		Status: events.StatusScheduled, Languages: []string{}, ObservedAt: observedAt,
+		VenueName: &venue,
+		Status:    events.StatusScheduled, Languages: []string{}, ObservedAt: observedAt,
 	})
 }
 
@@ -135,12 +152,14 @@ func feedDateCandidate(
 	date, observedAt time.Time,
 ) collections.Candidate {
 	t.Helper()
+	venue := "Town Hall"
 	startDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 	return feedCandidate(t, source, sourceEventID, events.Version{
 		Title: title, Category: events.CategoryArts,
 		SourceURL: "https://bangaloreinternationalcentre.org/event/" + sourceEventID,
 		StartDate: startDate, TimePrecision: events.TimePrecisionDate, Timezone: "Asia/Kolkata",
-		Status: events.StatusScheduled, Languages: []string{}, ObservedAt: observedAt,
+		VenueName: &venue,
+		Status:    events.StatusScheduled, Languages: []string{}, ObservedAt: observedAt,
 	})
 }
 

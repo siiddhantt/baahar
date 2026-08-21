@@ -41,6 +41,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/v1/ask': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Interpret a short discovery request and return verified matching events
+     * @description Converts one stateless request into the same deterministic city, time, category, free-entry, and venue filters used by the public feed. The interpreter never creates event facts and the response is not stored or cached.
+     */
+    post: operations['askBaahar'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/v1/events/{occurrence_id}': {
     parameters: {
       query?: never;
@@ -308,6 +328,8 @@ export interface components {
         source_count: number;
         /** Format: date-time */
         last_checked_at: string | null;
+        /** @description Exact current venue names available for this city and filter window. */
+        venues: string[];
         /** @description Number of items returned in this page. */
         page_size: number;
         /** @description Whether a continuation page is available through next_cursor. */
@@ -318,6 +340,25 @@ export interface components {
          */
         as_of: string;
       };
+    };
+    AskRequest: {
+      city: components['schemas']['CitySlug'];
+      query: string;
+    };
+    AskInterpretation: {
+      window: components['schemas']['TimeWindow'];
+      categories: components['schemas']['Category'][];
+      explicitly_free: boolean;
+      venue: string | null;
+      /** @description True when the configured language model produced the validated interpretation. */
+      assisted: boolean;
+    };
+    AskResult: {
+      interpretation: components['schemas']['AskInterpretation'];
+      items: components['schemas']['EventSummary'][];
+      result_count: number;
+      /** Format: date-time */
+      as_of: string;
     };
     EventChange: {
       /** Format: uuid */
@@ -481,6 +522,8 @@ export interface operations {
         category?: components['schemas']['Category'][];
         /** @description When true, include only events explicitly marked free. */
         free?: boolean;
+        /** @description Exact venue name returned in the feed metadata venue list. */
+        venue?: string;
         cursor?: string;
         limit?: number;
       };
@@ -498,6 +541,31 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['EventPage'];
+        };
+      };
+      default: components['responses']['Problem'];
+    };
+  };
+  askBaahar: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AskRequest'];
+      };
+    };
+    responses: {
+      /** @description Interpreted filters and a bounded verified preview */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AskResult'];
         };
       };
       default: components['responses']['Problem'];

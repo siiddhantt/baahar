@@ -75,6 +75,14 @@ paths:
           description: When true, include only events explicitly marked free.
           schema:
             type: boolean
+        - name: venue
+          in: query
+          required: false
+          description: Exact venue name returned in the feed metadata venue list.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 300
         - name: cursor
           in: query
           required: false
@@ -100,6 +108,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EventPage"
+        default:
+          $ref: "#/components/responses/Problem"
+  /v1/ask:
+    post:
+      operationId: askBaahar
+      tags: [public]
+      summary: Interpret a short discovery request and return verified matching events
+      description: >-
+        Converts one stateless request into the same deterministic city, time,
+        category, free-entry, and venue filters used by the public feed. The
+        interpreter never creates event facts and the response is not stored or
+        cached.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AskRequest"
+      responses:
+        "200":
+          description: Interpreted filters and a bounded verified preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AskResult"
         default:
           $ref: "#/components/responses/Problem"
   /v1/events/{occurrence_id}:
@@ -671,6 +704,7 @@ components:
               result_count,
               source_count,
               last_checked_at,
+              venues,
               page_size,
               has_more,
               as_of,
@@ -690,6 +724,15 @@ components:
             last_checked_at:
               type: [string, "null"]
               format: date-time
+            venues:
+              type: array
+              maxItems: 300
+              uniqueItems: true
+              description: Exact current venue names available for this city and filter window.
+              items:
+                type: string
+                minLength: 1
+                maxLength: 300
             page_size:
               type: integer
               minimum: 0
@@ -702,6 +745,56 @@ components:
               type: string
               format: date-time
               description: Stable request-time anchor carried by every cursor in this result set.
+    AskRequest:
+      type: object
+      additionalProperties: false
+      required: [city, query]
+      properties:
+        city:
+          $ref: "#/components/schemas/CitySlug"
+        query:
+          type: string
+          minLength: 1
+          maxLength: 280
+    AskInterpretation:
+      type: object
+      additionalProperties: false
+      required: [window, categories, explicitly_free, venue, assisted]
+      properties:
+        window:
+          $ref: "#/components/schemas/TimeWindow"
+        categories:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/Category"
+        explicitly_free:
+          type: boolean
+        venue:
+          type: [string, "null"]
+          maxLength: 300
+        assisted:
+          type: boolean
+          description: True when the configured language model produced the validated interpretation.
+    AskResult:
+      type: object
+      additionalProperties: false
+      required: [interpretation, items, result_count, as_of]
+      properties:
+        interpretation:
+          $ref: "#/components/schemas/AskInterpretation"
+        items:
+          type: array
+          maxItems: 6
+          items:
+            $ref: "#/components/schemas/EventSummary"
+        result_count:
+          type: integer
+          minimum: 0
+        as_of:
+          type: string
+          format: date-time
     EventChange:
       type: object
       additionalProperties: false

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/siiddhantt/baahar/internal/ask"
 	"github.com/siiddhantt/baahar/internal/collections"
 	"github.com/siiddhantt/baahar/internal/events"
 	"github.com/siiddhantt/baahar/internal/sources"
@@ -46,6 +47,7 @@ type Config struct {
 	Events        EventReader
 	Runs          RunReader
 	Operator      OperatorStore
+	Ask           ask.Interpreter
 	Logger        *slog.Logger
 	Now           func() time.Time
 }
@@ -57,6 +59,8 @@ type Server struct {
 	events        EventReader
 	runs          RunReader
 	operator      OperatorStore
+	ask           ask.Interpreter
+	askLimiter    *askRateLimiter
 	logger        *slog.Logger
 	now           func() time.Time
 }
@@ -80,6 +84,9 @@ func New(config Config) (*Server, error) {
 	if config.Now == nil {
 		config.Now = time.Now
 	}
+	if config.Ask == nil {
+		config.Ask = ask.NewDeterministic()
+	}
 	return &Server{
 		webOrigin:     strings.TrimSuffix(config.WebOrigin, "/"),
 		operatorToken: config.OperatorToken,
@@ -87,6 +94,8 @@ func New(config Config) (*Server, error) {
 		events:        config.Events,
 		runs:          config.Runs,
 		operator:      config.Operator,
+		ask:           config.Ask,
+		askLimiter:    newAskRateLimiter(8, time.Minute),
 		logger:        config.Logger,
 		now:           config.Now,
 	}, nil
@@ -96,6 +105,7 @@ func (server *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /v1/cities", server.handleCities)
 	mux.HandleFunc("GET /v1/events", server.handleEvents)
+	mux.HandleFunc("POST /v1/ask", server.handleAsk)
 	mux.HandleFunc("GET /v1/events/{occurrence_id}/changes", server.handleEventChanges)
 	mux.HandleFunc("GET /v1/events/{occurrence_id}", server.handleEventRoute)
 	mux.HandleFunc("GET /v1/sources/{source_slug}/summary", server.handleSourceSummary)

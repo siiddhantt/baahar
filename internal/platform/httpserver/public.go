@@ -19,6 +19,7 @@ type feedRequest struct {
 	Window       events.Window
 	Categories   []events.Category
 	ExplicitFree bool
+	Venue        string
 	Cursor       string
 	Limit        int
 }
@@ -51,6 +52,7 @@ func (server *Server) handleEvents(writer http.ResponseWriter, request *http.Req
 		AsOf:         asOf,
 		Categories:   parsed.Categories,
 		ExplicitFree: parsed.ExplicitFree,
+		Venue:        parsed.Venue,
 		Limit:        parsed.Limit,
 	}
 	if parsed.Cursor != "" {
@@ -93,6 +95,7 @@ func (server *Server) handleEvents(writer http.ResponseWriter, request *http.Req
 			ResultCount:   page.ResultCount,
 			SourceCount:   page.SourceCount,
 			LastCheckedAt: page.LastCheckedAt,
+			Venues:        nonNilStrings(page.Venues),
 			PageSize:      len(items),
 			HasMore:       page.Next != nil,
 			AsOf:          page.AsOf,
@@ -210,6 +213,10 @@ func parseFeedRequest(request *http.Request) (feedRequest, error) {
 		}
 		explicitFree = value
 	}
+	venue := query.Get("venue")
+	if len(venue) > 300 || strings.TrimSpace(venue) != venue {
+		return feedRequest{}, errors.New("venue must be an exact venue name of at most 300 characters")
+	}
 	limit := 24
 	if raw := query.Get("limit"); raw != "" {
 		value, err := strconv.Atoi(raw)
@@ -222,7 +229,14 @@ func parseFeedRequest(request *http.Request) (feedRequest, error) {
 	if len(cursor) > 1024 {
 		return feedRequest{}, errors.New("cursor is too long")
 	}
-	return feedRequest{City: city, Window: window, Categories: categories, ExplicitFree: explicitFree, Cursor: cursor, Limit: limit}, nil
+	return feedRequest{City: city, Window: window, Categories: categories, ExplicitFree: explicitFree, Venue: venue, Cursor: cursor, Limit: limit}, nil
+}
+
+func nonNilStrings(values []string) []string {
+	if values == nil {
+		return []string{}
+	}
+	return values
 }
 
 func parseCategories(raw string) ([]events.Category, error) {

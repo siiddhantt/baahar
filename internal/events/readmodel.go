@@ -50,6 +50,7 @@ type FeedQuery struct {
 	AsOf         time.Time
 	Categories   []Category
 	ExplicitFree bool
+	Venue        string
 	After        *CursorBoundary
 	Limit        int
 }
@@ -61,6 +62,7 @@ type FeedPage struct {
 	ResultCount   int
 	SourceCount   int
 	LastCheckedAt *time.Time
+	Venues        []string
 	AsOf          time.Time
 }
 

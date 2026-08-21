@@ -81,9 +81,30 @@ type eventMetaDTO struct {
 	ResultCount   int        `json:"result_count"`
 	SourceCount   int        `json:"source_count"`
 	LastCheckedAt *time.Time `json:"last_checked_at"`
+	Venues        []string   `json:"venues"`
 	PageSize      int        `json:"page_size"`
 	HasMore       bool       `json:"has_more"`
 	AsOf          time.Time  `json:"as_of"`
+}
+
+type askRequestDTO struct {
+	City  string `json:"city"`
+	Query string `json:"query"`
+}
+
+type askInterpretationDTO struct {
+	Window         string   `json:"window"`
+	Categories     []string `json:"categories"`
+	ExplicitlyFree bool     `json:"explicitly_free"`
+	Venue          *string  `json:"venue"`
+	Assisted       bool     `json:"assisted"`
+}
+
+type askResultDTO struct {
+	Interpretation askInterpretationDTO `json:"interpretation"`
+	Items          []eventDTO           `json:"items"`
+	ResultCount    int                  `json:"result_count"`
+	AsOf           time.Time            `json:"as_of"`
 }
 
 type eventChangeDTO struct {

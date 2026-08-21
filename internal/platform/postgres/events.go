@@ -77,6 +77,30 @@ func (repository *Events) List(ctx context.Context, query events.FeedQuery) (eve
 	if err != nil {
 		return events.FeedPage{}, fmt.Errorf("calculate feed window: %w", err)
 	}
+	venueQuery := query
+	venueQuery.Venue = ""
+	venueWhere, venueArguments := feedWhere(venueQuery, []any{query.CitySlug, window.Start, window.End, page.AsOf})
+	venueRows, err := tx.Query(ctx, `
+		SELECT DISTINCT ev.venue_name
+		`+feedFrom+venueWhere+`
+		AND ev.venue_name IS NOT NULL
+		ORDER BY ev.venue_name`, venueArguments...)
+	if err != nil {
+		return events.FeedPage{}, fmt.Errorf("list feed venues: %w", err)
+	}
+	for venueRows.Next() {
+		var venue string
+		if err := venueRows.Scan(&venue); err != nil {
+			venueRows.Close()
+			return events.FeedPage{}, fmt.Errorf("scan feed venue: %w", err)
+		}
+		page.Venues = append(page.Venues, venue)
+	}
+	if err := venueRows.Err(); err != nil {
+		venueRows.Close()
+		return events.FeedPage{}, fmt.Errorf("read feed venues: %w", err)
+	}
+	venueRows.Close()
 	metadataWhere, metadataArguments := feedWhere(query, []any{query.CitySlug, window.Start, window.End, page.AsOf})
 	err = tx.QueryRow(ctx, `
 		SELECT COUNT(*), COUNT(DISTINCT o.source_id), MAX(o.last_observed_at)
@@ -294,6 +318,10 @@ func feedWhere(query events.FeedQuery, arguments []any) (string, []any) {
 	}
 	if query.ExplicitFree {
 		where += " AND ev.is_free = true"
+	}
+	if query.Venue != "" {
+		where += fmt.Sprintf(" AND ev.venue_name = $%d", len(arguments)+1)
+		arguments = append(arguments, query.Venue)
 	}
 	return where, arguments
 }

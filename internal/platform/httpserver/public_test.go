@@ -31,7 +31,7 @@ func TestEventFeedDefaultsToUpcomingAndReusesCursorAnchor(t *testing.T) {
 	handler := server.Handler()
 
 	first := httptest.NewRecorder()
-	handler.ServeHTTP(first, httptest.NewRequest(http.MethodGet, "/v1/events?city=mysuru&limit=1", nil))
+	handler.ServeHTTP(first, httptest.NewRequest(http.MethodGet, "/v1/events?city=mysuru&venue=Town%20Hall&limit=1", nil))
 	if first.Code != http.StatusOK {
 		t.Fatalf("first page status = %d, body = %s", first.Code, first.Body.String())
 	}
@@ -47,7 +47,7 @@ func TestEventFeedDefaultsToUpcomingAndReusesCursorAnchor(t *testing.T) {
 	}
 
 	second := httptest.NewRecorder()
-	path := "/v1/events?city=mysuru&limit=1&cursor=" + *firstPage.NextCursor
+	path := "/v1/events?city=mysuru&venue=Town%20Hall&limit=1&cursor=" + *firstPage.NextCursor
 	handler.ServeHTTP(second, httptest.NewRequest(http.MethodGet, path, nil))
 	if second.Code != http.StatusOK {
 		t.Fatalf("second page status = %d, body = %s", second.Code, second.Body.String())
@@ -55,7 +55,7 @@ func TestEventFeedDefaultsToUpcomingAndReusesCursorAnchor(t *testing.T) {
 	if len(reader.queries) != 2 {
 		t.Fatalf("feed query count = %d, want 2", len(reader.queries))
 	}
-	if reader.queries[0].CitySlug != "mysuru" || reader.queries[0].Window != events.WindowUpcoming {
+	if reader.queries[0].CitySlug != "mysuru" || reader.queries[0].Window != events.WindowUpcoming || reader.queries[0].Venue != "Town Hall" {
 		t.Fatalf("first feed query = %+v", reader.queries[0])
 	}
 	if !reader.queries[1].AsOf.Equal(firstNow) {
@@ -96,7 +96,8 @@ func (reader *feedHTTPReader) List(_ context.Context, query events.FeedQuery) (e
 		City: events.City{
 			Slug: "mysuru", Name: "Mysuru", Timezone: "Asia/Kolkata", Accent: "palace",
 		},
-		AsOf: query.AsOf,
+		AsOf:   query.AsOf,
+		Venues: []string{"Town Hall", "Reading Room"},
 	}
 	if len(reader.queries) == 1 {
 		page.Next = &events.CursorBoundary{
