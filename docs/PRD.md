@@ -190,7 +190,7 @@ the visitor deliberately opens a contextual `About this source` disclosure.
 - Unknown price does not satisfy the explicit-free filter.
 - Categories are mapped by a reviewed source manifest or explicit source label;
   no runtime classifier invents them.
-- Ask Baahar may translate one short request into those same filters. A strict,
+- Mau may translate one short request into those same filters. A strict,
   stateless model output is validated against current venues and taxonomy before
   the ordinary feed query runs. It cannot create facts, arbitrary URLs, SQL, or
   hidden ranking.
@@ -366,7 +366,7 @@ Title similarity or performance-array position alone must never merge events.
 ### Privacy and security
 
 - No account, analytics fingerprint, or precise location is needed for P0.
-- Ask requests are bounded, rate-limited, sent with response storage disabled,
+- Mau requests are bounded, rate-limited, sent through data-collection-denied providers,
   and are not retained as conversation memory by Baahar.
 - Bright Data and object-store credentials remain server-side and are redacted
   from structured logs.

@@ -54,7 +54,7 @@ export interface paths {
      * Interpret a short discovery request and return verified matching events
      * @description Converts one stateless request into the same deterministic city, time, category, free-entry, and venue filters used by the public feed. The interpreter never creates event facts and the response is not stored or cached.
      */
-    post: operations['askBaahar'];
+    post: operations['askMau'];
     delete?: never;
     options?: never;
     head?: never;
@@ -350,8 +350,6 @@ export interface components {
       categories: components['schemas']['Category'][];
       explicitly_free: boolean;
       venue: string | null;
-      /** @description True when the configured language model produced the validated interpretation. */
-      assisted: boolean;
     };
     AskResult: {
       interpretation: components['schemas']['AskInterpretation'];
@@ -546,7 +544,7 @@ export interface operations {
       default: components['responses']['Problem'];
     };
   };
-  askBaahar: {
+  askMau: {
     parameters: {
       query?: never;
       header?: never;

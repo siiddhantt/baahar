@@ -1,4 +1,4 @@
-import { askBaahar, calendarUrl, listEvents, type EventPage } from './client';
+import { askMau, calendarUrl, listEvents, type EventPage } from './client';
 
 describe('calendarUrl', () => {
   it('escapes the occurrence identifier', () => {
@@ -49,7 +49,7 @@ describe('listEvents', () => {
     );
   });
 
-  it('posts a bounded Ask Baahar request as JSON', async () => {
+  it('posts a bounded Mau request as JSON', async () => {
     const fetchMock = vi.fn(() =>
       Promise.resolve(
         new Response(
@@ -59,7 +59,6 @@ describe('listEvents', () => {
               categories: [],
               explicitly_free: false,
               venue: null,
-              assisted: false,
             },
             items: [],
             result_count: 0,
@@ -71,7 +70,7 @@ describe('listEvents', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    await askBaahar('mysuru', 'music this weekend');
+    await askMau('mysuru', 'music this weekend');
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/v1/ask',

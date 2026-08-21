@@ -25,6 +25,7 @@ var Categories = []events.Category{
 
 type Context struct {
 	CityName string
+	Timezone string
 	Now      time.Time
 	Venues   []string
 }
@@ -34,58 +35,20 @@ type Intent struct {
 	Categories     []events.Category
 	ExplicitlyFree bool
 	Venue          string
-	Assisted       bool
 }
 
 type Interpreter interface {
 	Interpret(context.Context, string, Context) (Intent, error)
 }
 
-type deterministic struct{}
+var ErrUnavailable = errors.New("language interpretation is unavailable")
 
-func NewDeterministic() Interpreter {
-	return deterministic{}
-}
+type unavailable struct{}
 
-func (deterministic) Interpret(_ context.Context, query string, scope Context) (Intent, error) {
-	normalized := strings.ToLower(strings.TrimSpace(query))
-	intent := Intent{Window: events.WindowUpcoming}
+func NewUnavailable() Interpreter { return unavailable{} }
 
-	switch {
-	case strings.Contains(normalized, "tomorrow"):
-		intent.Window = events.WindowTomorrow
-	case strings.Contains(normalized, "weekend"):
-		intent.Window = events.WindowWeekend
-	case strings.Contains(normalized, "today") || strings.Contains(normalized, "tonight"):
-		intent.Window = events.WindowToday
-	}
-
-	categoryWords := map[events.Category][]string{
-		events.CategoryArts:      {"art", "arts", "dance", "film", "exhibition"},
-		events.CategoryTalks:     {"talk", "talks", "lecture", "conference", "seminar"},
-		events.CategoryWorkshops: {"workshop", "workshops", "class", "classes"},
-		events.CategoryTheatre:   {"theatre", "theater", "play", "plays"},
-		events.CategoryMusic:     {"music", "concert", "gig", "jazz"},
-		events.CategoryBooks:     {"book", "books", "literature", "poetry"},
-		events.CategoryCommunity: {"community", "social", "meetup", "festival"},
-	}
-	for _, category := range Categories {
-		for _, word := range categoryWords[category] {
-			if containsWord(normalized, word) {
-				intent.Categories = append(intent.Categories, category)
-				break
-			}
-		}
-	}
-	intent.ExplicitlyFree = containsWord(normalized, "free") || strings.Contains(normalized, "₹0")
-
-	for _, venue := range scope.Venues {
-		if strings.Contains(normalized, strings.ToLower(venue)) {
-			intent.Venue = venue
-			break
-		}
-	}
-	return intent, Validate(intent, scope)
+func (unavailable) Interpret(context.Context, string, Context) (Intent, error) {
+	return Intent{}, ErrUnavailable
 }
 
 func Validate(intent Intent, scope Context) error {
@@ -126,38 +89,10 @@ func Validate(intent Intent, scope Context) error {
 	return nil
 }
 
-type fallback struct {
-	primary  Interpreter
-	fallback Interpreter
-}
-
-func NewFallback(primary, secondary Interpreter) Interpreter {
-	return fallback{primary: primary, fallback: secondary}
-}
-
-func (interpreter fallback) Interpret(ctx context.Context, query string, scope Context) (Intent, error) {
-	intent, err := interpreter.primary.Interpret(ctx, query, scope)
-	if err == nil {
-		return intent, nil
-	}
-	return interpreter.fallback.Interpret(ctx, query, scope)
-}
-
 func SortedVenueNames(values []string) []string {
 	result := append([]string(nil), values...)
 	sort.Slice(result, func(left, right int) bool {
 		return strings.ToLower(result[left]) < strings.ToLower(result[right])
 	})
 	return result
-}
-
-func containsWord(text, word string) bool {
-	for _, field := range strings.FieldsFunc(text, func(value rune) bool {
-		return !(value >= 'a' && value <= 'z') && !(value >= '0' && value <= '9')
-	}) {
-		if field == word {
-			return true
-		}
-	}
-	return false
 }

@@ -15,8 +15,8 @@ vi.mock('../app/preferences', () => ({
   usePreferences: vi.fn(),
 }));
 
-vi.mock('../components/AskBaahar', () => ({
-  AskBaahar: () => <section aria-label="Ask Baahar" />,
+vi.mock('../components/MauGuide', () => ({
+  MauGuide: () => <div aria-label="Mau" />,
 }));
 
 const bengaluru = {

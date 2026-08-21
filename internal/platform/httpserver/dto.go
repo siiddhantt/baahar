@@ -97,7 +97,6 @@ type askInterpretationDTO struct {
 	Categories     []string `json:"categories"`
 	ExplicitlyFree bool     `json:"explicitly_free"`
 	Venue          *string  `json:"venue"`
-	Assisted       bool     `json:"assisted"`
 }
 
 type askResultDTO struct {

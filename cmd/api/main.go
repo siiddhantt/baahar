@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/siiddhantt/baahar/internal/ask"
 	"github.com/siiddhantt/baahar/internal/platform/httpserver"
-	openaiapi "github.com/siiddhantt/baahar/internal/platform/openai"
+	"github.com/siiddhantt/baahar/internal/platform/openrouter"
 	"github.com/siiddhantt/baahar/internal/platform/postgres"
 )
 
@@ -37,19 +38,21 @@ func main() {
 	eventRepository := postgres.NewEvents(pool)
 	runRepository := postgres.NewRuns(pool)
 	operatorRepository := postgres.NewOperator(pool)
-	var askInterpreter ask.Interpreter = ask.NewDeterministic()
-	if apiKey := os.Getenv("BAAHAR_OPENAI_API_KEY"); apiKey != "" {
-		model := os.Getenv("BAAHAR_OPENAI_MODEL")
-		if model == "" {
-			model = "gpt-5.4-mini"
+	var askInterpreter ask.Interpreter = ask.NewUnavailable()
+	if apiKey := os.Getenv("BAAHAR_OPENROUTER_API_KEY"); apiKey != "" {
+		models := openrouter.DefaultModels
+		if configured := splitModels(os.Getenv("BAAHAR_OPENROUTER_MODELS")); len(configured) > 0 {
+			models = configured
 		}
-		modelInterpreter, err := openaiapi.New(openaiapi.Config{APIKey: apiKey, Model: model})
+		modelInterpreter, err := openrouter.New(openrouter.Config{
+			APIKey: apiKey, Models: models, SiteURL: "https://baahar.vercel.app", SiteName: "Baahar",
+		})
 		if err != nil {
-			logger.Error("Ask Baahar configuration failed", "error", err)
+			logger.Error("Mau configuration failed", "error", err)
 			os.Exit(1)
 		}
-		askInterpreter = ask.NewFallback(modelInterpreter, askInterpreter)
-		logger.Info("Ask Baahar language interpretation enabled", "model", model)
+		askInterpreter = modelInterpreter
+		logger.Info("Mau language interpretation enabled", "models", models)
 	}
 	application, err := httpserver.New(httpserver.Config{
 		WebOrigin:     requiredEnvironment(logger, "BAAHAR_WEB_ORIGIN"),
@@ -98,6 +101,16 @@ func main() {
 		}
 		logger.Info("API stopped")
 	}
+}
+
+func splitModels(value string) []string {
+	models := make([]string, 0)
+	for _, model := range strings.Split(value, ",") {
+		if model = strings.TrimSpace(model); model != "" {
+			models = append(models, model)
+		}
+	}
+	return models
 }
 
 func requiredEnvironment(logger *slog.Logger, name string) string {

@@ -112,7 +112,7 @@ paths:
           $ref: "#/components/responses/Problem"
   /v1/ask:
     post:
-      operationId: askBaahar
+      operationId: askMau
       tags: [public]
       summary: Interpret a short discovery request and return verified matching events
       description: >-
@@ -759,7 +759,7 @@ components:
     AskInterpretation:
       type: object
       additionalProperties: false
-      required: [window, categories, explicitly_free, venue, assisted]
+      required: [window, categories, explicitly_free, venue]
       properties:
         window:
           $ref: "#/components/schemas/TimeWindow"
@@ -774,9 +774,6 @@ components:
         venue:
           type: [string, "null"]
           maxLength: 300
-        assisted:
-          type: boolean
-          description: True when the configured language model produced the validated interpretation.
     AskResult:
       type: object
       additionalProperties: false

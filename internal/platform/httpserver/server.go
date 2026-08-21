@@ -85,7 +85,7 @@ func New(config Config) (*Server, error) {
 		config.Now = time.Now
 	}
 	if config.Ask == nil {
-		config.Ask = ask.NewDeterministic()
+		config.Ask = ask.NewUnavailable()
 	}
 	return &Server{
 		webOrigin:     strings.TrimSuffix(config.WebOrigin, "/"),

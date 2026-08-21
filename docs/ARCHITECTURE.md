@@ -34,7 +34,7 @@ those costs now.
 | Object storage | S3-compatible; MinIO locally                                          | Immutable raw inputs independent of vendor retention                                     |
 | Contracts      | OpenAPI 3.1 + JSON Schema 2020-12                                     | One source of truth and generated TypeScript API types                                   |
 | Collection     | Bright Data Scraper Studio API/CLI                                    | Required custom collectors, scheduling integration, unblocking and self-healing          |
-| Ask Baahar     | Stateless Responses API structured output + deterministic feed query | Natural language changes filters; the model never creates or ranks event facts            |
+| Mau            | Stateless OpenRouter structured output + deterministic feed query    | Natural language changes filters; the model never creates or ranks event facts            |
 | Local stack    | Docker Compose for PostgreSQL + MinIO                                 | Reproducible real integration tests                                                      |
 | Observability  | Structured `slog`, Prometheus-format metrics, OpenTelemetry-ready IDs | Useful operations without a heavyweight platform dependency                              |
 
@@ -63,15 +63,16 @@ flowchart LR
 The visitor never talks to Bright Data. Public traffic cannot multiply scraping
 cost, and a source outage cannot make the public feed request hang.
 
-### Ask Baahar boundary
+### Mau boundary
 
-Ask Baahar is a query interpreter, not a second event database or an open-ended
-chatbot. One short request is sent server-side to the OpenAI Responses API with
-`store: false` and a strict JSON Schema containing only Baahar's current window,
-category, free-entry, and verified venue filters. The Go API validates that
-intent, executes the ordinary PostgreSQL feed query, and returns only verified
-event DTOs. If the model is unavailable, a small deterministic keyword parser
-keeps the same surface usable and marks the interpretation as unassisted.
+Mau is a query interpreter, not a second event database or an open-ended chatbot.
+One short request is sent server-side through OpenRouter with provider data
+collection denied and a strict JSON
+Schema containing only Baahar's current window, category, free-entry, and
+verified venue filters. The Go API validates that intent, executes the ordinary
+PostgreSQL feed query, and returns only verified event DTOs. Provider or schema
+failure returns a typed unavailable response; Baahar never guesses with a
+keyword fallback.
 
 There is no conversation memory, embedding index, vector database, tool loop, or
 model-authored event copy. The browser keeps only the current form/result state;
@@ -535,7 +536,7 @@ Write a short ADR before any of these changes:
 
 - adding PostGIS, Redis, a message broker, or another database;
 - adding user accounts or precise location;
-- letting a model author event facts, adding embeddings, or widening Ask Baahar
+- letting a model author event facts, adding embeddings, or widening Mau
   beyond its validated filter-only contract;
 - splitting a service from the monolith;
 - enabling automatic scraper-heal approval;

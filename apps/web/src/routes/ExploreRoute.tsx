@@ -5,12 +5,12 @@ import type { CitySlug } from '../api/client';
 import { useCities, useEvents } from '../api/queries';
 import { updatePreferences, usePreferences } from '../app/preferences';
 import { ActionButton } from '../components/ActionButton';
-import { AskBaahar } from '../components/AskBaahar';
 import { DataError } from '../components/DataError';
 import { EmptyState } from '../components/EmptyState';
 import { EventQuilt } from '../components/EventQuilt';
 import { EventQuiltSkeleton } from '../components/EventCardSkeleton';
 import { FeedFilters } from '../components/FeedFilters';
+import { MauGuide } from '../components/MauGuide';
 import { readFilters, timeWindowLabels, writeFilters } from '../features/feed/filters';
 import styles from './ExploreRoute.module.css';
 
@@ -117,12 +117,7 @@ export default function ExploreRoute({ city }: Props) {
         </div>
       </header>
 
-      <AskBaahar
-        city={city}
-        cityName={cityName}
-        venues={meta?.venues ?? []}
-        onApply={(next) => setSearchParams(writeFilters(searchParams, next))}
-      />
+      <MauGuide city={city} onApply={(next) => setSearchParams(writeFilters(searchParams, next))} />
 
       <FeedFilters
         filters={filters}

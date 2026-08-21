@@ -31,9 +31,11 @@ Get-Content .env |
   }
 ```
 
-Ask Baahar works in deterministic guided mode without another secret. To test
-the natural-language interpreter, set `BAAHAR_OPENAI_API_KEY` in the API process;
-the key is never read by the Vite application.
+Mau requires `BAAHAR_OPENROUTER_API_KEY` in the API process. Without it, the
+event board remains available and `POST /v1/ask` returns a typed `503`; there is
+no keyword-based substitute. The key is never read by the Vite application.
+`BAAHAR_OPENROUTER_MODELS` optionally overrides the ordered default/fallback
+model list.
 
 ## Start the stack
 

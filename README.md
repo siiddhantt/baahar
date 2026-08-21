@@ -65,8 +65,8 @@ The diagram is editable in
 ## What visitors can do
 
 - browse upcoming plans by city, date, category, venue, or free entry;
-- ask the little Baahar guide for something like “free music this weekend” and
-  see the exact filters it understood;
+- wake Mau, the small guide resting at the edge of the page, ask for something
+  like “free music this weekend,” and see the exact verified filters it applied;
 - open a clear event detail with its official source;
 - save plans on the device, share them, or open a pre-filled Google/Outlook
   calendar entry (with a standards-based calendar file as fallback); and

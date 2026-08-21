@@ -16,20 +16,20 @@ import (
 func (server *Server) handleAsk(writer http.ResponseWriter, request *http.Request) {
 	if !server.askLimiter.Allow(visitorKey(request), server.now()) {
 		writer.Header().Set("Retry-After", "60")
-		writeProblem(writer, request, http.StatusTooManyRequests, "ask_rate_limited", "Ask Baahar needs a breather", "Try another request in a minute.")
+		writeProblem(writer, request, http.StatusTooManyRequests, "ask_rate_limited", "Mau needs a breather", "Try another request in a minute.")
 		return
 	}
 	var input askRequestDTO
 	decoder := json.NewDecoder(request.Body)
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&input); err != nil {
-		writeProblem(writer, request, http.StatusBadRequest, "invalid_ask_request", "Ask Baahar could not read that", "Send a city and one short request.")
+		writeProblem(writer, request, http.StatusBadRequest, "invalid_ask_request", "Mau could not read that", "Send a city and one short request.")
 		return
 	}
 	input.City = strings.TrimSpace(input.City)
 	input.Query = strings.TrimSpace(input.Query)
 	if !slugPattern.MatchString(input.City) || len(input.City) > 80 || input.Query == "" || len([]rune(input.Query)) > ask.MaximumQueryLength {
-		writeProblem(writer, request, http.StatusBadRequest, "invalid_ask_request", "Ask Baahar could not read that", "Use an available city and a request of 280 characters or fewer.")
+		writeProblem(writer, request, http.StatusBadRequest, "invalid_ask_request", "Mau could not read that", "Use an available city and a request of 280 characters or fewer.")
 		return
 	}
 	now := server.now().UTC()
@@ -41,17 +41,17 @@ func (server *Server) handleAsk(writer http.ResponseWriter, request *http.Reques
 			writeProblem(writer, request, http.StatusNotFound, "city_not_available", "City is not available", "This city is not currently published.")
 			return
 		}
-		server.internalError(writer, request, "prepare Ask Baahar", err)
+		server.internalError(writer, request, "prepare Mau", err)
 		return
 	}
-	scope := ask.Context{CityName: base.City.Name, Now: now, Venues: base.Venues}
+	scope := ask.Context{CityName: base.City.Name, Timezone: base.City.Timezone, Now: now, Venues: base.Venues}
 	intent, err := server.ask.Interpret(request.Context(), input.Query, scope)
 	if err == nil {
 		err = ask.Validate(intent, scope)
 	}
 	if err != nil {
-		server.logger.WarnContext(request.Context(), "interpret Ask Baahar request", "trace_id", traceID(request), "error", err)
-		writeProblem(writer, request, http.StatusBadGateway, "ask_interpretation_failed", "Ask Baahar got a little lost", "Try a shorter request using a date, category, free entry, or venue.")
+		server.logger.WarnContext(request.Context(), "interpret Mau request", "trace_id", traceID(request), "error", err)
+		writeProblem(writer, request, http.StatusServiceUnavailable, "ask_unavailable", "Mau is having a quiet moment", "Try again shortly. Your event board is still available.")
 		return
 	}
 	page, err := server.events.List(request.Context(), events.FeedQuery{
@@ -59,7 +59,7 @@ func (server *Server) handleAsk(writer http.ResponseWriter, request *http.Reques
 		ExplicitFree: intent.ExplicitlyFree, Venue: intent.Venue, Limit: 6,
 	})
 	if err != nil {
-		server.internalError(writer, request, "query Ask Baahar results", err)
+		server.internalError(writer, request, "query Mau results", err)
 		return
 	}
 	items := make([]eventDTO, len(page.Items))
@@ -78,7 +78,7 @@ func (server *Server) handleAsk(writer http.ResponseWriter, request *http.Reques
 	writeJSON(writer, request, http.StatusOK, askResultDTO{
 		Interpretation: askInterpretationDTO{
 			Window: string(intent.Window), Categories: categories, ExplicitlyFree: intent.ExplicitlyFree,
-			Venue: venue, Assisted: intent.Assisted,
+			Venue: venue,
 		},
 		Items: items, ResultCount: page.ResultCount, AsOf: page.AsOf,
 	}, "no-store")

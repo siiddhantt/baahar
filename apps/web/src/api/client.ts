@@ -123,7 +123,7 @@ export function listEvents(query: ListEventsQuery, signal?: AbortSignal) {
   return requestJson<EventPage>(`/v1/events?${params.toString()}`, signal);
 }
 
-export function askBaahar(city: CitySlug, query: string, signal?: AbortSignal) {
+export function askMau(city: CitySlug, query: string, signal?: AbortSignal) {
   return postJson<AskResult>('/v1/ask', { city, query }, signal);
 }
 

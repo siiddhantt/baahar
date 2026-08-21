@@ -14,7 +14,7 @@ import (
 	"github.com/siiddhantt/baahar/internal/events"
 )
 
-func TestAskBaaharUsesValidatedIntentForDeterministicEventQuery(t *testing.T) {
+func TestMauUsesValidatedModelIntentForEventQuery(t *testing.T) {
 	now := time.Date(2026, time.August, 21, 10, 0, 0, 0, time.UTC)
 	reader := &askHTTPReader{}
 	server := &Server{
@@ -34,8 +34,25 @@ func TestAskBaaharUsesValidatedIntentForDeterministicEventQuery(t *testing.T) {
 	if result.CitySlug != "bengaluru" || result.Window != events.WindowWeekend || !result.ExplicitFree || result.Venue != "BIEC" || len(result.Categories) != 1 || result.Categories[0] != events.CategoryMusic {
 		t.Fatalf("result query = %+v", result)
 	}
-	if !strings.Contains(recorder.Body.String(), `"result_count":1`) || !strings.Contains(recorder.Body.String(), `"assisted":true`) {
+	if !strings.Contains(recorder.Body.String(), `"result_count":1`) || strings.Contains(recorder.Body.String(), `"assisted"`) {
 		t.Fatalf("body = %s", recorder.Body.String())
+	}
+}
+
+func TestMauReturnsUnavailableWithoutQueryingGuessedFilters(t *testing.T) {
+	reader := &askHTTPReader{}
+	server := &Server{
+		events: reader, ask: ask.NewUnavailable(), askLimiter: newAskRateLimiter(8, time.Minute),
+		now: time.Now, logger: slog.Default(),
+	}
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/v1/ask", strings.NewReader(`{"city":"bengaluru","query":"free music this weekend"}`))
+	server.Handler().ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusServiceUnavailable || !strings.Contains(recorder.Body.String(), `"code":"ask_unavailable"`) {
+		t.Fatalf("status = %d, body = %s", recorder.Code, recorder.Body.String())
+	}
+	if len(reader.queries) != 1 {
+		t.Fatalf("queries = %d, want only city context lookup", len(reader.queries))
 	}
 }
 
@@ -74,7 +91,7 @@ type fixedAskInterpreter struct{}
 func (fixedAskInterpreter) Interpret(context.Context, string, ask.Context) (ask.Intent, error) {
 	return ask.Intent{
 		Window: events.WindowWeekend, Categories: []events.Category{events.CategoryMusic},
-		ExplicitlyFree: true, Venue: "BIEC", Assisted: true,
+		ExplicitlyFree: true, Venue: "BIEC",
 	}, nil
 }
 

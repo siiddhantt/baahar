@@ -158,7 +158,7 @@ first viewport contains:
 
 1. wordmark, city switcher, theme action, and Saved;
 2. a one-line promise and one supporting sentence;
-3. a compact Ask Baahar guide followed by time/free/category/venue choices;
+3. time/free/category/venue choices, with Mau resting unobtrusively at the lower edge;
 4. at least the top portion of real event cards;
 5. a quiet result/source count such as `27 plans from 2 official calendars`.
 
@@ -200,15 +200,15 @@ The page contains:
 - a material change note when relevant;
 - a small `More on this day` group after the primary action.
 
-### Ask Baahar
+### Mau
 
-The cat is a small guide that lives inside Explore, not a floating support
-chatbot. Opening it reveals one short request field and a few useful examples.
-The result visibly becomes ordinary URL filters and the chronological event
-board remains the answer. Its speech can acknowledge the match count but never
-invent a venue, reason, event fact, or recommendation. Keyboard operation,
-reduced motion, graceful deterministic fallback, and an explicit loading/error
-state are required.
+Mau is a small sleeping cat at the bottom-left edge of Explore, not a content
+section or support chatbot. Hovering or focusing introduces the guide; opening
+it wakes Mau and reveals one short request field. The result visibly becomes
+ordinary URL filters and the chronological event board remains the answer.
+Mau may acknowledge the verified match count but never invent a venue, reason,
+event fact, or recommendation. Keyboard operation, reduced motion, a typed
+provider-unavailable state, and an unchanged browsing path are required.
 
 ### Saved
 

@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQueries, useQuery } from '@tanstack/react-query';
 
 import {
-  askBaahar,
+  askMau,
   getEvent,
   listCities,
   listEventChanges,
@@ -73,10 +73,10 @@ export function useEvents(filters: EventFilters, enabled = true) {
   });
 }
 
-export function useAskBaahar(city: CitySlug) {
+export function useMau(city: CitySlug) {
   return useMutation({
     mutationFn: ({ query, signal }: { query: string; signal?: AbortSignal }) =>
-      askBaahar(city, query, signal),
+      askMau(city, query, signal),
   });
 }
 
