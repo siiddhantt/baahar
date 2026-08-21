@@ -2,40 +2,27 @@
   .price {
     display: inline-flex;
     width: fit-content;
-    min-height: 1.9rem;
-    padding: 0.22rem 0.68rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--canvas-deep) 58%, var(--surface));
+    min-height: 1.35rem;
     color: var(--ink-soft);
-    font-size: 0.72rem;
-    font-weight: 760;
-    align-items: center;
-    gap: 0.42rem;
+    line-height: 1.2;
+    align-items: baseline;
+    gap: 0.38rem;
   }
 
-  .mark {
-    display: inline-grid;
-    min-width: 1.35rem;
-    height: 1.35rem;
-    padding-inline: 0.25rem;
-    border-radius: var(--radius-pill);
-    background: var(--ink);
-    color: var(--canvas);
+  .label {
+    color: var(--muted);
     font-size: 0.6rem;
-    font-weight: 850;
-    place-items: center;
+    font-weight: 760;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
   }
 
-  .price[data-free='true'] {
-    padding-left: 0.28rem;
-    border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
-    background: var(--accent-soft);
+  .value {
+    font-size: 0.75rem;
+    font-weight: 740;
+  }
+
+  .price[data-free='true'] .value {
     color: var(--accent-strong);
-  }
-
-  .price[data-free='true'] .mark {
-    background: var(--accent-strong);
-    color: var(--surface);
   }
 }

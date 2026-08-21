@@ -12,12 +12,8 @@ export function PriceTag({ event }: Props) {
 
   return (
     <span className={styles.price} data-free={event.pricing.is_free === true}>
-      {event.pricing.is_free === true ? (
-        <span className={styles.mark} aria-hidden="true">
-          ₹0
-        </span>
-      ) : null}
-      {label}
+      <span className={styles.label}>Entry</span>
+      <span className={styles.value}>{label}</span>
     </span>
   );
 }

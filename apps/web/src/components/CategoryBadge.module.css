@@ -2,35 +2,17 @@
   .badge {
     display: inline-flex;
     width: fit-content;
-    min-height: 1.65rem;
-    padding: 0.28rem 0.58rem;
-    border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface));
+    min-height: 1.35rem;
+    padding: 0.2rem 0.44rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    border-radius: 0.42rem;
+    background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
     color: var(--accent-strong);
-    font-size: 0.66rem;
-    font-weight: 820;
-    letter-spacing: 0.035em;
+    font-size: 0.59rem;
+    font-weight: 790;
+    letter-spacing: 0.055em;
     line-height: 1;
     align-items: center;
     text-transform: uppercase;
-    gap: 0.34rem;
-  }
-
-  .badge > span {
-    width: 0.38rem;
-    height: 0.38rem;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .badge[data-category='workshops'] > span,
-  .badge[data-category='community'] > span {
-    background: var(--signal);
-  }
-
-  .badge[data-category='music'] > span,
-  .badge[data-category='theatre'] > span {
-    background: var(--accent-secondary);
   }
 }

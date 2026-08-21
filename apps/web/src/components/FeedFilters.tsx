@@ -5,6 +5,7 @@ import {
   timeWindowLabels,
   timeWindows,
 } from '../features/feed/filters';
+import { VenuePicker } from './VenuePicker';
 import styles from './FeedFilters.module.css';
 
 type Filters = {
@@ -75,20 +76,11 @@ export function FeedFilters({ filters, onChange, venues }: Props) {
       </div>
 
       {venues.length ? (
-        <label className={styles.venueFilter}>
-          <span>Venue</span>
-          <select
-            value={filters.venue}
-            onChange={(event) => onChange({ ...filters, venue: event.target.value })}
-          >
-            <option value="">Anywhere in the city</option>
-            {venues.map((venue) => (
-              <option key={venue} value={venue}>
-                {venue}
-              </option>
-            ))}
-          </select>
-        </label>
+        <VenuePicker
+          value={filters.venue}
+          venues={venues}
+          onChange={(venue) => onChange({ ...filters, venue })}
+        />
       ) : null}
     </section>
   );

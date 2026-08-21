@@ -7,10 +7,5 @@ type Props = {
 };
 
 export function CategoryBadge({ category }: Props) {
-  return (
-    <span className={styles.badge} data-category={category}>
-      <span aria-hidden="true" />
-      {categoryLabels[category]}
-    </span>
-  );
+  return <span className={styles.badge}>{categoryLabels[category]}</span>;
 }
