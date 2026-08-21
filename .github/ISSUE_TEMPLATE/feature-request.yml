@@ -1,0 +1,32 @@
+name: Suggest a product improvement
+description: Propose a focused improvement to the Baahar experience or data pipeline.
+title: "feature: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      placeholder: When I am looking for plans, I...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: Describe the smallest useful version and where it belongs in the experience.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. What can a visitor do today instead?
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Contribution check
+      options:
+        - label: This request does not require publishing private data or bypassing a source's access rules.
+          required: true

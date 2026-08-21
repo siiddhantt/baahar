@@ -1,41 +1,66 @@
 # Contributing to Baahar
 
-The current build order is defined in [docs/EXECUTION.md](docs/EXECUTION.md).
-Do not begin a later checkpoint while an earlier exit gate is red.
+Thanks for helping Baahar find more of the city beyond the obvious. Useful
+contributions include product improvements, accessibility fixes, source
+suggestions, collector hardening, tests, and documentation.
 
-## Boundaries
+## Start with the outcome
 
-- `contracts/` is the source of truth for HTTP and collector payloads.
-- `internal/` packages own product capabilities, not generic technical layers.
-- `apps/web/` consumes generated contract types and does not reproduce them.
-- `sources/` owns reviewed manifests, collector code/evidence, and source fixtures.
-- Interfaces exist at effect boundaries and are owned by their consumers.
-- Do not add a dependency, service, abstraction, or route for an unimplemented
-  future feature.
+- [Suggest an official event source](https://github.com/siiddhantt/baahar/issues/new?template=source-suggestion.yml)
+- [Suggest a product improvement](https://github.com/siiddhantt/baahar/issues/new?template=feature-request.yml)
+- For a code change, open an issue or describe the user-visible outcome in the
+  pull request.
 
-## Required before handoff
+Keep one concern per change. Baahar favours small, complete vertical slices over
+new frameworks or speculative abstractions.
 
-- format, lint, typecheck, focused tests, and production build are green;
-- real PostgreSQL/MinIO or live Bright Data checks are run when the change crosses
-  those boundaries; a skipped live check is reported as skipped;
-- generated binaries, local data, secrets, and raw private evidence are untracked;
-- changed behaviour and exact verification commands are recorded in the handoff.
+## Source contributions
 
-Comments explain an external constraint or non-obvious invariant. Delete dead
-code and obsolete comments instead of leaving them for a future cleanup.
+Read the [source registry](sources/README.md) and
+[source documentation template](sources/SOURCE_TEMPLATE.md) first.
 
-Run Go checks with `./cmd/... ./contracts ./internal/...`. The frontend's npm
-dependency tree contains third-party `.go` source, so an unscoped `go test ./...`
-would test code Baahar neither owns nor ships.
+A proposed source should:
+
+- be an official organiser, venue, institution, or clearly authoritative public
+  page;
+- contain several current, exact, city-relevant events;
+- expose a bounded and respectful collection path;
+- have reviewed robots and terms boundaries;
+- preserve unknown facts as unknown rather than infer them;
+- link every event back to its official page.
+
+Search engines, forums, social posts, and aggregators are useful for discovery,
+but they are not publication authority when a first-party source exists.
+
+Never commit API tokens, private batch payloads, dashboard exports, personal
+paths, or copied long-form source content.
+
+## Development
+
+Follow the [local development guide](docs/DEVELOPMENT.md). The important
+boundaries are:
+
+- `contracts/` owns HTTP and collector payload contracts;
+- `internal/` owns product capabilities and effect boundaries;
+- `apps/web/` consumes generated API types;
+- `sources/` owns reviewed collector code, policy, mapping, and evidence;
+- `migrations/` owns production source configuration and schema changes.
+
+Before handoff, run the focused checks for the changed boundary and the standard
+quality suite. Real PostgreSQL, object storage, live-source, or Scraper Studio
+checks are required when the change crosses those boundaries; otherwise state
+that they were not run.
 
 ## Change history
 
-- Branch from `main` with `feat/`, `fix/`, or `release/`.
-- Keep one product concern per commit and use Conventional Commit subjects such
-  as `feat:`, `fix:`, `test:`, `docs:`, or `chore:`.
-- Stage explicit paths. Never mix private evidence, generated binaries, or an
-  unrelated working-tree change into a commit.
-- Update the relevant source evidence ledger whenever a collector is previewed,
-  promoted, run, healed, or blocked.
-- A source is not described as active until its immutable batch, normalization,
-  publication, API, and browser gates have all passed.
+- Use Conventional Commit subjects such as `feat:`, `fix:`, `test:`, `docs:`,
+  and `chore:`.
+- Keep generated files with the change that generated them.
+- Do not mix private evidence or unrelated working-tree changes into a commit.
+- Update a source evidence ledger whenever its collector is previewed, promoted,
+  run, repaired, rolled back, or blocked.
+- Describe a source as active only after immutable collection, publication, API,
+  and browser gates pass.
+
+Comments should explain an external constraint or non-obvious invariant. Remove
+dead code and obsolete commentary instead of preserving it for a future cleanup.

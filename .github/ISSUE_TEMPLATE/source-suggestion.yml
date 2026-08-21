@@ -1,0 +1,49 @@
+name: Suggest an event source
+description: Propose an official venue, organiser, institution, or city calendar for Baahar.
+title: "source: "
+labels:
+  - source
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping Baahar find more of the city. Search results and aggregators are welcome as leads, but the source we publish should be first-party whenever possible.
+  - type: input
+    id: city
+    attributes:
+      label: City
+      placeholder: Bengaluru, Delhi, Mumbai, Varanasi, or another city
+    validations:
+      required: true
+  - type: input
+    id: source_url
+    attributes:
+      label: Official source URL
+      placeholder: https://example.org/events
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Why this source is useful
+      description: What kinds of events does it publish, and roughly how many current events are visible?
+      placeholder: This venue publishes...
+    validations:
+      required: true
+  - type: textarea
+    id: authority
+    attributes:
+      label: Authority and public access
+      description: Explain why this is the organiser or official publisher and whether the events appear open to the public.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example current events
+      description: Share up to three titles and dates. Links are helpful.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Mention pagination, registration, access restrictions, or another source covering the same events.
