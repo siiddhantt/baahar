@@ -31,6 +31,10 @@ Get-Content .env |
   }
 ```
 
+Ask Baahar works in deterministic guided mode without another secret. To test
+the natural-language interpreter, set `BAAHAR_OPENAI_API_KEY` in the API process;
+the key is never read by the Vite application.
+
 ## Start the stack
 
 Start the development data services, apply migrations, and install the web

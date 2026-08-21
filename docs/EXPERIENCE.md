@@ -137,14 +137,14 @@ Routes:
 ```text
 /
 /bengaluru
-/bengaluru?window=weekend&category=theatre&free=true
+/bengaluru?window=weekend&category=theatre&free=true&venue=Ranga+Shankara
 /varanasi?window=today
 /events/:occurrenceId/:slug
 /saved
 /operator/sources             protected, not linked publicly
 ```
 
-City, non-default date window, category, and free state belong in the URL. An
+City, non-default date window, category, venue, and free state belong in the URL. An
 omitted window means Upcoming. Back navigation restores filters, cursor-loaded
 items, and scroll position.
 
@@ -158,7 +158,7 @@ first viewport contains:
 
 1. wordmark, city switcher, theme action, and Saved;
 2. a one-line promise and one supporting sentence;
-3. Upcoming-first time/free/category quick choices;
+3. a compact Ask Baahar guide followed by time/free/category/venue choices;
 4. at least the top portion of real event cards;
 5. a quiet result/source count such as `27 plans from 2 official calendars`.
 
@@ -174,12 +174,13 @@ look Pinterest-like while keyboard/screen-reader order remains chronological.
 Card priority:
 
 1. image or procedural cover;
-2. date/time stamp;
-3. title, two-line visual limit but full accessible name;
-4. venue/neighbourhood;
-5. free/price/registration state when explicit;
-6. quiet source and freshness line;
-7. save action.
+2. category badge and critical status (never a transient `New` badge);
+3. date/time stamp;
+4. title, two-line visual limit but full accessible name;
+5. venue/neighbourhood;
+6. a compact free/price treatment when explicit;
+7. quiet source and freshness line;
+8. save action.
 
 Card variations are assigned deterministically from an event ID and available
 image ratio. A filter change never randomly reshuffles shapes.
@@ -194,10 +195,20 @@ The page contains:
 
 - title, date/time, venue, status and explicit price/registration state;
 - a short structured details block, not copied source prose;
-- `Official page`, `Save`, `Add to calendar`, and native share;
+- `Official page`, `Save`, provider-aware `Add to calendar`, and native share;
 - the official-source disclosure and a stale warning only when action may be needed;
 - a material change note when relevant;
 - a small `More on this day` group after the primary action.
+
+### Ask Baahar
+
+The cat is a small guide that lives inside Explore, not a floating support
+chatbot. Opening it reveals one short request field and a few useful examples.
+The result visibly becomes ordinary URL filters and the chronological event
+board remains the answer. Its speech can acknowledge the match count but never
+invent a venue, reason, event fact, or recommendation. Keyboard operation,
+reduced motion, graceful deterministic fallback, and an explicit loading/error
+state are required.
 
 ### Saved
 

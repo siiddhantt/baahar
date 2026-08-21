@@ -184,12 +184,16 @@ the visitor deliberately opens a contextual `About this source` disclosure.
 - Empty states identify which filter caused the empty result and offer one clear
   reset action.
 
-### FR-3 Filters
+### FR-3 Filters and guided discovery
 
-- Date window, category, explicit-free, and city are shareable URL parameters.
+- Date window, category, explicit-free, venue, and city are shareable URL parameters.
 - Unknown price does not satisfy the explicit-free filter.
 - Categories are mapped by a reviewed source manifest or explicit source label;
   no runtime classifier invents them.
+- Ask Baahar may translate one short request into those same filters. A strict,
+  stateless model output is validated against current venues and taxonomy before
+  the ordinary feed query runs. It cannot create facts, arbitrary URLs, SQL, or
+  hidden ranking.
 
 ### FR-4 Event details
 
@@ -210,6 +214,9 @@ the visitor deliberately opens a contextual `About this source` disclosure.
   relevant changed fields.
 - ICS output escapes text correctly, uses UTC timestamps where exact times are
   known, and represents all-day events without fabricating times.
+- Google and Outlook compose links are offered only when the known time range is
+  sufficient; incomplete timed events keep the calendar-file fallback rather
+  than receiving an invented duration.
 
 ### FR-6 Source collection
 
@@ -359,6 +366,8 @@ Title similarity or performance-array position alone must never merge events.
 ### Privacy and security
 
 - No account, analytics fingerprint, or precise location is needed for P0.
+- Ask requests are bounded, rate-limited, sent with response storage disabled,
+  and are not retained as conversation memory by Baahar.
 - Bright Data and object-store credentials remain server-side and are redacted
   from structured logs.
 - Only manifest-allowlisted source URLs can enter the collector pipeline.

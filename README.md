@@ -64,9 +64,12 @@ The diagram is editable in
 
 ## What visitors can do
 
-- browse upcoming plans by city, date, category, or free entry;
+- browse upcoming plans by city, date, category, venue, or free entry;
+- ask the little Baahar guide for something like “free music this weekend” and
+  see the exact filters it understood;
 - open a clear event detail with its official source;
-- save plans on the device, share them, or add them to a calendar; and
+- save plans on the device, share them, or open a pre-filled Google/Outlook
+  calendar entry (with a standards-based calendar file as fallback); and
 - see source counts without being told that Baahar covers an entire city.
 
 ## Live coverage
@@ -95,7 +98,7 @@ reproduced the same result without another collection call.
 ## Roadmap
 
 - [x] Four public city feeds backed by seven verified sources
-- [x] Filters, detail pages, local saves, native sharing, and calendar files
+- [x] Venue-aware filters, guided discovery, local saves, sharing, and calendar actions
 - [x] Last-known-good publication and a same-collector repair demonstration
 - [ ] More independent official sources in every city
 - [ ] “More on this day” suggestions from the same verified feed

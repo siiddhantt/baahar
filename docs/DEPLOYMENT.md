@@ -40,6 +40,9 @@ platform's secret store. Never bake them into an image or frontend bundle.
 - `BAAHAR_DATABASE_URL`: grant the API and worker only the database permissions
   they require. Run migrations with a separate privileged release identity.
 - `BAAHAR_WEB_ORIGIN`: exact public web origin; no wildcard CORS.
+- `BAAHAR_OPENAI_API_KEY`: optional server-only key for natural-language Ask
+  Baahar interpretation. Without it, the deterministic guided parser remains
+  available. `BAAHAR_OPENAI_MODEL` defaults to `gpt-5.4-mini`.
 - `VITE_API_ORIGIN`: omit for a same-origin reverse proxy, or set the public API
   origin at web build time.
 
