@@ -346,6 +346,7 @@ export interface components {
       query: string;
     };
     AskInterpretation: {
+      city: components['schemas']['CitySlug'];
       window: components['schemas']['TimeWindow'];
       categories: components['schemas']['Category'][];
       explicitly_free: boolean;

@@ -55,6 +55,7 @@ describe('listEvents', () => {
         new Response(
           JSON.stringify({
             interpretation: {
+              city: 'mysuru',
               window: 'upcoming',
               categories: [],
               explicitly_free: false,

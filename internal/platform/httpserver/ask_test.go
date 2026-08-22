@@ -14,7 +14,7 @@ import (
 	"github.com/siiddhantt/baahar/internal/events"
 )
 
-func TestMauUsesValidatedModelIntentForEventQuery(t *testing.T) {
+func TestMauUsesValidatedCrossCityIntentForEventQuery(t *testing.T) {
 	now := time.Date(2026, time.August, 21, 10, 0, 0, 0, time.UTC)
 	reader := &askHTTPReader{}
 	server := &Server{
@@ -22,19 +22,19 @@ func TestMauUsesValidatedModelIntentForEventQuery(t *testing.T) {
 		now: func() time.Time { return now }, logger: slog.Default(),
 	}
 	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodPost, "/v1/ask", strings.NewReader(`{"city":"bengaluru","query":"free music this weekend at BIEC"}`))
+	request := httptest.NewRequest(http.MethodPost, "/v1/ask", strings.NewReader(`{"city":"bengaluru","query":"are there any events in varanasi?"}`))
 	server.Handler().ServeHTTP(recorder, request)
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, body = %s", recorder.Code, recorder.Body.String())
 	}
-	if len(reader.queries) != 2 {
-		t.Fatalf("queries = %d, want base and result", len(reader.queries))
+	if len(reader.queries) != 3 {
+		t.Fatalf("queries = %d, want two city contexts and one result", len(reader.queries))
 	}
-	result := reader.queries[1]
-	if result.CitySlug != "bengaluru" || result.Window != events.WindowWeekend || !result.ExplicitFree || result.Venue != "BIEC" || len(result.Categories) != 1 || result.Categories[0] != events.CategoryMusic {
+	result := reader.queries[2]
+	if result.CitySlug != "varanasi" || result.Window != events.WindowUpcoming || result.ExplicitFree || result.Venue != "" || len(result.Categories) != 0 {
 		t.Fatalf("result query = %+v", result)
 	}
-	if !strings.Contains(recorder.Body.String(), `"result_count":1`) || strings.Contains(recorder.Body.String(), `"assisted"`) {
+	if !strings.Contains(recorder.Body.String(), `"city":"varanasi"`) || !strings.Contains(recorder.Body.String(), `"result_count":1`) || strings.Contains(recorder.Body.String(), `"assisted"`) {
 		t.Fatalf("body = %s", recorder.Body.String())
 	}
 }
@@ -51,8 +51,8 @@ func TestMauReturnsUnavailableWithoutQueryingGuessedFilters(t *testing.T) {
 	if recorder.Code != http.StatusServiceUnavailable || !strings.Contains(recorder.Body.String(), `"code":"ask_unavailable"`) {
 		t.Fatalf("status = %d, body = %s", recorder.Code, recorder.Body.String())
 	}
-	if len(reader.queries) != 1 {
-		t.Fatalf("queries = %d, want only city context lookup", len(reader.queries))
+	if len(reader.queries) != 2 {
+		t.Fatalf("queries = %d, want only supported city context lookups", len(reader.queries))
 	}
 }
 
@@ -90,8 +90,7 @@ type fixedAskInterpreter struct{}
 
 func (fixedAskInterpreter) Interpret(context.Context, string, ask.Context) (ask.Intent, error) {
 	return ask.Intent{
-		Window: events.WindowWeekend, Categories: []events.Category{events.CategoryMusic},
-		ExplicitlyFree: true, Venue: "BIEC",
+		City: "varanasi", Window: events.WindowUpcoming,
 	}, nil
 }
 
@@ -101,11 +100,17 @@ type askHTTPReader struct {
 
 func (reader *askHTTPReader) List(_ context.Context, query events.FeedQuery) (events.FeedPage, error) {
 	reader.queries = append(reader.queries, query)
-	page := events.FeedPage{
-		City:   events.City{Slug: "bengaluru", Name: "Bengaluru", Timezone: "Asia/Kolkata", Accent: "rain"},
-		Venues: []string{"BIEC", "Town Hall"}, AsOf: query.AsOf, ResultCount: 1,
+	city := events.City{Slug: query.CitySlug, Name: "Bengaluru", Timezone: "Asia/Kolkata", Accent: "rain"}
+	venues := []string{"BIEC", "Town Hall"}
+	if query.CitySlug == "varanasi" {
+		city.Name = "Varanasi"
+		city.Accent = "river"
+		venues = []string{"BHU Campus"}
 	}
-	if len(reader.queries) == 2 {
+	page := events.FeedPage{
+		City: city, Venues: venues, AsOf: query.AsOf, ResultCount: 1,
+	}
+	if query.Limit == 6 {
 		page.Items = []events.PublicOccurrence{{
 			ID:   uuid.MustParse("11111111-1111-4111-8111-111111111111"),
 			City: page.City,
@@ -118,7 +123,12 @@ func (reader *askHTTPReader) List(_ context.Context, query events.FeedQuery) (ev
 	return page, nil
 }
 
-func (*askHTTPReader) ListCities(context.Context) ([]events.City, error) { return nil, nil }
+func (*askHTTPReader) ListCities(context.Context) ([]events.City, error) {
+	return []events.City{
+		{Slug: "bengaluru", Name: "Bengaluru", Timezone: "Asia/Kolkata", Accent: "rain"},
+		{Slug: "varanasi", Name: "Varanasi", Timezone: "Asia/Kolkata", Accent: "river"},
+	}, nil
+}
 func (*askHTTPReader) Get(context.Context, uuid.UUID, time.Time, time.Time) (events.PublicOccurrence, error) {
 	return events.PublicOccurrence{}, events.ErrNotFound
 }

@@ -93,6 +93,7 @@ type askRequestDTO struct {
 }
 
 type askInterpretationDTO struct {
+	City           string   `json:"city"`
 	Window         string   `json:"window"`
 	Categories     []string `json:"categories"`
 	ExplicitlyFree bool     `json:"explicitly_free"`

@@ -100,6 +100,7 @@ type chatEnvelope struct {
 }
 
 type intentPayload struct {
+	City           string   `json:"city"`
 	Window         string   `json:"window"`
 	Categories     []string `json:"categories"`
 	ExplicitlyFree bool     `json:"explicitly_free"`
@@ -114,9 +115,9 @@ func (interpreter *Interpreter) Interpret(ctx context.Context, query string, sco
 			{Role: "user", Content: strings.TrimSpace(query)},
 		},
 		Temperature: 0,
-		MaxTokens:   120,
+		MaxTokens:   140,
 		ResponseFormat: responseFormat{Type: "json_schema", JSONSchema: jsonSchema{
-			Name: "baahar_event_intent", Strict: true, Schema: intentSchema(scope.Venues),
+			Name: "baahar_event_intent", Strict: true, Schema: intentSchema(scope),
 		}},
 		Provider: provider{RequireParameters: true, AllowFallbacks: true, DataCollection: "deny"},
 	}
@@ -163,7 +164,7 @@ func (interpreter *Interpreter) Interpret(ctx context.Context, query string, sco
 	if err := decoder.Decode(&parsed); err != nil {
 		return ask.Intent{}, unavailable("decode structured intent", err)
 	}
-	intent := ask.Intent{Window: events.Window(parsed.Window), ExplicitlyFree: parsed.ExplicitlyFree}
+	intent := ask.Intent{City: parsed.City, Window: events.Window(parsed.Window), ExplicitlyFree: parsed.ExplicitlyFree}
 	for _, category := range parsed.Categories {
 		intent.Categories = append(intent.Categories, events.Category(category))
 	}
@@ -197,24 +198,47 @@ func unavailable(operation string, err error) error {
 }
 
 func instructions(scope ask.Context) string {
-	venues, _ := json.Marshal(ask.SortedVenueNames(scope.Venues))
-	localNow := scope.Now
-	if location, err := time.LoadLocation(scope.Timezone); err == nil {
-		localNow = scope.Now.In(location)
+	cities := ask.SortedCities(scope.Cities)
+	cityOptions := make([]map[string]any, 0, len(cities))
+	for _, city := range cities {
+		cityOptions = append(cityOptions, map[string]any{
+			"slug": city.Slug, "name": city.Name, "venues": ask.SortedVenueNames(city.Venues),
+		})
 	}
-	return fmt.Sprintf(`Interpret one short event-discovery request for %s as filters. Return only the requested JSON schema. Use only the supported categories arts, talks, workshops, theatre, music, books, community, other and only an exact venue from this JSON list: %s. Choose upcoming when no time window is stated. Set explicitly_free only when the user clearly asks for free entry. Never answer the user, invent events, broaden a venue, or add facts. Current local time is %s.`, scope.CityName, venues, localNow.Format(time.RFC3339))
+	options, _ := json.Marshal(cityOptions)
+	localNow := scope.Now
+	if current, found := ask.FindCity(scope, scope.CurrentCity); found {
+		if location, err := time.LoadLocation(current.Timezone); err == nil {
+			localNow = scope.Now.In(location)
+		}
+	}
+	return fmt.Sprintf(`Interpret one short event-discovery request as filters for Baahar's city boards. Return only the requested JSON schema. Supported cities and their exact venues are: %s. Choose a named supported city when the user asks about it; otherwise use the current city slug %q. Use only the supported categories arts, talks, workshops, theatre, music, books, community, other. Use a venue only when it exactly matches a venue listed for the selected city. Choose upcoming when no time window is stated. Set explicitly_free only when the user clearly asks for free entry. Never answer the user, invent events, broaden a venue, or add facts. Current local time is %s.`, options, scope.CurrentCity, localNow.Format(time.RFC3339))
 }
 
-func intentSchema(venues []string) map[string]any {
-	venueEnum := make([]any, 0, len(venues)+1)
+func intentSchema(scope ask.Context) map[string]any {
+	cities := ask.SortedCities(scope.Cities)
+	cityEnum := make([]string, 0, len(cities))
+	venueCount := 0
+	for _, city := range cities {
+		cityEnum = append(cityEnum, city.Slug)
+		venueCount += len(city.Venues)
+	}
+	venueEnum := make([]any, 0, venueCount+1)
 	venueEnum = append(venueEnum, nil)
-	for _, venue := range ask.SortedVenueNames(venues) {
-		venueEnum = append(venueEnum, venue)
+	seenVenues := make(map[string]bool, venueCount)
+	for _, city := range cities {
+		for _, venue := range ask.SortedVenueNames(city.Venues) {
+			if !seenVenues[venue] {
+				venueEnum = append(venueEnum, venue)
+				seenVenues[venue] = true
+			}
+		}
 	}
 	return map[string]any{
 		"type": "object", "additionalProperties": false,
-		"required": []string{"window", "categories", "explicitly_free", "venue"},
+		"required": []string{"city", "window", "categories", "explicitly_free", "venue"},
 		"properties": map[string]any{
+			"city":   map[string]any{"type": "string", "enum": cityEnum},
 			"window": map[string]any{"type": "string", "enum": []string{"upcoming", "today", "tomorrow", "weekend"}},
 			"categories": map[string]any{
 				"type": "array", "maxItems": 3, "uniqueItems": true,

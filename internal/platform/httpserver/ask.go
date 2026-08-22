@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"encoding/json"
-	"errors"
 	"net"
 	"net/http"
 	"strings"
@@ -33,18 +32,32 @@ func (server *Server) handleAsk(writer http.ResponseWriter, request *http.Reques
 		return
 	}
 	now := server.now().UTC()
-	base, err := server.events.List(request.Context(), events.FeedQuery{
-		CitySlug: input.City, Window: events.WindowUpcoming, AsOf: now, Limit: 1,
-	})
+	cities, err := server.events.ListCities(request.Context())
 	if err != nil {
-		if errors.Is(err, events.ErrNotFound) {
-			writeProblem(writer, request, http.StatusNotFound, "city_not_available", "City is not available", "This city is not currently published.")
-			return
-		}
 		server.internalError(writer, request, "prepare Mau", err)
 		return
 	}
-	scope := ask.Context{CityName: base.City.Name, Timezone: base.City.Timezone, Now: now, Venues: base.Venues}
+	scope := ask.Context{CurrentCity: input.City, Now: now, Cities: make([]ask.CityScope, 0, len(cities))}
+	currentCityAvailable := false
+	for _, city := range cities {
+		if city.Slug == input.City {
+			currentCityAvailable = true
+		}
+		base, listErr := server.events.List(request.Context(), events.FeedQuery{
+			CitySlug: city.Slug, Window: events.WindowUpcoming, AsOf: now, Limit: 1,
+		})
+		if listErr != nil {
+			server.internalError(writer, request, "prepare Mau city", listErr)
+			return
+		}
+		scope.Cities = append(scope.Cities, ask.CityScope{
+			Slug: base.City.Slug, Name: base.City.Name, Timezone: base.City.Timezone, Venues: base.Venues,
+		})
+	}
+	if !currentCityAvailable {
+		writeProblem(writer, request, http.StatusNotFound, "city_not_available", "City is not available", "This city is not currently published.")
+		return
+	}
 	intent, err := server.ask.Interpret(request.Context(), input.Query, scope)
 	if err == nil {
 		err = ask.Validate(intent, scope)
@@ -55,7 +68,7 @@ func (server *Server) handleAsk(writer http.ResponseWriter, request *http.Reques
 		return
 	}
 	page, err := server.events.List(request.Context(), events.FeedQuery{
-		CitySlug: input.City, Window: intent.Window, AsOf: now, Categories: intent.Categories,
+		CitySlug: intent.City, Window: intent.Window, AsOf: now, Categories: intent.Categories,
 		ExplicitFree: intent.ExplicitlyFree, Venue: intent.Venue, Limit: 6,
 	})
 	if err != nil {
@@ -77,7 +90,7 @@ func (server *Server) handleAsk(writer http.ResponseWriter, request *http.Reques
 	}
 	writeJSON(writer, request, http.StatusOK, askResultDTO{
 		Interpretation: askInterpretationDTO{
-			Window: string(intent.Window), Categories: categories, ExplicitlyFree: intent.ExplicitlyFree,
+			City: intent.City, Window: string(intent.Window), Categories: categories, ExplicitlyFree: intent.ExplicitlyFree,
 			Venue: venue,
 		},
 		Items: items, ResultCount: page.ResultCount, AsOf: page.AsOf,

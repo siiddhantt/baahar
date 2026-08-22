@@ -759,8 +759,10 @@ components:
     AskInterpretation:
       type: object
       additionalProperties: false
-      required: [window, categories, explicitly_free, venue]
+      required: [city, window, categories, explicitly_free, venue]
       properties:
+        city:
+          $ref: "#/components/schemas/CitySlug"
         window:
           $ref: "#/components/schemas/TimeWindow"
         categories:

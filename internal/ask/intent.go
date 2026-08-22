@@ -23,14 +23,21 @@ var Categories = []events.Category{
 	events.CategoryOther,
 }
 
-type Context struct {
-	CityName string
+type CityScope struct {
+	Slug     string
+	Name     string
 	Timezone string
-	Now      time.Time
 	Venues   []string
 }
 
+type Context struct {
+	CurrentCity string
+	Now         time.Time
+	Cities      []CityScope
+}
+
 type Intent struct {
+	City           string
 	Window         events.Window
 	Categories     []events.Category
 	ExplicitlyFree bool
@@ -52,6 +59,10 @@ func (unavailable) Interpret(context.Context, string, Context) (Intent, error) {
 }
 
 func Validate(intent Intent, scope Context) error {
+	city, found := FindCity(scope, intent.City)
+	if !found {
+		return errors.New("ask intent has an unknown city")
+	}
 	switch intent.Window {
 	case events.WindowUpcoming, events.WindowToday, events.WindowTomorrow, events.WindowWeekend:
 	default:
@@ -76,7 +87,7 @@ func Validate(intent Intent, scope Context) error {
 	}
 	if intent.Venue != "" {
 		found := false
-		for _, venue := range scope.Venues {
+		for _, venue := range city.Venues {
 			if intent.Venue == venue {
 				found = true
 				break
@@ -87,6 +98,23 @@ func Validate(intent Intent, scope Context) error {
 		}
 	}
 	return nil
+}
+
+func FindCity(scope Context, slug string) (CityScope, bool) {
+	for _, city := range scope.Cities {
+		if city.Slug == slug {
+			return city, true
+		}
+	}
+	return CityScope{}, false
+}
+
+func SortedCities(values []CityScope) []CityScope {
+	result := append([]CityScope(nil), values...)
+	sort.Slice(result, func(left, right int) bool {
+		return strings.ToLower(result[left].Name) < strings.ToLower(result[right].Name)
+	})
+	return result
 }
 
 func SortedVenueNames(values []string) []string {
