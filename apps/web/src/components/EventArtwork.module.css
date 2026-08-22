@@ -17,76 +17,68 @@
   .generated {
     background: linear-gradient(
       138deg,
-      color-mix(in srgb, var(--accent) 76%, white),
-      var(--accent-secondary)
+      color-mix(in srgb, var(--accent) 72%, #d59b6a),
+      color-mix(in srgb, var(--accent-secondary) 82%, #283b55)
     );
     color: white;
     isolation: isolate;
   }
 
-  .generated::before,
-  .generated::after {
-    position: absolute;
-    content: '';
-    border: 1px solid rgb(255 255 255 / 55%);
-    border-radius: 50%;
-  }
-
   .generated::before {
-    width: 72%;
-    aspect-ratio: 1;
-    top: -15%;
-    right: -25%;
-    box-shadow:
-      0 0 0 1.2rem rgb(255 255 255 / 7%),
-      0 0 0 2.4rem rgb(255 255 255 / 5%);
+    position: absolute;
+    background:
+      repeating-linear-gradient(115deg, transparent 0 1.2rem, rgb(255 255 255 / 4%) 1.25rem 1.3rem),
+      radial-gradient(circle at 76% 18%, rgb(255 255 255 / 24%) 0 2%, transparent 2.3%);
+    content: '';
+    inset: 0;
   }
 
-  .generated::after {
-    width: 48%;
-    aspect-ratio: 1;
-    bottom: -12%;
-    left: -16%;
+  .generated[data-category='arts'] {
+    background: linear-gradient(145deg, #b75047, #66518c);
   }
 
   .generated[data-category='music'] {
-    background: linear-gradient(145deg, var(--accent-secondary), #2f3678);
+    background: linear-gradient(145deg, #38538b, #5b3679);
   }
 
-  .generated[data-category='books'],
-  .generated[data-category='talks'],
+  .generated[data-category='books'] {
+    background: linear-gradient(145deg, #aa573c, #3b685a);
+  }
+
+  .generated[data-category='talks'] {
+    background: linear-gradient(145deg, #a86535, #394f6b);
+  }
+
   .generated[data-category='workshops'] {
-    background: linear-gradient(145deg, #a35130, var(--accent));
+    background: linear-gradient(145deg, #ad5a36, #4a5180);
   }
 
-  .index {
+  .generated[data-category='theatre'] {
+    background: linear-gradient(145deg, #8c3e48, #6e542b);
+  }
+
+  .generated[data-category='community'] {
+    background: linear-gradient(145deg, #28776f, #b07339);
+  }
+
+  .generated[data-category='other'] {
+    background: linear-gradient(145deg, #4f6473, #915a63);
+  }
+
+  .illustration {
     position: absolute;
     z-index: 1;
-    top: 9%;
-    left: 9%;
-    font-family: var(--font-display);
-    font-size: clamp(2.4rem, 6cqi, 4.6rem);
-    font-variation-settings: 'wdth' 120;
-    font-weight: 760;
-    letter-spacing: -0.08em;
-    line-height: 0.8;
-  }
-
-  .lineOne,
-  .lineTwo {
-    position: absolute;
-    z-index: 1;
-    width: 54%;
-    height: 1px;
-    right: 8%;
-    bottom: 24%;
-    background: rgb(255 255 255 / 72%);
-    transform: rotate(-8deg);
-  }
-
-  .lineTwo {
-    width: 35%;
-    bottom: 19%;
+    width: 88%;
+    height: 88%;
+    top: 3%;
+    left: 6%;
+    fill: rgb(255 255 255 / 7%);
+    filter: drop-shadow(0 0.4rem 0.8rem rgb(35 22 20 / 14%));
+    stroke: rgb(255 255 255 / 78%);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 5;
+    vector-effect: non-scaling-stroke;
   }
 
   .date {
