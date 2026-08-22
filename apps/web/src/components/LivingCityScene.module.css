@@ -1,0 +1,323 @@
+@layer components {
+  .scene {
+    --pointer-x: 0;
+    --pointer-y: 0;
+    position: relative;
+    overflow: hidden;
+    min-height: 19rem;
+    aspect-ratio: 1.45;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+    border-radius: 2.25rem 2.25rem 0.7rem 2.25rem;
+    background:
+      radial-gradient(
+        circle at 70% 18%,
+        color-mix(in srgb, var(--signal) 58%, transparent),
+        transparent 18%
+      ),
+      linear-gradient(145deg, var(--accent-soft), var(--surface));
+    box-shadow:
+      0 1.4rem 4rem color-mix(in srgb, var(--ink) 13%, transparent),
+      inset 0 0 0 0.45rem color-mix(in srgb, var(--canvas) 26%, transparent);
+    isolation: isolate;
+  }
+
+  .scrollPlane,
+  .pointerPlane,
+  .sky,
+  .weather,
+  .shimmer,
+  .edge {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+    inset: 0;
+  }
+
+  .scrollPlane {
+    inset: -6%;
+  }
+
+  .pointerPlane {
+    transform: translate3d(calc(var(--pointer-x) * -0.65rem), calc(var(--pointer-y) * -0.45rem), 0);
+    transition: transform 180ms var(--ease-standard);
+    will-change: transform;
+  }
+
+  .art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--city-art-position, 50% 50%);
+    filter: saturate(0.92) contrast(0.98);
+    animation: breathe 16s ease-in-out infinite alternate;
+    transform: scale(1.035);
+    will-change: transform;
+  }
+
+  .sky {
+    z-index: 1;
+    background:
+      radial-gradient(
+        ellipse at 70% 8%,
+        color-mix(in srgb, var(--signal) 38%, transparent),
+        transparent 30%
+      ),
+      linear-gradient(180deg, color-mix(in srgb, var(--canvas) 7%, transparent), transparent 48%);
+    animation: skyDrift 12s ease-in-out infinite alternate;
+    mix-blend-mode: soft-light;
+  }
+
+  .weather {
+    z-index: 2;
+  }
+
+  .weather i {
+    position: absolute;
+    display: block;
+    width: 0.42rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--signal) 68%, white);
+    box-shadow: 0 0 0.8rem color-mix(in srgb, var(--signal) 72%, transparent);
+    opacity: 0;
+    animation: mote 8s linear infinite;
+  }
+
+  .weather i:nth-child(1) {
+    left: 9%;
+    animation-delay: -5s;
+  }
+
+  .weather i:nth-child(2) {
+    left: 34%;
+    width: 0.26rem;
+    animation-delay: -1.5s;
+    animation-duration: 10s;
+  }
+
+  .weather i:nth-child(3) {
+    left: 68%;
+    width: 0.32rem;
+    animation-delay: -7s;
+    animation-duration: 12s;
+  }
+
+  .weather i:nth-child(4) {
+    left: 88%;
+    width: 0.22rem;
+    animation-delay: -3s;
+    animation-duration: 9s;
+  }
+
+  .birds {
+    position: absolute;
+    z-index: 3;
+    width: 5.5rem;
+    top: 18%;
+    left: -6rem;
+    overflow: visible;
+    fill: none;
+    opacity: 0.62;
+    pointer-events: none;
+    stroke: color-mix(in srgb, var(--ink) 72%, transparent);
+    stroke-linecap: round;
+    stroke-width: 1.8;
+    animation: birdPass 24s linear infinite;
+  }
+
+  .shimmer {
+    z-index: 3;
+    top: 57%;
+    background: repeating-linear-gradient(
+      96deg,
+      transparent 0 10%,
+      color-mix(in srgb, var(--signal) 22%, transparent) 12% 12.6%,
+      transparent 14% 22%
+    );
+    opacity: 0;
+    transform: translateX(-3%);
+    animation: shimmer 9s ease-in-out infinite alternate;
+    mask-image: linear-gradient(180deg, transparent, black 35%, transparent 88%);
+  }
+
+  .scene[data-atmosphere='river'] .shimmer,
+  .scene[data-atmosphere='coast'] .shimmer {
+    opacity: 0.72;
+  }
+
+  .scene[data-atmosphere='rain'] .weather i {
+    width: 1px;
+    height: 2.8rem;
+    border-radius: 0;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, #dceeff 72%, transparent));
+    box-shadow: none;
+    transform: rotate(9deg);
+  }
+
+  .scene[data-atmosphere='rain'] .sky {
+    background: linear-gradient(
+      110deg,
+      color-mix(in srgb, #b9d7d9 22%, transparent),
+      transparent 58%
+    );
+  }
+
+  .scene[data-atmosphere='dust'] .weather i {
+    background: color-mix(in srgb, #ffd59b 78%, white);
+  }
+
+  .scene[data-atmosphere='coast'] .birds {
+    animation-duration: 19s;
+  }
+
+  .edge {
+    z-index: 4;
+    background:
+      linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--ink) 20%, transparent)),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--canvas) 12%, transparent),
+        transparent 25% 75%,
+        color-mix(in srgb, var(--canvas) 9%, transparent)
+      );
+    box-shadow: inset 0 0 3rem color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+
+  .scene[data-image='fallback'] .birds,
+  .scene[data-image='fallback'] .weather {
+    opacity: 0.55;
+  }
+
+  .scene[data-active='false'] *,
+  .scene[data-active='false'] *::before,
+  .scene[data-active='false'] *::after {
+    animation-play-state: paused !important;
+  }
+
+  :global(:root[data-theme='dark']) .art {
+    filter: brightness(0.72) saturate(0.8) contrast(1.08);
+  }
+
+  :global(:root[data-theme='dark']) .edge {
+    background:
+      linear-gradient(180deg, transparent 52%, color-mix(in srgb, #080a08 48%, transparent)),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, #080a08 16%, transparent),
+        transparent 25% 75%,
+        color-mix(in srgb, #080a08 14%, transparent)
+      );
+  }
+
+  @keyframes breathe {
+    from {
+      transform: scale(1.035);
+    }
+    to {
+      transform: scale(1.075);
+    }
+  }
+
+  @keyframes skyDrift {
+    from {
+      transform: translate3d(-2%, -1%, 0) scale(1.04);
+    }
+    to {
+      transform: translate3d(3%, 1%, 0) scale(1.1);
+    }
+  }
+
+  @keyframes mote {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, -3rem, 0);
+    }
+    18% {
+      opacity: 0.78;
+    }
+    78% {
+      opacity: 0.44;
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(1.7rem, 22rem, 0);
+    }
+  }
+
+  @keyframes birdPass {
+    0%,
+    14% {
+      transform: translate3d(0, 0, 0) scale(0.72);
+    }
+    58% {
+      transform: translate3d(34rem, -2rem, 0) scale(0.9);
+    }
+    100% {
+      transform: translate3d(60rem, 1.5rem, 0) scale(0.76);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      transform: translate3d(-3%, 0, 0) skewX(-4deg);
+    }
+    to {
+      transform: translate3d(4%, 0.6rem, 0) skewX(3deg);
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .scrollPlane {
+      animation: sceneDepth linear both;
+      animation-range: entry -5% exit 105%;
+      animation-timeline: view();
+    }
+
+    @keyframes sceneDepth {
+      from {
+        transform: translateY(2.5%);
+      }
+      to {
+        transform: translateY(-2.5%);
+      }
+    }
+  }
+
+  @media (max-width: 52rem) {
+    .scene {
+      min-height: 0;
+      aspect-ratio: 1.75;
+      border-radius: 1.6rem 1.6rem 0.6rem 1.6rem;
+    }
+
+    .art {
+      object-position: var(--city-art-mobile-position, var(--city-art-position, 50% 50%));
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .scene {
+      touch-action: pan-y;
+    }
+
+    .pointerPlane {
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene *,
+    .scene *::before,
+    .scene *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .pointerPlane,
+    .art,
+    .sky,
+    .shimmer {
+      transform: none;
+    }
+  }
+}

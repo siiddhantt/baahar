@@ -17,6 +17,7 @@ describe('city art registry', () => {
     expect(art?.src).toBe(src);
     expect(art?.position).toMatch(/^\d+% \d+%$/);
     expect(art?.mobilePosition).toMatch(/^\d+% \d+%$/);
+    expect(['coast', 'dust', 'rain', 'river']).toContain(art?.atmosphere);
   });
 
   it('leaves an unknown API city to the generated fallback', () => {

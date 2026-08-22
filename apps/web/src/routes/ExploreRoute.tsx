@@ -10,6 +10,7 @@ import { EmptyState } from '../components/EmptyState';
 import { EventQuilt } from '../components/EventQuilt';
 import { EventQuiltSkeleton } from '../components/EventCardSkeleton';
 import { FeedFilters } from '../components/FeedFilters';
+import { LivingCityScene } from '../components/LivingCityScene';
 import { MauGuide } from '../components/MauGuide';
 import { readFilters, timeWindowLabels, writeFilters } from '../features/feed/filters';
 import styles from './ExploreRoute.module.css';
@@ -94,27 +95,30 @@ export default function ExploreRoute({ city }: Props) {
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
-        <div>
+        <div className={styles.heroCopy}>
           <p className={styles.kicker}>Less scrolling. More going.</p>
           <h1>What’s on in {cityName}?</h1>
           <p className={styles.description}>
             Real plans from the city pages most people forget to check.
           </p>
         </div>
-        <div className={styles.stamp} aria-hidden="true">
-          <span>Now</span>
-          <strong>
-            {new Intl.DateTimeFormat('en-IN', {
-              day: '2-digit',
-              timeZone: 'Asia/Kolkata',
-            }).format(new Date())}
-          </strong>
-          <span>
-            {new Intl.DateTimeFormat('en-IN', {
-              month: 'short',
-              timeZone: 'Asia/Kolkata',
-            }).format(new Date())}
-          </span>
+        <div className={styles.sceneWrap}>
+          <LivingCityScene cityName={cityName} citySlug={city} />
+          <div className={styles.stamp} aria-hidden="true">
+            <span>Now</span>
+            <strong>
+              {new Intl.DateTimeFormat('en-IN', {
+                day: '2-digit',
+                timeZone: 'Asia/Kolkata',
+              }).format(new Date())}
+            </strong>
+            <span>
+              {new Intl.DateTimeFormat('en-IN', {
+                month: 'short',
+                timeZone: 'Asia/Kolkata',
+              }).format(new Date())}
+            </span>
+          </div>
         </div>
       </header>
 
