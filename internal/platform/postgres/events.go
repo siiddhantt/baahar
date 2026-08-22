@@ -81,10 +81,10 @@ func (repository *Events) List(ctx context.Context, query events.FeedQuery) (eve
 	venueQuery.Venue = ""
 	venueWhere, venueArguments := feedWhere(venueQuery, []any{query.CitySlug, window.Start, window.End, page.AsOf})
 	venueRows, err := tx.Query(ctx, `
-		SELECT DISTINCT ev.venue_name
+		SELECT DISTINCT ev.venue_name COLLATE "C" AS venue_name
 		`+feedFrom+venueWhere+`
 		AND ev.venue_name IS NOT NULL
-		ORDER BY ev.venue_name`, venueArguments...)
+		ORDER BY venue_name`, venueArguments...)
 	if err != nil {
 		return events.FeedPage{}, fmt.Errorf("list feed venues: %w", err)
 	}

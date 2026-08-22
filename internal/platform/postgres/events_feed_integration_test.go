@@ -66,7 +66,7 @@ func TestEventFeedExcludesEndedPreservesOngoingAndPaginatesStableTies(t *testing
 			t.Fatalf("required current occurrence %q missing from feed: %v", required, titles)
 		}
 	}
-	if len(full.Venues) != 2 || full.Venues[0] != "Town Hall" || full.Venues[1] != "Tomorrow Hall" {
+	if len(full.Venues) != 2 || full.Venues[0] != "Tomorrow Hall" || full.Venues[1] != "Town Hall" {
 		t.Fatalf("venue facets = %v", full.Venues)
 	}
 	venuePage, err := repository.List(ctx, events.FeedQuery{
