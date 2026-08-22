@@ -6,7 +6,6 @@ import { useCities } from '../api/queries';
 import { updatePreferences, usePreferences } from '../app/preferences';
 import { useResolvedTheme } from '../app/themeContext';
 import { useSavedIds } from '../features/saved/savedStore';
-import { BrandMark } from './BrandMark';
 import { BookmarkIcon, MoonIcon, SunIcon } from './icons';
 import styles from './SiteHeader.module.css';
 
@@ -61,7 +60,6 @@ export function SiteHeader() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <Link className={styles.brand} to="/">
-          <BrandMark className={styles.mark} />
           <span className={styles.wordmark}>
             Baahar
             <span className={styles.brandDot} aria-hidden="true">
