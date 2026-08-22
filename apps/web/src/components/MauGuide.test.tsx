@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
-import type { AskResult } from '../api/client';
+import type { AskResult, EventSummary } from '../api/client';
 import { useMau } from '../api/queries';
 import { MauGuide } from './MauGuide';
 
@@ -17,6 +18,47 @@ function mockGuide(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useMau>);
 }
 
+function renderMau(onApply = vi.fn()) {
+  return render(
+    <MemoryRouter initialEntries={['/bengaluru?window=upcoming']}>
+      <MauGuide city="bengaluru" onApply={onApply} />
+    </MemoryRouter>,
+  );
+}
+
+const event = {
+  id: '11111111-1111-4111-8111-111111111111',
+  slug: 'a-city-plan',
+  city: { slug: 'bengaluru', name: 'Bengaluru', timezone: 'Asia/Kolkata', accent: 'rain' },
+  title: 'A verified evening plan',
+  category: 'music',
+  timing: {
+    start_date: '2026-08-22',
+    starts_at: '2026-08-22T19:30:00+05:30',
+    end_date: '2026-08-22',
+    ends_at: '2026-08-22T21:00:00+05:30',
+    precision: 'timed',
+    timezone: 'Asia/Kolkata',
+  },
+  venue: { name: 'BIEC', address: null },
+  pricing: { is_free: true, minimum_minor: null, maximum_minor: null, currency: null },
+  registration: { url: null, state: null },
+  status: 'scheduled',
+  image_url: null,
+  source: {
+    slug: 'city-calendar',
+    name: 'City Calendar',
+    url: 'https://calendar.example/plan',
+    host: 'calendar.example',
+    freshness: 'fresh',
+  },
+  last_checked_at: '2026-08-21T12:00:00Z',
+  change_kind: null,
+  language: [],
+  age_note: null,
+  accessibility_note: null,
+} satisfies EventSummary;
+
 it('wakes Mau, asks the provider, and applies only returned verified filters', () => {
   const onApply = vi.fn();
   const result: AskResult = {
@@ -26,7 +68,7 @@ it('wakes Mau, asks the provider, and applies only returned verified filters', (
       explicitly_free: true,
       venue: 'BIEC',
     },
-    items: [],
+    items: [event],
     result_count: 3,
     as_of: '2026-08-21T10:00:00Z',
   };
@@ -34,17 +76,19 @@ it('wakes Mau, asks the provider, and applies only returned verified filters', (
     (_input: { query: string }, options: { onSuccess: (value: AskResult) => void }) =>
       options.onSuccess(result),
   );
-  mockGuide({ mutate });
+  mockGuide({ mutate, data: result });
 
-  render(<MauGuide city="bengaluru" onApply={onApply} />);
-  expect(
-    screen.getByRole('button', { name: 'Ask Mau for a plan' }).querySelector('img'),
-  ).toHaveAttribute('src', '/mascot/mau-sleeping.webp');
+  renderMau(onApply);
+  const mascot = screen.getByRole('button', { name: 'Ask Mau for a plan' });
+  expect(mascot.querySelector('img[src="/mascot/mau-sleeping.webp"]')).toBeInTheDocument();
+  expect(mascot).toHaveTextContent('zzZ');
   fireEvent.click(screen.getByRole('button', { name: 'Ask Mau for a plan' }));
   expect(screen.getByRole('dialog', { name: 'Ask Mau' })).toBeInTheDocument();
   expect(
-    screen.getByRole('button', { name: 'Put Mau back to sleep' }).querySelector('img'),
-  ).toHaveAttribute('src', '/mascot/mau-awake.webp');
+    screen
+      .getByRole('button', { name: 'Put Mau back to sleep' })
+      .querySelector('img[src="/mascot/mau-awake.webp"]'),
+  ).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText('Ask Mau what you would like to do'), {
     target: { value: 'free music at BIEC this weekend' },
   });
@@ -60,21 +104,28 @@ it('wakes Mau, asks the provider, and applies only returned verified filters', (
     explicitlyFree: true,
     venue: 'BIEC',
   });
+  expect(screen.getByRole('link', { name: /A verified evening plan/ })).toHaveAttribute(
+    'href',
+    '/events/11111111-1111-4111-8111-111111111111/a-city-plan',
+  );
 });
 
 it('rests without guessing when the language service is unavailable', () => {
   mockGuide({ isError: true });
-  render(<MauGuide city="bengaluru" onApply={vi.fn()} />);
+  renderMau();
   fireEvent.click(screen.getByRole('button', { name: 'Ask Mau for a plan' }));
   expect(screen.getByRole('alert')).toHaveTextContent('The event board still works');
+  expect(screen.getByText('A tiny nap…')).toBeInTheDocument();
   expect(
-    screen.getByRole('button', { name: 'Put Mau back to sleep' }).querySelector('img'),
-  ).toHaveAttribute('src', '/mascot/mau-sleeping.webp');
+    screen
+      .getByRole('button', { name: 'Put Mau back to sleep' })
+      .querySelector('img[src="/mascot/mau-sleeping.webp"]'),
+  ).toBeInTheDocument();
 });
 
 it('closes on Escape and restores focus to Mau', () => {
   mockGuide();
-  render(<MauGuide city="bengaluru" onApply={vi.fn()} />);
+  renderMau();
   const trigger = screen.getByRole('button', { name: 'Ask Mau for a plan' });
   fireEvent.click(trigger);
   fireEvent.keyDown(document, { key: 'Escape' });

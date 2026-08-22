@@ -1,8 +1,10 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 import type { CitySlug, EventCategory, TimeWindow } from '../api/client';
 import { useMau } from '../api/queries';
 import { categoryLabels, timeWindowLabels } from '../features/feed/filters';
+import { eventDateTimeLabel } from '../lib/eventFormat';
 import styles from './MauGuide.module.css';
 
 type AppliedFilters = {
@@ -24,6 +26,7 @@ export function MauGuide({ city, onApply }: Props) {
   const trigger = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const ask = useMau(city);
+  const location = useLocation();
   const resetAsk = ask.reset;
 
   useEffect(() => {
@@ -78,7 +81,6 @@ export function MauGuide({ city, onApply }: Props) {
   }
 
   const result = ask.data;
-  const awake = open && !ask.isError;
   const state = ask.isPending
     ? 'thinking'
     : ask.isError
@@ -86,6 +88,15 @@ export function MauGuide({ city, onApply }: Props) {
       : result
         ? 'found'
         : 'listening';
+  const prompt = !open
+    ? 'Ask Mau'
+    : ask.isPending
+      ? 'Hmm…'
+      : ask.isError
+        ? 'A tiny nap…'
+        : result
+          ? 'Found a few!'
+          : 'I’m listening.';
 
   return (
     <div className={styles.root} ref={root} data-open={open} data-state={state}>
@@ -153,6 +164,24 @@ export function MauGuide({ city, onApply }: Props) {
                 {result.interpretation.explicitly_free ? <span>Free entry</span> : null}
                 {result.interpretation.venue ? <span>{result.interpretation.venue}</span> : null}
               </div>
+              {result.items.length ? (
+                <ul className={styles.plans} aria-label="Plans Mau found">
+                  {result.items.slice(0, 3).map((event) => (
+                    <li key={event.id}>
+                      <Link
+                        to={`/events/${event.id}/${event.slug}`}
+                        state={{ from: `${location.pathname}${location.search}` }}
+                      >
+                        <span>{event.title}</span>
+                        <small>
+                          {eventDateTimeLabel(event)}
+                          {event.venue?.name ? ` · ${event.venue.name}` : ''}
+                        </small>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
           ) : null}
         </section>
@@ -168,10 +197,27 @@ export function MauGuide({ city, onApply }: Props) {
         onClick={() => (open ? close() : setOpen(true))}
       >
         <span className={styles.prompt} aria-hidden="true">
-          {open ? (ask.isPending ? 'Hmm…' : 'I’m listening.') : 'Ask Mau'}
+          {prompt}
         </span>
+        {!open ? (
+          <span className={styles.sleepMarks} aria-hidden="true">
+            <span>z</span>
+            <span>z</span>
+            <span>Z</span>
+          </span>
+        ) : null}
         <img
-          src={awake ? '/mascot/mau-awake.webp' : '/mascot/mau-sleeping.webp'}
+          className={styles.sleeping}
+          src="/mascot/mau-sleeping.webp"
+          width="640"
+          height="640"
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+        />
+        <img
+          className={styles.awake}
+          src="/mascot/mau-awake.webp"
           width="640"
           height="640"
           alt=""
