@@ -7,12 +7,23 @@ Tailscale Funnel TLS endpoint.
 
 ## Bring-up
 
-1. Copy `.env.example` to `.env`, replace every secret, and set mode `0600`.
+1. Copy `.env.example` to `.env`, replace every secret, add a server-only
+   OpenRouter key for Mau, and set mode `0600`.
 2. Start storage: `docker compose --env-file .env up -d postgres minio create-bucket`.
 3. Restore the reviewed PostgreSQL and object-store snapshots when migrating an
    existing installation.
 4. Run migrations and the API: `docker compose --env-file .env up -d migrate api`.
-5. Verify `curl -fsS http://127.0.0.1:8081/v1/cities`.
+5. Verify the public feed with `curl -fsS http://127.0.0.1:8081/v1/cities`,
+   then verify Mau:
+
+   ```sh
+   curl -fsS http://127.0.0.1:8081/v1/ask \
+     -H 'Content-Type: application/json' \
+     -d '{"city":"bengaluru","query":"free music this weekend"}'
+   ```
+
+   A `404` means the API image is stale; a typed `503` means the OpenRouter key
+   or provider is unavailable.
 6. Give the node its stable service name and point Funnel at the loopback API
    only: `sudo tailscale set --hostname=baahar-pi`, then
    `sudo tailscale funnel --bg 8081`.
