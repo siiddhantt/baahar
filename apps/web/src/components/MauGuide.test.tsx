@@ -126,6 +126,30 @@ it('rests without guessing when the language service is unavailable', () => {
   ).toBeInTheDocument();
 });
 
+it('does not claim to find plans when the verified result is empty', () => {
+  mockGuide({
+    data: {
+      interpretation: {
+        city: 'varanasi',
+        window: 'weekend',
+        categories: ['music'],
+        explicitly_free: true,
+        venue: null,
+      },
+      items: [],
+      result_count: 0,
+      as_of: '2026-08-21T10:00:00Z',
+    } satisfies AskResult,
+  });
+  renderMau();
+  fireEvent.click(screen.getByRole('button', { name: 'Ask Mau for a plan' }));
+
+  expect(screen.getByRole('button', { name: 'Put Mau back to sleep' })).toHaveTextContent(
+    'Nothing exact.',
+  );
+  expect(screen.getByText(/Nothing exact in Varanasi yet/)).toBeInTheDocument();
+});
+
 it('closes on Escape and restores focus to Mau', () => {
   mockGuide();
   renderMau();

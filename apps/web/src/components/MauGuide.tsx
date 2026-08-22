@@ -103,7 +103,9 @@ export function MauGuide({ city, onApply }: Props) {
       : ask.isError
         ? 'Lost the signal…'
         : result
-          ? 'Found them!'
+          ? result.result_count
+            ? 'Found them!'
+            : 'Nothing exact.'
           : 'I’m listening.';
 
   return (
@@ -158,7 +160,7 @@ export function MauGuide({ city, onApply }: Props) {
                 </div>
                 {result.items.length ? (
                   <ul className={styles.plans} aria-label="Plans Mau found">
-                    {result.items.slice(0, 3).map((event) => (
+                    {result.items.slice(0, 2).map((event) => (
                       <li key={event.id}>
                         <Link
                           to={`/events/${event.id}/${event.slug}`}

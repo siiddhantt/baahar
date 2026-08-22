@@ -209,7 +209,7 @@
 
   .conversation {
     display: grid;
-    max-height: min(18rem, calc(100dvh - 11rem));
+    max-height: min(14rem, calc(100dvh - 11rem));
     overflow-y: auto;
     overscroll-behavior: contain;
     gap: 0.5rem;
