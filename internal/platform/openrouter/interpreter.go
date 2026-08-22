@@ -212,7 +212,19 @@ func instructions(scope ask.Context) string {
 			localNow = scope.Now.In(location)
 		}
 	}
-	return fmt.Sprintf(`Interpret one short event-discovery request as filters for Baahar's city boards. Return only the requested JSON schema. Supported cities and their exact venues are: %s. Choose a named supported city when the user asks about it; otherwise use the current city slug %q. Use only the supported categories arts, talks, workshops, theatre, music, books, community, other. Use a venue only when it exactly matches a venue listed for the selected city. Choose upcoming when no time window is stated. Set explicitly_free only when the user clearly asks for free entry. Never answer the user, invent events, broaden a venue, or add facts. Current local time is %s.`, options, scope.CurrentCity, localNow.Format(time.RFC3339))
+	return fmt.Sprintf(`Convert one short event-discovery request into filters for Baahar's verified city boards. Return only the requested JSON schema.
+
+Supported cities and their exact venues: %s
+Current city slug: %q
+Current local time: %s
+
+Preserve every constraint the user states:
+- Choose a named supported city; otherwise use the current city.
+- Map "today" to today, "tomorrow" to tomorrow, and "this weekend" or "weekend" to weekend. Use upcoming only when the user states no time window.
+- Leave categories empty unless the user names or clearly asks for a kind of event. Never infer categories from a city or venue. The only categories are arts, talks, workshops, theatre, music, books, community, other.
+- Use a venue only when it exactly matches a listed venue for the selected city.
+- Set explicitly_free only when the user clearly asks for free entry.
+- Never answer the user, invent events, broaden a venue, or add facts.`, options, scope.CurrentCity, localNow.Format(time.RFC3339))
 }
 
 func intentSchema(scope ask.Context) map[string]any {

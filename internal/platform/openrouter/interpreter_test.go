@@ -65,8 +65,13 @@ func TestInterpreterCanSelectAnotherSupportedCityFromNaturalLanguage(t *testing.
 		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
 			t.Fatal(err)
 		}
-		if len(body.Messages) != 2 || !strings.Contains(body.Messages[0].Content, `"slug":"varanasi"`) || !strings.Contains(body.Messages[0].Content, `current city slug "bengaluru"`) {
+		if len(body.Messages) != 2 || !strings.Contains(body.Messages[0].Content, `"slug":"varanasi"`) || !strings.Contains(body.Messages[0].Content, `Current city slug: "bengaluru"`) {
 			t.Fatalf("system prompt did not bind supported and current cities: %#v", body.Messages)
+		}
+		for _, rule := range []string{`"this weekend" or "weekend" to weekend`, "Leave categories empty", "Never infer categories from a city or venue"} {
+			if !strings.Contains(body.Messages[0].Content, rule) {
+				t.Fatalf("system prompt is missing constraint %q", rule)
+			}
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		_, _ = writer.Write([]byte(`{"choices":[{"message":{"content":"{\"city\":\"varanasi\",\"window\":\"upcoming\",\"categories\":[],\"explicitly_free\":false,\"venue\":null}"}}]}`))
