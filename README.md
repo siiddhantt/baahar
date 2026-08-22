@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/brand/baahar-icon.webp" alt="Baahar's open doorway mark" width="104">
+
 # Baahar
 
 **One place for the city plans hiding across official calendars.**
