@@ -16,7 +16,32 @@ vi.mock('../app/preferences', () => ({
 }));
 
 vi.mock('../components/MauGuide', () => ({
-  MauGuide: () => <div aria-label="Mau" />,
+  MauGuide: ({
+    onApply,
+  }: {
+    onApply: (next: {
+      city: string;
+      window: 'upcoming';
+      categories: [];
+      explicitlyFree: boolean;
+      venue: string;
+    }) => void;
+  }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onApply({
+          city: 'varanasi',
+          window: 'upcoming',
+          categories: [],
+          explicitlyFree: false,
+          venue: '',
+        })
+      }
+    >
+      Use Varanasi result
+    </button>
+  ),
 }));
 
 const bengaluru = {
@@ -38,6 +63,13 @@ const mumbai = {
   name: 'Mumbai',
   timezone: 'Asia/Kolkata',
   accent: 'coast',
+} as const;
+
+const varanasi = {
+  slug: 'varanasi',
+  name: 'Varanasi',
+  timezone: 'Asia/Kolkata',
+  accent: 'river',
 } as const;
 
 function renderRoute(city: string) {
@@ -109,6 +141,52 @@ describe('ExploreRoute', () => {
     renderRoute('bengaluru');
 
     await waitFor(() => expect(updatePreferences).toHaveBeenCalledWith({ city: 'bengaluru' }));
+  });
+
+  it('moves to the supported city selected by Mau', async () => {
+    vi.mocked(useCities).mockReturnValue({
+      data: { items: [bengaluru, varanasi] },
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+    } as ReturnType<typeof useCities>);
+    vi.mocked(useEvents).mockReturnValue({
+      data: {
+        pages: [
+          {
+            items: [],
+            next_cursor: null,
+            meta: {
+              city: bengaluru,
+              window: 'upcoming',
+              result_count: 0,
+              source_count: 1,
+              last_checked_at: '2026-08-22T12:00:00Z',
+              venues: [],
+              page_size: 0,
+              has_more: false,
+              as_of: '2026-08-22T12:00:00Z',
+            },
+          },
+        ],
+      },
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+      hasNextPage: false,
+    } as unknown as ReturnType<typeof useEvents>);
+
+    render(
+      <MemoryRouter initialEntries={['/bengaluru?window=upcoming']}>
+        <Routes>
+          <Route path="/bengaluru" element={<ExploreRoute city="bengaluru" />} />
+          <Route path="/varanasi" element={<h1>Varanasi destination</h1>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Use Varanasi result' }));
+    expect(await screen.findByRole('heading', { name: 'Varanasi destination' })).toBeVisible();
   });
 
   it.each([delhi, mumbai])(

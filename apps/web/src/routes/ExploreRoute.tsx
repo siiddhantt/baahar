@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { CitySlug } from '../api/client';
 import { useCities, useEvents } from '../api/queries';
@@ -28,6 +28,7 @@ function cityNameFromSlug(slug: string) {
 
 export default function ExploreRoute({ city }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const preferences = usePreferences();
   const cities = useCities();
   const filters = readFilters(searchParams);
@@ -117,7 +118,20 @@ export default function ExploreRoute({ city }: Props) {
         </div>
       </header>
 
-      <MauGuide city={city} onApply={(next) => setSearchParams(writeFilters(searchParams, next))} />
+      <MauGuide
+        city={city}
+        onApply={(next) => {
+          const targetParams = writeFilters(
+            next.city === city ? searchParams : new URLSearchParams(),
+            next,
+          );
+          if (next.city === city) {
+            setSearchParams(targetParams);
+          } else {
+            void navigate(`/${next.city}?${targetParams.toString()}`);
+          }
+        }}
+      />
 
       <FeedFilters
         filters={filters}

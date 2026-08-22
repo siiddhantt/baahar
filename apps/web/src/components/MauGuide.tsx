@@ -8,6 +8,7 @@ import { eventDateTimeLabel } from '../lib/eventFormat';
 import styles from './MauGuide.module.css';
 
 type AppliedFilters = {
+  city: CitySlug;
   window: TimeWindow;
   categories: EventCategory[];
   explicitlyFree: boolean;
@@ -70,6 +71,7 @@ export function MauGuide({ city, onApply }: Props) {
       {
         onSuccess: (result) => {
           onApply({
+            city: result.interpretation.city,
             window: result.interpretation.window,
             categories: result.interpretation.categories,
             explicitlyFree: result.interpretation.explicitly_free,
@@ -81,6 +83,12 @@ export function MauGuide({ city, onApply }: Props) {
   }
 
   const result = ask.data;
+  const resultCity = result
+    ? result.interpretation.city
+        .split('-')
+        .map((part) => `${part[0]?.toUpperCase() ?? ''}${part.slice(1)}`)
+        .join(' ')
+    : '';
   const state = ask.isPending
     ? 'thinking'
     : ask.isError
@@ -153,10 +161,11 @@ export function MauGuide({ city, onApply }: Props) {
             <div className={styles.result} role="status" aria-live="polite">
               <p>
                 {result.result_count
-                  ? `Mau found ${result.result_count} ${result.result_count === 1 ? 'plan' : 'plans'} and tuned the board.`
-                  : 'No exact match yet. Mau applied the closest verified filters so you can adjust them.'}
+                  ? `Mau found ${result.result_count} ${result.result_count === 1 ? 'plan' : 'plans'} in ${resultCity} and tuned the board.`
+                  : `No exact match in ${resultCity} yet. Mau applied the verified filters so you can adjust them.`}
               </p>
               <div className={styles.filters}>
+                <span>{resultCity}</span>
                 <span>{timeWindowLabels[result.interpretation.window]}</span>
                 {result.interpretation.categories.map((category) => (
                   <span key={category}>{categoryLabels[category]}</span>

@@ -29,7 +29,7 @@ function renderMau(onApply = vi.fn()) {
 const event = {
   id: '11111111-1111-4111-8111-111111111111',
   slug: 'a-city-plan',
-  city: { slug: 'bengaluru', name: 'Bengaluru', timezone: 'Asia/Kolkata', accent: 'rain' },
+  city: { slug: 'varanasi', name: 'Varanasi', timezone: 'Asia/Kolkata', accent: 'river' },
   title: 'A verified evening plan',
   category: 'music',
   timing: {
@@ -40,7 +40,7 @@ const event = {
     precision: 'timed',
     timezone: 'Asia/Kolkata',
   },
-  venue: { name: 'BIEC', address: null },
+  venue: { name: 'BHU Campus', address: null },
   pricing: { is_free: true, minimum_minor: null, maximum_minor: null, currency: null },
   registration: { url: null, state: null },
   status: 'scheduled',
@@ -63,10 +63,11 @@ it('wakes Mau, asks the provider, and applies only returned verified filters', (
   const onApply = vi.fn();
   const result: AskResult = {
     interpretation: {
+      city: 'varanasi',
       window: 'weekend',
       categories: ['music'],
       explicitly_free: true,
-      venue: 'BIEC',
+      venue: 'BHU Campus',
     },
     items: [event],
     result_count: 3,
@@ -90,20 +91,22 @@ it('wakes Mau, asks the provider, and applies only returned verified filters', (
       .querySelector('img[src="/mascot/mau-awake.webp"]'),
   ).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText('Ask Mau what you would like to do'), {
-    target: { value: 'free music at BIEC this weekend' },
+    target: { value: 'free music at BHU in Varanasi this weekend' },
   });
   fireEvent.click(screen.getByRole('button', { name: 'Ask' }));
 
   expect(mutate).toHaveBeenCalledWith(
-    { query: 'free music at BIEC this weekend' },
+    { query: 'free music at BHU in Varanasi this weekend' },
     expect.any(Object),
   );
   expect(onApply).toHaveBeenCalledWith({
+    city: 'varanasi',
     window: 'weekend',
     categories: ['music'],
     explicitlyFree: true,
-    venue: 'BIEC',
+    venue: 'BHU Campus',
   });
+  expect(screen.getByText(/3 plans in Varanasi/)).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /A verified evening plan/ })).toHaveAttribute(
     'href',
     '/events/11111111-1111-4111-8111-111111111111/a-city-plan',
