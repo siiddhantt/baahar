@@ -1,0 +1,22 @@
+type Props = {
+  className: string | undefined;
+};
+
+export function BrandMark({ className }: Props) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      focusable="false"
+      viewBox="0 0 64 64"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M8 4h21.5C41.8 4 50 10.8 50 20.8c0 5.2-2.3 9.5-6.4 12.4C50.2 35.8 54 40.7 54 47.3 54 57.9 46.2 63 33.8 63H8V4Zm12 11.5v12.8h9.2c5.5 0 8.8-2.3 8.8-6.4s-3.3-6.4-8.8-6.4H20Zm0 36.2h21.9v-6.2c0-6.2-4.7-11.2-10.9-11.2s-11 5-11 11.2v6.2Z"
+      />
+      <circle cx="54" cy="9" r="5" fill="var(--signal)" />
+    </svg>
+  );
+}

@@ -1,11 +1,10 @@
+import { BrandMark } from './BrandMark';
 import styles from './RouteFallback.module.css';
 
 export function RouteFallback() {
   return (
     <div className={styles.fallback} role="status">
-      <span className={styles.mark} aria-hidden="true">
-        B
-      </span>
+      <BrandMark className={styles.mark} />
       <span>Opening the city…</span>
     </div>
   );

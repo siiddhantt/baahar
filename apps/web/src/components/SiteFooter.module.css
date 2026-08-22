@@ -52,6 +52,10 @@
     text-decoration: none;
   }
 
+  .brand a span {
+    color: var(--signal);
+  }
+
   .brand p,
   .meta {
     color: var(--muted);

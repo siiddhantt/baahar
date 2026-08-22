@@ -19,8 +19,15 @@
     display: inline-flex;
     color: var(--ink);
     text-decoration: none;
-    align-items: baseline;
-    gap: 0.35rem;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mark {
+    width: clamp(1.45rem, 1.2rem + 0.5vw, 1.9rem);
+    height: clamp(1.45rem, 1.2rem + 0.5vw, 1.9rem);
+    flex: 0 0 auto;
+    color: var(--accent-strong);
   }
 
   .wordmark {
@@ -38,10 +45,7 @@
   }
 
   .brandDot {
-    width: 0.42rem;
-    height: 0.42rem;
-    border-radius: 50%;
-    background: var(--signal);
+    color: var(--signal);
   }
 
   .actions,
@@ -232,6 +236,11 @@
 
     .wordmark {
       font-size: 1.5rem;
+    }
+
+    .mark {
+      width: 1.35rem;
+      height: 1.35rem;
     }
 
     .cityButton {

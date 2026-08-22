@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/brand/baahar-icon.webp" alt="Baahar's open doorway mark" width="104">
+<img src="apps/web/public/brand/baahar-mark.svg" alt="Baahar's B and open-door mark" width="92">
 
 # Baahar
 
@@ -67,13 +67,34 @@ The diagram is editable in
 ## What visitors can do
 
 - browse upcoming plans by city, date, category, venue, or free entry;
-- wake Mau, the small guide resting at the edge of the page, ask for something
-  like “events in Varanasi” or “free music this weekend,” and open the verified
-  city plans it found;
+- ask Mau for something in ordinary language and open the verified plans it found;
 - open a clear event detail with its official source;
 - save plans on the device, share them, or open a pre-filled Google/Outlook
   calendar entry (with a standards-based calendar file as fallback); and
 - see source counts without being told that Baahar covers an entire city.
+
+## Meet Mau
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="apps/web/public/mascot/mau-sleeping.webp" alt="Mau sleeping beside the city board" width="240"><br>
+      <strong>Resting until needed</strong><br>
+      <sub>Mau stays out of the way at the bottom of the board.</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="apps/web/public/mascot/mau-awake.webp" alt="Mau awake and ready to find a plan" width="240"><br>
+      <strong>Listening for a plan</strong><br>
+      <sub>Try “free music in Bengaluru this weekend” or “Prithvi tomorrow.”</sub>
+    </td>
+  </tr>
+</table>
+
+Mau turns that request into a city, time window, category, venue, and free-entry
+preference. The Go API checks every value against Baahar's real city catalogue,
+then runs the same verified feed query used by the filters. Mau can narrow the
+board; it cannot invent an event. If the language service is unavailable, the
+city guide keeps working and Mau quietly asks you to try again.
 
 ## Live coverage
 

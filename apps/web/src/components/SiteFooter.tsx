@@ -13,7 +13,9 @@ export function SiteFooter() {
         <span />
       </div>
       <div className={styles.brand}>
-        <Link to="/">Baahar</Link>
+        <Link to="/">
+          Baahar<span aria-hidden="true">.</span>
+        </Link>
         <p>Less scrolling. More going.</p>
       </div>
       <nav aria-label="Footer">
