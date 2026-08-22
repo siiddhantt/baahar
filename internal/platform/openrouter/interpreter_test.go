@@ -48,6 +48,9 @@ func TestInterpreterUsesProviderFallbacksAndStrictStructuredOutput(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
+	if interpreter.client.Timeout != defaultClientTimeout {
+		t.Fatalf("provider timeout = %s, want %s", interpreter.client.Timeout, defaultClientTimeout)
+	}
 	intent, err := interpreter.Interpret(context.Background(), "free music at BIEC", testScope())
 	if err != nil {
 		t.Fatal(err)

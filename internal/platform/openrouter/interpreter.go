@@ -15,7 +15,10 @@ import (
 	"github.com/siiddhantt/baahar/internal/events"
 )
 
-const defaultEndpoint = "https://openrouter.ai/api/v1/chat/completions"
+const (
+	defaultEndpoint      = "https://openrouter.ai/api/v1/chat/completions"
+	defaultClientTimeout = 12 * time.Second
+)
 
 var DefaultModels = []string{
 	"qwen/qwen3-30b-a3b-instruct-2507",
@@ -52,7 +55,7 @@ func New(config Config) (*Interpreter, error) {
 		config.Endpoint = defaultEndpoint
 	}
 	if config.Client == nil {
-		config.Client = &http.Client{Timeout: 8 * time.Second}
+		config.Client = &http.Client{Timeout: defaultClientTimeout}
 	}
 	return &Interpreter{
 		apiKey: strings.TrimSpace(config.APIKey), models: models, endpoint: config.Endpoint,
