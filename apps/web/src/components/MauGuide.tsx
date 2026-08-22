@@ -101,9 +101,9 @@ export function MauGuide({ city, onApply }: Props) {
     : ask.isPending
       ? 'Hmm…'
       : ask.isError
-        ? 'A tiny nap…'
+        ? 'Lost the signal…'
         : result
-          ? 'Found a few!'
+          ? 'Found them!'
           : 'I’m listening.';
 
   return (
@@ -111,10 +111,8 @@ export function MauGuide({ city, onApply }: Props) {
       {open ? (
         <section className={styles.panel} id="mau-guide" role="dialog" aria-label="Ask Mau">
           <div className={styles.heading}>
-            <div>
-              <p className={styles.eyebrow}>Mau knows the board</p>
-              <h2>What feels right?</h2>
-            </div>
+            <h2>Mau</h2>
+            <span>knows the board</span>
             <button
               className={styles.close}
               type="button"
@@ -125,7 +123,62 @@ export function MauGuide({ city, onApply }: Props) {
             </button>
           </div>
 
-          <form onSubmit={submit}>
+          <div className={styles.conversation}>
+            {!ask.isPending && !ask.isError && !result ? (
+              <p className={styles.reply}>What are you in the mood for?</p>
+            ) : null}
+
+            {ask.isPending ? (
+              <p className={styles.reply} role="status">
+                Let me check what’s actually on…
+              </p>
+            ) : null}
+
+            {ask.isError ? (
+              <p className={styles.reply} role="alert">
+                My whiskers lost the signal. The board is still here—give me a moment and ask again.
+              </p>
+            ) : null}
+
+            {result ? (
+              <div className={styles.result} role="status" aria-live="polite">
+                <p className={styles.reply}>
+                  {result.result_count
+                    ? `I found ${result.result_count} ${result.result_count === 1 ? 'plan' : 'plans'} in ${resultCity}. I’ve tuned the board for you.`
+                    : `Nothing exact in ${resultCity} yet. I’ve set the closest verified filters so you can look around.`}
+                </p>
+                <div className={styles.filters} aria-label="Filters Mau applied">
+                  <span>{resultCity}</span>
+                  <span>{timeWindowLabels[result.interpretation.window]}</span>
+                  {result.interpretation.categories.map((category) => (
+                    <span key={category}>{categoryLabels[category]}</span>
+                  ))}
+                  {result.interpretation.explicitly_free ? <span>Free entry</span> : null}
+                  {result.interpretation.venue ? <span>{result.interpretation.venue}</span> : null}
+                </div>
+                {result.items.length ? (
+                  <ul className={styles.plans} aria-label="Plans Mau found">
+                    {result.items.slice(0, 3).map((event) => (
+                      <li key={event.id}>
+                        <Link
+                          to={`/events/${event.id}/${event.slug}`}
+                          state={{ from: `${location.pathname}${location.search}` }}
+                        >
+                          <span>{event.title}</span>
+                          <small>
+                            {eventDateTimeLabel(event)}
+                            {event.venue?.name ? ` · ${event.venue.name}` : ''}
+                          </small>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+
+          <form className={styles.form} onSubmit={submit}>
             <label className="visually-hidden" htmlFor="mau-query">
               Ask Mau what you would like to do
             </label>
@@ -136,63 +189,14 @@ export function MauGuide({ city, onApply }: Props) {
                 value={query}
                 maxLength={280}
                 autoComplete="off"
-                placeholder="Free music this weekend…"
+                placeholder="Try “free music this weekend”"
                 onChange={(event) => setQuery(event.target.value)}
               />
-              <button type="submit" disabled={!query.trim() || ask.isPending}>
-                {ask.isPending ? 'Looking…' : 'Ask'}
+              <button type="submit" aria-label="Ask Mau" disabled={!query.trim() || ask.isPending}>
+                <span aria-hidden="true">→</span>
               </button>
             </div>
           </form>
-
-          {ask.isPending ? (
-            <p className={styles.message} role="status">
-              Mau is checking the real event board…
-            </p>
-          ) : null}
-
-          {ask.isError ? (
-            <p className={styles.error} role="alert">
-              Mau can’t look right now. The event board still works, so try again in a little while.
-            </p>
-          ) : null}
-
-          {result ? (
-            <div className={styles.result} role="status" aria-live="polite">
-              <p>
-                {result.result_count
-                  ? `Mau found ${result.result_count} ${result.result_count === 1 ? 'plan' : 'plans'} in ${resultCity} and tuned the board.`
-                  : `No exact match in ${resultCity} yet. Mau applied the verified filters so you can adjust them.`}
-              </p>
-              <div className={styles.filters}>
-                <span>{resultCity}</span>
-                <span>{timeWindowLabels[result.interpretation.window]}</span>
-                {result.interpretation.categories.map((category) => (
-                  <span key={category}>{categoryLabels[category]}</span>
-                ))}
-                {result.interpretation.explicitly_free ? <span>Free entry</span> : null}
-                {result.interpretation.venue ? <span>{result.interpretation.venue}</span> : null}
-              </div>
-              {result.items.length ? (
-                <ul className={styles.plans} aria-label="Plans Mau found">
-                  {result.items.slice(0, 3).map((event) => (
-                    <li key={event.id}>
-                      <Link
-                        to={`/events/${event.id}/${event.slug}`}
-                        state={{ from: `${location.pathname}${location.search}` }}
-                      >
-                        <span>{event.title}</span>
-                        <small>
-                          {eventDateTimeLabel(event)}
-                          {event.venue?.name ? ` · ${event.venue.name}` : ''}
-                        </small>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ) : null}
         </section>
       ) : null}
 

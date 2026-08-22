@@ -93,7 +93,7 @@ it('wakes Mau, asks the provider, and applies only returned verified filters', (
   fireEvent.change(screen.getByLabelText('Ask Mau what you would like to do'), {
     target: { value: 'free music at BHU in Varanasi this weekend' },
   });
-  fireEvent.click(screen.getByRole('button', { name: 'Ask' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Ask Mau' }));
 
   expect(mutate).toHaveBeenCalledWith(
     { query: 'free music at BHU in Varanasi this weekend' },
@@ -117,8 +117,8 @@ it('rests without guessing when the language service is unavailable', () => {
   mockGuide({ isError: true });
   renderMau();
   fireEvent.click(screen.getByRole('button', { name: 'Ask Mau for a plan' }));
-  expect(screen.getByRole('alert')).toHaveTextContent('The event board still works');
-  expect(screen.getByText('A tiny nap…')).toBeInTheDocument();
+  expect(screen.getByRole('alert')).toHaveTextContent('My whiskers lost the signal');
+  expect(screen.getByText('Lost the signal…')).toBeInTheDocument();
   expect(
     screen
       .getByRole('button', { name: 'Put Mau back to sleep' })
