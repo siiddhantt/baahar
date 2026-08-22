@@ -68,11 +68,12 @@ cost, and a source outage cannot make the public feed request hang.
 Mau is a query interpreter, not a second event database or an open-ended chatbot.
 One short request is sent server-side through OpenRouter with provider data
 collection denied and a strict JSON
-Schema containing only Baahar's current window, category, free-entry, and
-verified venue filters. The Go API validates that intent, executes the ordinary
-PostgreSQL feed query, and returns only verified event DTOs. Provider or schema
-failure returns a typed unavailable response; Baahar never guesses with a
-keyword fallback.
+Schema containing only Baahar's supported cities, window, category, free-entry,
+and verified venue filters. The current city is the default, while a named live
+city can become the target. The Go API validates that intent, executes the
+ordinary PostgreSQL feed query, and returns only verified event DTOs. Provider
+or schema failure returns a typed unavailable response; Baahar never guesses
+with a keyword fallback.
 
 There is no conversation memory, embedding index, vector database, tool loop, or
 model-authored event copy. The browser keeps only the current form/result state;

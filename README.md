@@ -68,7 +68,8 @@ The diagram is editable in
 
 - browse upcoming plans by city, date, category, venue, or free entry;
 - wake Mau, the small guide resting at the edge of the page, ask for something
-  like “free music this weekend,” and see the exact verified filters it applied;
+  like “events in Varanasi” or “free music this weekend,” and open the verified
+  city plans it found;
 - open a clear event detail with its official source;
 - save plans on the device, share them, or open a pre-filled Google/Outlook
   calendar entry (with a standards-based calendar file as fallback); and

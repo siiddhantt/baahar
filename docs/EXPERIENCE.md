@@ -202,10 +202,12 @@ The page contains:
 
 ### Mau
 
-Mau is a small sleeping cat at the bottom-left edge of Explore, not a content
+Mau is a small sleeping cat at the bottom-right edge of Explore, not a content
 section or support chatbot. Hovering or focusing introduces the guide; opening
 it wakes Mau and reveals one short request field. The result visibly becomes
-ordinary URL filters and the chronological event board remains the answer.
+ordinary URL filters, can move to another supported city when it was named, and
+links to a small verified event preview. The chronological event board remains
+the answer.
 Mau may acknowledge the verified match count but never invent a venue, reason,
 event fact, or recommendation. Keyboard operation, reduced motion, a typed
 provider-unavailable state, and an unchanged browsing path are required.

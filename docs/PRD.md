@@ -190,8 +190,9 @@ the visitor deliberately opens a contextual `About this source` disclosure.
 - Unknown price does not satisfy the explicit-free filter.
 - Categories are mapped by a reviewed source manifest or explicit source label;
   no runtime classifier invents them.
-- Mau may translate one short request into those same filters. A strict,
-  stateless model output is validated against current venues and taxonomy before
+- Mau may translate one short request into those same filters and select another
+  live city when the user names it. A strict, stateless model output is validated
+  against supported cities, that city's current venues, and the taxonomy before
   the ordinary feed query runs. It cannot create facts, arbitrary URLs, SQL, or
   hidden ranking.
 
